@@ -1,5 +1,5 @@
 """
-bundlenet.py
+matchernet.py
 =====
 
 This module contains a null demonstration of the BundleNet
@@ -7,8 +7,8 @@ This module contains a null demonstration of the BundleNet
 """
 import brica
 from brica import Component, VirtualTimeScheduler, Timing
-import bundlenet
-from bundlenet import Bundle, Matcher
+import matchernet
+from matchernet import Bundle, Matcher
 import numpy as np
 import utils
 import state

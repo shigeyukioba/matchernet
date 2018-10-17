@@ -23,7 +23,7 @@ ey2 = np.eye(2,dtype=np.float32)
 
 def ekf_test_multiple_observer(dt, numSteps, num_observers, yrecs):
     '''
-    Run a bundlenet of the following structure
+    Run a matchernet of the following structure
     b0 --- m01 --- b1
        --- m02 --- b2
        --- m03 --- b3

@@ -16,7 +16,7 @@ import sys
 _with_brica = True
 
 #=======================================================================
-#  Visualization functions for the bundlenet_ekf.py
+#  Visualization functions for the matchernet_ekf.py
 #=======================================================================
 def visualize_bundle_rec(b, yrec=None):
 
@@ -78,7 +78,7 @@ def visualize_bundle_rec(b, yrec=None):
 
 
 #=======================================================================
-#  Test functions for the bundlenet_ekf.py
+#  Test functions for the matchernet_ekf.py
 #=======================================================================
 
 mu0 = np.array([[0,1.0]],dtype=np.float32)
@@ -124,7 +124,7 @@ def test_bundle_and_observer(dt, numSteps, yrec):
 
 def test_MatcherEKF01(dt,numSteps,yrec):
     '''
-    Run a bundlenet of the following structure
+    Run a matchernet of the following structure
     b0 --- m01 --- b1
     '''
 

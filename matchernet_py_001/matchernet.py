@@ -1,5 +1,5 @@
 """
-bundlenet.py
+matchernet.py
 =====
 
 This module contains basic abstract classes that the BundleNet
@@ -28,7 +28,7 @@ _with_brica = True
 
 class Bundle(object):
     """
-    'Bundle' is an abstract class that defines basic propaties of Bundles in a bundlenet.
+    'Bundle' is an abstract class that defines basic propaties of Bundles in a matchernet.
 
     Each bundle has
       a state
@@ -76,8 +76,8 @@ class Bundle(object):
 
 class Matcher(object):
     """
-    'Matcher' is an abstract class that defines basic propaties of Matchers in a bundlenet.
-    Matcher is a component of bundlenet.
+    'Matcher' is an abstract class that defines basic propaties of Matchers in a matchernet.
+    Matcher is a component of matchernet.
     It connects Bundles, calculates energy, and returns a feedback state for each Bundle.
     Here, energy stands for a measure of contradiction among all the linking Bundles. The feedback stands for a signal that is used at the corresponding Bundle; the Bundle updates its state in order to decrease the energy.
     """

@@ -2,10 +2,10 @@ import numpy as np
 import utils
 from utils import print1, print2, print3, print4, print5
 import state
-import bundlenet
+import matchernet
 
 
-class Observer(bundlenet.Bundle):
+class Observer(matchernet.Bundle):
     '''Observer works as a Bundle that provides vector data at each time step of the MatcherNet simulation.
 
     Usage:

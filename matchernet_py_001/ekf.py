@@ -1,6 +1,6 @@
 import numpy as np
-import bundlenet
-from bundlenet import Bundle, Matcher
+import matchernet
+from matchernet import Bundle, Matcher
 import utils
 from utils import print1, print2, print3, print4, print5
 import state
@@ -14,7 +14,7 @@ import fn
 class BundleEKFContinuousTime(Bundle):
     '''Class BundleEKFContinuousTime is a Bundle part of an extended Kalman filter (EKF) model implemented as the BundleNet.
 
-    See bundlenet.py for general concept of the BundleNet, especially the general relationship between the "Bundle" and the "Matcher".
+    See matchernet.py for general concept of the BundleNet, especially the general relationship between the "Bundle" and the "Matcher".
 
     This class "BundleEKFContinuousTime" manages an internal state  x  and its dynamics model  f.
     The dynamics is defined as a probabilistic differential equation,
@@ -70,7 +70,7 @@ class BundleEKFContinuousTime(Bundle):
         self._initialize_control_params()
         self._initialize_state(n)
         self.f = fn.LinearFn(n,n)
-        #self.bw = bundlenet.bundleWeight(numSteps)
+        #self.bw = matchernet.bundleWeight(numSteps)
         super(BundleEKFContinuousTime, self).__init__(self.name, self.state)
         self._first_call_of_state_record = True
 
@@ -127,7 +127,7 @@ class BundleEKFContinuousTime(Bundle):
 
     def accept_feedback(self,fbst):
         """
-        Overriding bundlenet.Bundle.accept_feedback()
+        Overriding matchernet.Bundle.accept_feedback()
         This method updates the state of the current Bundle with accepting a feedback, fbst, from each Matcher linking from the current Bundle, according to the following update rule.
 
             mu <-- mu + dmu,
@@ -182,7 +182,7 @@ class BundleEKFContinuousTime(Bundle):
 class MatcherEKF(Matcher):
     '''Class MatcherEKF is a Matcher part of an extended Kalman filter (EKF) model implemented as the BundleNet.
 
-    See bundlenet.py for general concept of the BundleNet, especially the general relationship between the "Bundle" and the "Matcher".
+    See matchernet.py for general concept of the BundleNet, especially the general relationship between the "Bundle" and the "Matcher".
 
     In short, the followings are what MatcherEKF does in the BundleNet.
      (1) Defines a link between two bundles  b0  and  b1
@@ -393,7 +393,7 @@ def test_EKF():
     """
     Here is the least test of consistency of the classes
      'BundleEKFContinuousTime' and 'MatcherEKF'.
-    See 'bundlenet_ekf_test.py' for richer and fancyer tests and demonstrations of EKF.
+    See 'matchernet_ekf_test.py' for richer and fancyer tests and demonstrations of EKF.
     """
     b0 = BundleEKFContinuousTime("Bundle0",4)
     b1 = BundleEKFContinuousTime("Bundle1",4)

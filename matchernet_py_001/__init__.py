@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 """
-bundlenet
+matchernet
 =====
-bundlenet is a
+matchernet is a
 """
 
-__all__ = ["bundlenet","utils","observer","bundlenet_null","bundlenet_ekf","bundlenet_ekf_test","state_space_model_2d","fn"]
+__all__ = ["matchernet","utils","observer","bundlenet_null","bundlenet_ekf","bundlenet_ekf_test","state_space_model_2d","fn"]
 
-from .bundlenet import *
+from .matchernet import *
 from .utils import *
 from .state import *
 from .observer import *
-from .bundlenet_ekf import *
-from .bundlenet_ekf_test import *
+from .matchernet_ekf import *
+from .matchernet_ekf_test import *
 from .app.writing import *
