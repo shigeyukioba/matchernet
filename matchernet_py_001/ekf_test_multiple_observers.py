@@ -16,6 +16,7 @@ import sys
 import ekf_test
 from ekf_test import visualize_bundle_rec
 _with_brica = True
+import time
 
 mu0 = np.array([[0,1.0]],dtype=np.float32)
 A0 = np.array([[-0.1,2],[-2,-0.1]],dtype=np.float32)
@@ -105,7 +106,11 @@ if __name__ == '__main__':
 
     dt = 0.02
     num_steps = 200
-    num_observers = 20
+    args = sys.argv
+    print(args[1])
+    num_observers = int(args[1])
+
+    print( "num_observers={}".format(num_observers) )
 
     # preparing a list simulation sequences
     yrecs = prepare_data(dt, num_steps, num_observers)
@@ -114,6 +119,9 @@ if __name__ == '__main__':
     plt.pause(0.5)
 
     plt.figure(2)
+    start = time.time()
     ekf_test_multiple_observer(dt, num_steps, num_observers, yrecs)
+    elapsed_time = time.time() - start
+    print ("elapsed_time:{0}".format(elapsed_time) + "[sec]")
 
     plt.pause(100)
