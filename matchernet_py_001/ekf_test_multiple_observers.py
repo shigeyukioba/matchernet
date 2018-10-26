@@ -13,8 +13,7 @@ from brica import Component, VirtualTimeScheduler, Timing
 import utils
 from utils import print1, print2, print3, print4, print_flush
 import sys
-import ekf_test
-from ekf_test import visualize_bundle_rec
+
 _with_brica = True
 import time
 
@@ -84,20 +83,69 @@ def prepare_data(dt, num_steps, num_observers):
 
 def include_random_missing(y):
     num_channels = len(y)
-
+    num_timestep = len(y[0][:,0])
     for c in range(num_channels):
         y[c] = miss_hmm(y[c])
         plt.subplot(num_channels,1,c+1)
-        plt.plot(y[c])
+        for i in range(num_timestep):
+            if np.isnan(y[c][i,0]):
+                plt.plot([i,i],[-1,1],'-',color='gray',linewidth='3')
+        plt.plot(y[c],'.-')
+
     return y
 
 def miss_hmm(y):
     num_steps, dim = y.shape
-    n = 5
+    n = 8
     r = np.convolve( np.random.rand(num_steps)-0.5, np.ones(n), 'same')
     y[:,0] = np.where(r>0.5,y[:,0],np.nan)
     y[:,1] = np.where(r>0.5,y[:,1],np.nan)
     return y
+
+def visualize_bundle_rec(b, yrec=None):
+
+    murec = b.record["mu"]
+    sigmarec = b.record["diagSigma"]
+    time_stamp = b.record["time_stamp"]
+    numofTimesteps = murec.shape[0]
+    timestamp = np.array(range(0,numofTimesteps))
+
+    plt.subplot(221)
+    plt.plot(murec[:,0],murec[:,1])
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.title("Trajectory")
+
+
+    plt.subplot(222)
+    yd = murec[:,0]-sigmarec[:,0]
+    yu = murec[:,0]+sigmarec[:,0]
+
+    plt.fill_between(time_stamp,yd,yu,facecolor='y', alpha=0.5)
+    plt.plot(time_stamp,murec[:,0])
+    plt.ylabel("X")
+    plt.xlabel("time")
+
+    plt.subplot(224)
+    yd = murec[:,1]-sigmarec[:,1]
+    yu = murec[:,1]+sigmarec[:,1]
+    plt.fill_between(time_stamp,yd,yu,facecolor='y', alpha=0.5)
+    plt.plot(time_stamp,murec[:,1])
+    #plt.scatter(range(0,5000-1),murec[:,0])
+    plt.ylabel("Y")
+    plt.xlabel("time")
+
+    if yrec is None:
+        return
+    else:
+        plt.subplot(221)
+        plt.scatter(yrec[:,0], yrec[:,1],s=2)
+        plt.subplot(222)
+        plt.scatter(time_stamp, yrec[:,0],s=2)
+        plt.subplot(224)
+        plt.scatter(time_stamp, yrec[:,1],s=2)
+
+
 
 
 if __name__ == '__main__':
