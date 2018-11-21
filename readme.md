@@ -1,4 +1,5 @@
-* Setting up virtual environment at the ARM server
+Setting up virtual environment at the ARM server
+
 - First create a directory for the environments
 
 $ mkdir ~/virt_env
@@ -27,14 +28,16 @@ $ deactivate mynewenv
 $ workon mynewenv
 
 
-* Activate the virtual environment
+Activate the virtual environment
+
 $ module load loadonly/python_wrapper
 $ source ~/virt_env/mynewenv/bin/activate
 
-* Installing BriCA2 parallel (beta)
+Installing BriCA2 parallel (beta)
+
 $ git clone https://github.com/BriCA/BriCA2
 $ git checkout wip/python
 $ cd BriCA2
 
-* activate the virtual environment
+activate the virtual environment
 $ pip install .
