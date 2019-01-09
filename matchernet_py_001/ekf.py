@@ -71,8 +71,9 @@ class BundleEKFContinuousTime(Bundle):
         self._initialize_state(n)
         self.f = fn.LinearFn(n,n)
         #self.bw = matchernet.bundleWeight(numSteps)
-        super(BundleEKFContinuousTime, self).__init__(self.name, self.state)
+        self.record = {}
         self._first_call_of_state_record = True
+        super(BundleEKFContinuousTime, self).__init__(self.name, self.state)
 
     def __call__(self, inputs):
         """ The main routine that is called from brica.
@@ -228,6 +229,7 @@ class MatcherEKF(Matcher):
         self._initialize_model()
         self.ts0_recent = -1 # the most recent value of the time_stamp of b0
         self.ts1_recent = -1 # that of b1
+        self.update_component()
 
     def _initialize_model(self):
         self.n = self.n0      # dim. of g0(x0), g1(x1)

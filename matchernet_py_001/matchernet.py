@@ -85,15 +85,21 @@ class Matcher(object):
         self.name = name
         self.state = state.StatePlain(1) # Own state of the current matcher
         self.results = {}
-        self.component = Component(self)
-        for b in bundles:
-            self.component.make_in_port(b.name)
-            self.component.make_out_port(b.name)
-            b.component.make_in_port(name)
-            brica.connect(b.component, "state", self.component, b.name)
-            brica.connect(self.component, b.name, b.component, name)
+        self.bundles = bundles
+        self.component = None
+        self.update_component()
+
+    def update_component(self):
+        component = Component(self)
+        for b in self.bundles:
+            component.make_in_port(b.name)
+            component.make_out_port(b.name)
+            b.component.make_in_port(self.name)
+            brica.connect(b.component, "state", component, b.name)
+            brica.connect(component, b.name, b.component, self.name)
             print4( "{}".format(b.state.data))
             self.results[b.name] = copy.deepcopy(b.state)
+        self.component = component
 
     def __call__(self, inputs):
         """
@@ -138,7 +144,7 @@ def test_abstract_bm():
     b0   = Bundle("Bundle0",st)
     b1   = Bundle("Bundle1",st)
     b2   = Bundle("Bundle2",st)
-
+    
     m01 = Matcher("Matcher01",b0,b1)
     m02 = Matcher("Matcher02",b0,b2)
     m12 = Matcher("Matcher12",b1,b2)

@@ -146,8 +146,6 @@ def visualize_bundle_rec(b, yrec=None):
         plt.scatter(time_stamp, yrec[:,1],s=2)
 
 
-
-
 if __name__ == '__main__':
 
     utils._print_level = 1 #5 is the noisiest, 1 is the most quiet

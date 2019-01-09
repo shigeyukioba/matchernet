@@ -36,13 +36,13 @@ class Observer(matchernet.Bundle):
         self.length = buff.shape[0]
         self.dim = buff.shape[1]
         self.state = state.StateMuSigma(self.dim)
-        super(Observer,self).__init__(self.name, self.state)
         self.obs_noise_covariance = 1000 * np.eye(self.dim,dtype=np.float32)
         self.missing_handler = missing_handler001
             # default setting of missing value handler function
         self.set_results()
             # set the first value with large obs_noise_covariance
             # for an initial value
+        super(Observer,self).__init__(self.name, self.state)
 
     def __call__(self, inputs):
         """ The main routine that is called from brica.
