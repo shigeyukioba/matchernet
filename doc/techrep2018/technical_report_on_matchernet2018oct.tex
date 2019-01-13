@@ -64,13 +64,19 @@ We propose a general framework that can easily implement a complex model involvi
 \newcommand{\vmu}{{\boldsymbol{\mu}}}
 \newcommand{\vSigma}{{\boldsymbol{\Sigma}}}
 \newcommand{\Real}{\mathbb{R}}
+\newcommand{\Normal}{{\mathbf{N}}}
 
 \section{Preliminary}
+State space models (SSMs) are widely used in order to describe the relationship of stochastic dynamics and noisy observation of the environment. They are used for signal processing, building artificial intelligence to control robots, and mimicking animal behavior. 
 
-\subsection{Extended Kalman-filter and its continuous version}
-State space model assumes a time sequence of latent state variable $\vx_t\in\Real^{N_X}$
-behind the observation $\vy_t\in\Real^{N_Y}$ along the discrete time $t=1,...,T$.
-The extended Kalman-filter (EKF) model, in specific, assumes a general model of the following form
+
+\subsection{General SSMs for EKF and its continuous version}
+Extended Kalman-filter algorithm is based on a temporary linearization
+A state space model assumes a time sequence of latent state variable $\vx_t\in\Real^{N_X}$
+behind the observation $\vy_t\in\Real^{N_Y}$ along the discrete time course $t=1,...,T$.
+
+
+The extended Kalman-filter (EKF) algorithm, in specific, assumes a general model of the following form
 \begin{align}
  \vx_{t+1} &= f( \vx_t ) + \vw_t, \\
  \vy_{t} &= g( \vx_t ) + \vz_t
@@ -85,9 +91,11 @@ $\vw_t$ and $\vz_t$ denote random noise, called system noise and observation noi
 where $\vect{Q}$ and $\vect{R}$ are covariance matrices of size $N_X\times N_X$ and $N_Y\times N_Y$
 representing system noise and observation noise, respectively. 
 
-The goal of the EKF is to estimate the temporal posterior of the latent state variable
- $q_t \equiv q(\vx_t) = N(\vmu_t, \vSigma_t)$ 
- using all the past sequence of observations $\vy_{t'}, t'=1,...,t$.
+The goal of the EKF is to approximate the posterior probability of the latent state variable
+ $p(\vx_t | \vy_{1:t} )$ as a Gaussian distribution $q_t \equiv q(\vx_t) = N(\vmu_t, \vSigma_t)$,
+ with mean $\vmu_t$ and covariance $\vSigma_t$,
+ for each time $t=1,\cdots,T$ in an online manner.
+ 
 To this end, a well known sequential algorithm provides a sequential update of the posterior $q_{t+1}$ by only using $q_{t}$ and $\vy_{t+1}$.
 In other words, $q_{t}$ brings all the information that was contained in the
 past sequence $\vy_{t'}, t'=1,...,t$ so that $q_{t}$ and $\vy_{t+1}$ are sufficient for knowing current update $q_{t+1}$.
@@ -96,16 +104,19 @@ The update rule is shown in the Figure \ref{EKFalg}.
 We may consider a continuous version of the EKF (cEKF). 
 The cEKF assumes a stochastic differential equation, which enables state update with an arbitrary time step $\Delta_t$.
 \begin{align}
- \dot\vx  &= f( \vx ) + \vQ d\omega, \\
+ \dot\vx  &= f( \vx ) + \vQ d\omega, \label{cont_dyn}\\
  \vy_{t} &= g( \vx_t ) + \vz_t
 \end{align}
 where $\omega$ denotes a Wiener process such that
 $\omega_{t+\Delta t}-\omega_t \sim N(\vect{0},\Delta t\vect{I})$ holds.
-The continuous EKF consider arbitrary time step $\Delta t$ such that
+The continuous EKF enables arbitrary time step $\Delta t$ such that
  the linear approximation of $f(\cdot)$ holds.
 The update algorithm (Figure \ref{EKFalg})
 becomes similar to the standard EKF except for the application of the dynamics model.
  
+In EKF and cEKF, we may consider $f(\vx)$ and $g(\vx)$ unknown and/or variable. 
+They are to be updated in order to decrease the error.
+
 \begin{figure}
 %\begin{tabular}{cc}
 \begin{itembox}[l]{\bf EKF algorithm}
@@ -139,13 +150,37 @@ $(\vmu_{t+\Delta t}, \vSigma_{t+\Delta t}) \leftarrow (\vmu_t, \vSigma_t, \Delta
 %\end{tabular}
 \caption{EKF algorithms of standard and continuous versions.
 Note $\vA, \vF, \vC, \vS, \vK$ are temporal matrices
-that are used once and become forgettable.}
+that are used once at each update of the posterior $q_t$.}
 \label{EKFalg}
 \end{figure}
 
+%==========================================
 \subsection{Multiple inputs and multiple subjects}
+We assume multiple input vectors $\vy_m, m=1,\cdots, M$ 
+that obey corresponding observation models,
+\begin{align}
+ \vy_{m} = g_m( \vx ) + \vz_{m} \approx \vC_m \vx + \vz_m
+\end{align}
+where $g_m(\cdot)$ and $\vC_m$ denotes the $m$-th observation model and its linearized coefficient.
+$\vz_m$ is a noise term with Gaussian distribution of covariance $\vR_m$.
 
+We regard a high-dimensional state vector $\vx\in\Real^{D_x}$ as a set of multiple parts of vectors
+$\vx=(\vx_1,\cdots,\vx_K)$ where $\vx_k\in\Real^{D_{xk}}, k=1,\cdots, K$.
+Then, the dynamics model \eqref{cont_dyn} becomes the following
+ multi-part dynamics form without loss of generality:
+\begin{align}
+ \dot{\vx}_{k} = f_k( \vx ) + \vw_k \approx \sum_{k=1}^K \vA_{kk'} \vx_{k'} + \vw_k
+\end{align}
+where $f_k(\vx)$ denotes the dynamics model for the $k$th part $\vx_k$ of the state vector $\vx$,
+ $\vw_k$ is a system noise term with Gaussian distribution of covariance $\vQ_k$,
+ and $\vA_{kk'} \equiv \partial f_k / \partial \vx_{k'}$ is a part of Jacobian matrix corresponding to the $\vx_k$ and $\vx_{k'}$.
 
+We introduce a hidden state vector $\vv\in\Real^{D_v}$ representing an abstract state that can govern
+all the original state vectors $\vx_1,\cdots,\vx_K$. Besides, we omit any of the direct interactions among the $K$ state vectors, namely we assume $\vA_{kk'}=\vect{0}$ for $k\neq k'$.
+\begin{align}
+ \dot{\vx}_{k} =& f_k( \vx, \vv ) + \vw_k \approx  \vA_{kk} \vx_{k} + \vA_{kv} \vv + \vw_k,\\
+ \dot{\vv} =& f_v( \vv ) + \vw_v \approx  \vA_{vv} \vv + \vw_v.
+\end{align}
 
 \subsection{Hierarchical generalized filter}
 The hierarchical generalized filter (GF) is a rich extension to the EKF \cite{GF}.
@@ -236,8 +271,12 @@ $\vx_t$ is determined to predict $\vy_t$ the
 
 
 
-\section{Bundlenet}
-Bundlenet is a general framework for state space modeling of multi-modal signals.
+\section{Matchernet}
+Matchernet is a general framework to build a structured state space modeling of multi-modal signals.
+
+Let us consider a set of three signal sources $\vy_{(1)}, \vy_{(2)}, \vy_{(3)}$ providing
+$N_{(1)}, N_{(2)}, N_{(3)}$ dimensional vectors, respectively, in a sequential manner along the time course $t=1, \cdots, T$.
+ 
 
 Let us consider a set of state variables
 $\vx_{(i)} \in \Real^{D_i}, i=1,...,N_B$,
