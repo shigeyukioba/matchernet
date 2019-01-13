@@ -37,8 +37,7 @@ class Observer(matchernet.Bundle):
         self.dim = buff.shape[1]
         self.state = state.StateMuSigma(self.dim)
         self.obs_noise_covariance = 1000 * np.eye(self.dim,dtype=np.float32)
-        # self.missing_handler = missing_handler001
-        self.missing_handler = 0 # a dummy value
+        self.missing_handler = missing_handler001
             # default setting of missing value handler function
         self.set_results()
             # set the first value with large obs_noise_covariance
@@ -76,7 +75,7 @@ class Observer(matchernet.Bundle):
 
     def set_results(self):
         q = self.get_state()
-        mu, Sigma = missing_handler001( np.array(q,np.float32), self.obs_noise_covariance )
+        mu, Sigma = self.missing_handler( np.array(q,np.float32), self.obs_noise_covariance )
         self.state.data["mu"]=mu
         self.state.data["Sigma"]=Sigma
         self.state.data["time_stamp"]=self.counter
