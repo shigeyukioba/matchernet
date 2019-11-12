@@ -1,5 +1,4 @@
-import utils
-import warnings
+from matchernet_py_001 import utils
 
 class State(object):
     '''Class State is a state handler that maintains, serializes, and deserializes the state of Bundles or Matchers.
@@ -65,24 +64,3 @@ class StateMuSigma(State):
         self.data["time_stamp"] = 0
         self.data["mu"] = utils.zeros((1,n))
         self.data["Sigma"] = utils.zeros((n,n))
-
-
-if __name__ == '__main__':
-    print("===Testing StatePlain===")
-    s = StatePlain(4)
-    s.data["mu"][0]=np.array([1,2,3,4],dtype=np.float32)
-    print("mu",s.data["mu"])
-
-    print("===Testing StateMuSigma===")
-    s = StateMuSigma(4)
-    s.data["mu"][0]=np.array([1,2,3,4],dtype=np.float32)
-    s.data["Sigma"]=np.eye(4,dtype=np.float32)
-    print("mu", s.data["mu"])
-    print("Sigma", s.data["Sigma"])
-
-    print("===Testing StateMuSigmaDiag===")
-    s = StateMuSigmaDiag(4)
-    s.data["mu"][0]=np.array([1,2,3,4],dtype=np.float32)
-    s.data["sigma"][0]=np.array([5,5,5,5],dtype=np.float32)
-    print("mu",s.data["mu"])
-    print("sigma",s.data["sigma"])
