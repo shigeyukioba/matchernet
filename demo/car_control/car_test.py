@@ -53,7 +53,6 @@ class CarDynamicsTest(unittest.TestCase):
 
         # Compare Jacobian value with numerical differentiation result
         fu_n = jacobian_finite_difference(dynamics.value, 1, x, u)
-        np.testing.assert_almost_equal(fu, fu_n, 4)
         self.assertTrue(np.allclose(fu, fu_n, atol=1e-4))
 
 
