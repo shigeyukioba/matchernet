@@ -124,7 +124,8 @@ class Matcher(object):
         self.print_state()
 
     def print_state(self):
-        '''Prints the state of the self.'''
+        """Prints the state of the self.
+        """
         print3("State of {n}".format(n=self.name))
         print3("self.state.data={x}".format(x=self.state.data))
         print3("self.results={x}".format(x=self.results))
