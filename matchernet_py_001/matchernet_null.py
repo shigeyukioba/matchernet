@@ -31,7 +31,8 @@ class BundleNull(Bundle):
             # elapsed = time.clock_gettime(time.CLOCK_MONOTONIC) - ref
 
 class MatcherNull2(Matcher):
-    '''MatcherNull is a Matcher that connects two BundleNull s'''
+    """MatcherNull is a Matcher that connects two BundleNull s
+    """
     def __init__(self,name,b0,b1):
         self.name = name
         super(MatcherNull2, self).__init__(self.name, b0, b1)
