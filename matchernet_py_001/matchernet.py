@@ -12,14 +12,10 @@ https://github.com/BriCA/BriCA2
 
 import brica
 from brica import Component, VirtualTimeScheduler, Timing
-import numpy as np
 from matchernet_py_001 import utils
-from matchernet_py_001.utils import print1, print2, print3, print4, _print_level
+from matchernet_py_001.utils import print2, print3, print4
 from matchernet_py_001 import state
-import time
 import copy
-
-#import pdb
 
 zeros = utils.zeros
 
@@ -115,7 +111,6 @@ class Matcher(object):
           results = {"Bundle0", fbst0, "Bundle1", fbst1}
 
         """
-        mu = {}
         for key in inputs:
             if inputs[key] is not None:
                 self.accept_bundle_state(inputs[key])
@@ -133,8 +128,3 @@ class Matcher(object):
         print3("State of {n}".format(n=self.name))
         print3("self.state.data={x}".format(x=self.state.data))
         print3("self.results={x}".format(x=self.results))
-
-
-# ====================
-#   Test functions
-# ====================
