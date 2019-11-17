@@ -10,9 +10,9 @@ architecture needs. It is overridden when you use chainer/TensorFlow to implemen
 import numpy as np
 
 class Fn(object):
-    ''' An abstract class to implement numerical function
+    """An abstract class to implement numerical function
     that BundleNet uses.
-    '''
+    """
     def __init__(self, dim_in, dim_out):
         self.shape =(dim_in,dim_out)
         self.params = {"none":0}
@@ -21,24 +21,25 @@ class Fn(object):
         return self.params
 
     def value(self, x):
-        ''' Numerically calculates f(x)
+        """Numerically calculates f(x)
           x should be a numpy array of shape (dim_in, 1)
           outputs a numpy array of shape (dim_out, 1)
-         '''
+        """
         return 0
     def x(self, x):
-        ''' Numerically calculates df/dx
+        """Numerically calculates df/dx
           outputs a numpy array of shape (dim_out, dim_in)
-         '''
+        """
         return 0
     def xx(self, x):
-        ''' Numerically calculates df^2/dx^2
+        """Numerically calculates df^2/dx^2
           outputs a numpy array of shape (dim_out, dim_in, dim_in)
-         '''
+        """
         return 0
 
 class LinearFn(Fn):
-    ''' Linear function y = np.dot( x, A ) and its derivatives.'''
+    """Linear function y = np.dot( x, A ) and its derivatives.
+    """
     def __init__(self, dim_in, dim_out):
         super(LinearFn, self).__init__(dim_in, dim_out)
         A = np.zeros((dim_out,dim_in),dtype=np.float32)
@@ -54,8 +55,9 @@ class LinearFn(Fn):
         return np.zeros(self.shape,dtype=np.float32)
 
 class LinearFnXU(Fn):
-    ''' Linear function y = np.dot( x, A ) + np.dot( u, B )
-     and its derivatives.'''
+    """Linear function y = np.dot( x, A ) + np.dot( u, B )
+     and its derivatives.
+    """
     def __init__(self, dim_x, dim_u, dim_out):
         super(LinearFnXU, self).__init__(dim_x, dim_out)
         A = np.zeros((dim_out,dim_x),dtype=np.float32)
