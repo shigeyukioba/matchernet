@@ -17,7 +17,7 @@ class Fn(object):
         self.shape =(dim_in,dim_out)
         self.params = {"none":0}
 
-    def get_params():
+    def get_params(self):
         return self.params
 
     def value(self, x):
