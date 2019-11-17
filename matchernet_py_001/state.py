@@ -24,7 +24,8 @@ class StatePlain(State):
     """StatePlain is a State that handles plain numpy.array.
     """
     def __init__(self, n ):
-        '''Initializer takes a dimensionarity of the vector.'''
+        """Initializer takes a dimensionarity of the vector.
+        """
         self.n = n
         #super().__init__(self.n)
         super(StatePlain, self).__init__(self.n)
