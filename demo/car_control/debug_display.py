@@ -71,7 +71,9 @@ def main():
     renderer = CarRenderer()
     reward_system = ObstacleRewardSystem()
     
-    env = MPCEnv(dynamics, renderer, reward_system, use_visual_state=True)
+    Q = np.identity(4) * 0.0001
+    
+    env = MPCEnv(dynamics, renderer, reward_system, Q, use_visual_state=True)
     display = Display(display_size, env, recording=recording)
     
     clock = pygame.time.Clock()

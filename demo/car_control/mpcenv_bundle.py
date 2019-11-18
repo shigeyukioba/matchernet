@@ -12,9 +12,9 @@ class MPCEnvBundle(Bundle):
         dt = 0.03
         dynamics = CarDynamics(dt)
         renderer = CarRenderer()
-        self.reward_system = reward_system
+        reward_system = ObstacleRewardSystem()
         
-        self.env = MPCEnv(dynamics, renderer, use_visual_state=False)
+        self.env = MPCEnv(dynamics, renderer, reward_system, use_visual_state=False)
         self.update_component()
 
     def __call__(self, inputs):

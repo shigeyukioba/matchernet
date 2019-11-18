@@ -69,7 +69,7 @@ class iLQG:
         lx  = self.cost.x( x_list[T], u_zero, T)
         lxx = self.cost.xx(x_list[T], u_zero, T)
         
-        Vx  = lx  # (x_dim,1)
+        Vx  = lx  # (x_dim,)
         Vxx = lxx # (x_dim,x_dim)
         
         assert Vx.shape  == (self.dynamics.x_dim,)

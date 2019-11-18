@@ -51,6 +51,10 @@ class CarDynamics(object):
     
         # New state
         x_new = x + dx
+
+        # Limit x,y pos range (TDOO: for debugging)
+        #x_new[0] = np.clip(x_new[0], -1.0, 1.0)
+        #x_new[1] = np.clip(x_new[1], -1.0, 1.0)
         return x_new
 
     @property
