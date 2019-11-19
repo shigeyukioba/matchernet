@@ -72,7 +72,6 @@ class BundleEKFContinuousTime(Bundle):
         self.f = fn.LinearFn(n,n)
         #self.bw = matchernet.bundleWeight(numSteps)
         self.record = {}
-        self._first_call_of_state_record = True
         super(BundleEKFContinuousTime, self).__init__(self.name, self.state)
 
     def __call__(self, inputs):
@@ -87,22 +86,9 @@ class BundleEKFContinuousTime(Bundle):
         self.step_dynamics(self.dt)
         self._countup()
         self.state.data["Sigma"] = utils.regularize_cov_matrix(self.state.data["Sigma"])
-        self._state_record()
         print3("1: mu={}".format(self.state.data["mu"]))
 
         return {"state": self.state}
-
-    def _state_record(self):
-        mu = np.array(self.state.data["mu"],dtype=np.float32)
-        sigma = np.array([np.diag(self.state.data["Sigma"])],dtype=np.float32)
-        ts = np.array([self.state.data["time_stamp"]],dtype=np.float32)
-        if self._first_call_of_state_record is True:
-            self.record = {"mu":mu, "diagSigma":sigma, "time_stamp":ts}
-            self._first_call_of_state_record = False
-        else:
-            self.record["mu"] = np.concatenate((self.record["mu"],mu),axis=0)
-            self.record["diagSigma"] = np.concatenate((self.record["diagSigma"],sigma),axis=0)
-            self.record["time_stamp"] = np.concatenate((self.record["time_stamp"],ts),axis=0)
 
     def _initialize_control_params(self):
         self.id = 0
@@ -124,7 +110,6 @@ class BundleEKFContinuousTime(Bundle):
         self.state.data["mu"] = mu
         self.state.data["Sigma"] = Sigma
         self.state.data["Q"] = Q
-        self._first_call_of_state_record = 1
 
     def accept_feedback(self,fbst):
         """
@@ -268,32 +253,6 @@ class MatcherEKF(Matcher):
         """
         self.update(inputs)
         return self.results
-
-    def _state_record(self):
-        '''Storing records of current MatcherEKF'''
-        b0 = self.b0state
-        b1 = self.b1state
-        fbst0 = self.results[self.b0name]
-        fbst1 = self.results[self.b1name]
-         # feedback from the current Matcher to the Bundle b1
-        mu0 = np.array( b0.data["mu"] )
-        sigma0 = np.array([np.diag(b0.data["Sigma"])],dtype=np.float32)
-        mu1 = np.array( b1.data["mu"] )
-        sigma1 = np.array([np.diag(b1.data["Sigma"])],dtype=np.float32)
-        dmu1 = np.array( fbst1.data["mu"] )
-        dsigma1 = np.array([np.diag(fbst1.data["Sigma"])],dtype=np.float32)
-        if self._first_call_of_state_record == 1:
-            self.record = {"mu0":mu0, "diagSigma0":sigma0,
-             "mu1":mu1, "diagSigma1":sigma1,
-             "dmu1":dmu1, "diagDSigma1":dsigma1}
-            self._first_call_of_state_record = 0
-        else:
-            self.record["mu0"] = np.concatenate((self.record["mu0"],mu0),axis=0)
-            self.record["diagSigma0"] = np.concatenate((self.record["diagSigma0"],sigma0),axis=0)
-            self.record["mu1"] = np.concatenate((self.record["mu1"],mu1),axis=0)
-            self.record["diagSigma1"] = np.concatenate((self.record["diagSigma1"],sigma1),axis=0)
-            self.record["dmu1"] = np.concatenate((self.record["dmu1"],dmu1),axis=0)
-            self.record["diagDSigma1"] = np.concatenate((self.record["diagDSigma1"],dsigma1),axis=0)
 
     def forward(self):
         ''' Main method that evaluates the error and derivatives.
