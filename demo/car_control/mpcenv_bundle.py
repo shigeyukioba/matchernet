@@ -1,33 +1,67 @@
 # -*- coding: utf-8 -*-
+import numpy as np
 from matchernet import Bundle, Matcher
-from mpcenv import MPCEnv
-from car import CarDynamics, CarRenderer
-from obstacle_reward_system import ObstacleRewardSystem
 
 
 class MPCEnvBundle(Bundle):
-    def __init__(self):
-        super(MPCEnvBundle, self).__init__("mpcenv_b0")
-
-        dt = 0.03
-        dynamics = CarDynamics(dt)
-        renderer = CarRenderer()
-        reward_system = ObstacleRewardSystem()
+    def __init__(self, env):
+        """
+        Arguments:
+          env
+            MPCEnv instance
+        """
+        super(MPCEnvBundle, self).__init__("mpcenv_bundle")
+        self.env = env
+        self.timestamp = 0.0
         
-        self.env = MPCEnv(dynamics, renderer, reward_system, use_visual_state=False)
         self.update_component()
 
+    def __call__(self, inputs):
+        if "mpcenv_matcher" in inputs and inputs["mpcenv_matcher"] is not None:
+            feedback = inputs["mpcenv_matcher"]
+            
+            # Receive action from Matcher
+            u = feedback["u"]
+
+            # Step environment with received action
+            x, reward = self.env.step(u)
+            
+            # Increment timestamp
+            self.timestamp += self.env.dynamics.dt
+
+            # Send state to matcher
+            state = {
+                "x" : x,
+                "reward" : reward,
+                "timestamp" : self.timestamp
+            }
+            return {
+                "state" : state
+            }
+        else:
+            return {}
+
+
+class MPCEnvDebugMatcher(Matcher):
+    def __init__(self, *bundles):
+        super(MPCEnvDebugMatcher, self).__init__("mpcenv_matcher", *bundles)
         self.timestamp = 0.0
 
     def __call__(self, inputs):
-        action = inputs["u"]
-        state, reward = self.env.step(action)
-        
-        # Increment timestamp
-        self.timestamp += self.env.dynamics.dt
-        
+        if "mpcenv_bundle" in inputs and inputs["mpcenv_bundle"] is not None:
+            # Receive sate from bundle
+            mpcenv_state = inputs["mpcenv_bundle"]
+            x         = mpcenv_state["x"]
+            reward    = mpcenv_state["reward"]
+            timestamp = mpcenv_state["timestamp"]
+
+            print("x received from bundle: {}".format(x))
+            
+        # Send action to Bundle
+        u = np.array([0.1, 0.2], dtype=np.float32)
+        results = {
+            "u" : u
+        }
         return {
-            "x" : state,
-            "r" : reward,
-            "timestamp" : self.timestamp
+            "mpcenv_bundle" : results
         }
