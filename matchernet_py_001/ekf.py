@@ -11,7 +11,7 @@ from .utils import print1, print2, print3, print4, print5
 #=======================================================================
 
 class BundleEKFContinuousTime(Bundle):
-    '''Class BundleEKFContinuousTime is a Bundle part of an extended Kalman filter (EKF) model implemented as the BundleNet.
+    """Class BundleEKFContinuousTime is a Bundle part of an extended Kalman filter (EKF) model implemented as the BundleNet.
 
     See matchernet.py for general concept of the BundleNet, especially the general relationship between the "Bundle" and the "Matcher".
 
@@ -61,7 +61,7 @@ class BundleEKFContinuousTime(Bundle):
         BundleEKFContinuousTimeTrainable (to be implemented soon)
     for a similar class with trainable dynamics function.
 
-    '''
+    """
     def __init__(self, name, n):
         self.n = n # Dimsnsionarity of the state variable
         self.name = name
@@ -74,7 +74,7 @@ class BundleEKFContinuousTime(Bundle):
         super(BundleEKFContinuousTime, self).__init__(self.name, self.state)
 
     def __call__(self, inputs):
-        """ The main routine that is called from brica.
+        """The main routine that is called from brica.
         """
         print2("=== In Bundle {}".format(self.name))
         for key in inputs: # key is one of the matcher names
@@ -111,8 +111,7 @@ class BundleEKFContinuousTime(Bundle):
         self.state.data["Q"] = Q
 
     def accept_feedback(self,fbst):
-        """
-        Overriding matchernet.Bundle.accept_feedback()
+        """Overriding matchernet.Bundle.accept_feedback()
         This method updates the state of the current Bundle with accepting a feedback, fbst, from each Matcher linking from the current Bundle, according to the following update rule.
 
             mu <-- mu + dmu,
@@ -136,8 +135,7 @@ class BundleEKFContinuousTime(Bundle):
         #self.Q = (1-weight*self.lr) * Q + weight*self.lr * np.dot(dmu.T,dmu)
 
     def step_dynamics(self, dt):
-        """
-        This method updates  self.state  using the dynamics model,
+        """This method updates  self.state  using the dynamics model,
 
             dx/dt  =  f(x) + Q dw.
 
@@ -165,7 +163,7 @@ class BundleEKFContinuousTime(Bundle):
 #=======================================================================
 
 class MatcherEKF(Matcher):
-    '''Class MatcherEKF is a Matcher part of an extended Kalman filter (EKF) model implemented as the BundleNet.
+    """Class MatcherEKF is a Matcher part of an extended Kalman filter (EKF) model implemented as the BundleNet.
 
     See matchernet.py for general concept of the BundleNet, especially the general relationship between the "Bundle" and the "Matcher".
 
@@ -201,7 +199,7 @@ class MatcherEKF(Matcher):
        S = C0 Sigma0 C0' + C1 Sigma1 C1'
 
     where  C0 = (dg0/dx)  and  C1 = (dg1/dx)  are Jacobian matrices. Note that C0 and C1 are identity matrices and  S = Sigma0 + Sigma1  holds in the simplest case.
-    '''
+    """
     def __init__(self,name,b0,b1): # b0 and b1 are the Bundles to be linked to the current Matcher
         self.name = name
         super(MatcherEKF, self).__init__(name, b0,b1)
@@ -237,8 +235,7 @@ class MatcherEKF(Matcher):
         print2("n0={}, n1={}, n={}".format(self.n0, self.n1, self.n))
 
     def __call__(self, inputs):
-        """
-        The main routine that is called from brica.
+        """The main routine that is called from brica.
         The input variable  'inputs'  is a python dictionary object that brings all the current states of bundles.
         Ex.
 
@@ -254,7 +251,7 @@ class MatcherEKF(Matcher):
         return self.results
 
     def forward(self):
-        ''' Main method that evaluates the error and derivatives.
+        """Main method that evaluates the error and derivatives.
            z = g0(mu0) - g1(mu1)
            C0 = (d g0/ d mu0)   <-- Jacobian
            C1 = (d g1/ d mu1)   <-- Jacobian
@@ -272,7 +269,7 @@ class MatcherEKF(Matcher):
            where  R = Sigma0.
            In other words, user may provide a fixed noise matrix  Sigma0 = R  in the observer in order to set the observation noise model.
            Missing observation can be described as temporally setting of large diagonal elements of  Sigma0.
-        '''
+        """
         print3("Matcher_EKF forward")
         self.lnL_t = 0
         #self.R = self.Sigma0 + self.Sigma1
@@ -298,17 +295,17 @@ class MatcherEKF(Matcher):
         print3("lnL_t = {lnLt}, lnL = {lnL}".format(lnLt=self.lnL_t,lnL=self.lnL))
 
     def backward(self):
-        ''' Updates the observation models
+        """Updates the observation models
               self.g0 and self.g1
         if they are variables.
         (to be implemented soon)
-        '''
+        """
         print2("{} backward".format(self.name))
 
     def update(self, inputs):
-        ''' method self.update()
+        """method self.update()
          is called from self.__call__()
-        '''
+        """
         self.b0state = inputs[self.b0name]
         d0 = self.b0state.data
         self.b1state = inputs[self.b1name]
