@@ -1,3 +1,4 @@
+import numpy as np
 from matchernet_py_001 import utils
 
 class State(object):
@@ -46,7 +47,7 @@ class StateMuSigmaDiag(State):
         self.data["id"] = 1
         self.data["time_stamp"] = 0
         self.data["mu"] = utils.zeros((1,n))
-        self.data["sigma"] = utils.zeros((1,n))
+        self.data["sigma"] = np.diag(np.eye(self.n, dtype=np.float32))
 
 class StateMuSigma(State):
     """StateMuSigma is a state handler that handles
@@ -64,4 +65,4 @@ class StateMuSigma(State):
         self.data["id"] = 1
         self.data["time_stamp"] = 0
         self.data["mu"] = utils.zeros((1,n))
-        self.data["Sigma"] = utils.zeros((n,n))
+        self.data["Sigma"] = np.eye(n, dtype=np.float32)
