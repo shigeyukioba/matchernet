@@ -1,7 +1,7 @@
 import numpy as np
-import utils
-import fn
-import matplotlib.pyplot as plt
+
+from matchernet_py_001 import fn
+from matchernet_py_001 import utils
 
 printDebug = True
 class StateSpaceModel2Dim(object):
