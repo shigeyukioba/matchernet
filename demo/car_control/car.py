@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import autograd.numpy as np
 from autograd import jacobian
-
 import cv2
+
+from mpc import Dynamics, Renderer
 
 
 # Dynamics properties
@@ -15,13 +16,12 @@ WHEEL_WIDTH        = 0.15 * 0.1
 WHEEL_LENGTH       = 0.4  * 0.1
 
 
-class CarDynamics(object):
+class CarDynamics(Dynamics):
     """
     Car movement dynamics.
     """
     def __init__(self, dt):
-        # Timestep
-        self._dt = dt
+        super(CarDynamics, self).__init__(dt)
         
         # Jacobian calculation with automatic differentiation
         self.x = jacobian(self.value, 0)
@@ -51,10 +51,11 @@ class CarDynamics(object):
     
         # New state
         x_new = x + dx
-
-        # Limit x,y pos range (TDOO: for debugging)
-        #x_new[0] = np.clip(x_new[0], -1.0, 1.0)
-        #x_new[1] = np.clip(x_new[1], -1.0, 1.0)
+        
+        # Limit x,y pos range For debugging)
+        x_min = np.array([-1, -1, -np.inf, -np.inf], dtype=np.float32)
+        x_max = np.array([ 1,  1,  np.inf,  np.inf], dtype=np.float32)
+        x_new = np.clip(x_new, x_min, x_max)
         return x_new
 
     @property
@@ -65,18 +66,14 @@ class CarDynamics(object):
     def u_dim(self):
         return 2
 
-    @property
-    def dt(self):
-        return self._dt
 
-    
-class CarRenderer(object):
+class CarRenderer(Renderer):
     """
     Car renderer.
     Used for MPCEnv when image output option is used.
     """
     def __init__(self):
-        pass
+        super(CarRenderer, self).__init__()
 
     def draw_rotated_rect(self, image, x, y, w, h, angle, color):
         rect = ((x,y), (h, w), angle / np.pi * 180.0)

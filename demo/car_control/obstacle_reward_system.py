@@ -2,6 +2,7 @@
 import numpy as np
 import cv2
 
+
 class Reward(object):
     def __init__(self, pos, is_good, radius=0.1):
         self.pos = pos

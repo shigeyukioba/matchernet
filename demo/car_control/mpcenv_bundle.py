@@ -7,7 +7,7 @@ from obstacle_reward_system import ObstacleRewardSystem
 
 class MPCEnvBundle(Bundle):
     def __init__(self):
-        super(MPCEnvBundle, self).__init__("mpcenv")
+        super(MPCEnvBundle, self).__init__("mpcenv_b0")
 
         dt = 0.03
         dynamics = CarDynamics(dt)
@@ -17,8 +17,17 @@ class MPCEnvBundle(Bundle):
         self.env = MPCEnv(dynamics, renderer, reward_system, use_visual_state=False)
         self.update_component()
 
+        self.timestamp = 0.0
+
     def __call__(self, inputs):
-        action = [0.0, 0.1]
-        new_state, reward = self.env.step(action)
-        print("new state={}".format(new_state))
-        return {}
+        action = inputs["u"]
+        state, reward = self.env.step(action)
+        
+        # Increment timestamp
+        self.timestamp += self.env.dynamics.dt
+        
+        return {
+            "x" : state,
+            "r" : reward,
+            "timestamp" : self.timestamp
+        }

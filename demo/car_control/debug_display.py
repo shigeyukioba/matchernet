@@ -71,7 +71,7 @@ def main():
     renderer = CarRenderer()
     reward_system = ObstacleRewardSystem()
     
-    Q = np.identity(4) * 0.0001
+    Q = np.identity(4) * 0.00005
     
     env = MPCEnv(dynamics, renderer, reward_system, Q, use_visual_state=True)
     display = Display(display_size, env, recording=recording)
