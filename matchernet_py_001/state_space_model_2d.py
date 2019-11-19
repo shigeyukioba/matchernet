@@ -41,28 +41,3 @@ class StateSpaceModel2Dim(object):
         self.y = self.x+self.z
         #Sigma = dt * Q + np.dot( np.dot( F.T,  Sigma), F )
         return (self.x, self.y)
-
-
-def test_state_space_model_2Dim(numSteps):
-    dt = 0.1
-    ssm = StateSpaceModel2Dim(dt)
-    xrec, yrec = ssm.simulation(dt, numSteps)
-    if printDebug is True:
-        print('x: ',xrec)
-        print('y: ',yrec)
-
-    plt.subplot(211)
-    timestamp=np.array(range(0,numSteps))
-    plt.plot(timestamp,xrec[:,0])
-    plt.scatter(timestamp,yrec[:,0],s=1)
-    plt.title("test_state_space_model_2Dim")
-    plt.ylabel("X")
-    plt.subplot(212)
-    plt.plot(timestamp,xrec[:,1])
-    plt.scatter(timestamp,yrec[:,1],s=1)
-    plt.ylabel("Y")
-    plt.show()
-
-if __name__ == '__main__':
-
-    test_state_space_model_2Dim(500)
