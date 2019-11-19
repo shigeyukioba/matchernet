@@ -1,10 +1,52 @@
 # -*- coding: utf-8 -*-
-import numpy as np
+import autograd.numpy as np
 import unittest
+from autograd import jacobian
 
-from car import CarDynamics, CarRenderer
-from obstacle_reward_system import ObstacleRewardSystem
+from mpc import Dynamics, Renderer
 from mpcenv import MPCEnv
+
+
+class DummyDynamics(Dynamics):
+    def __init__(self, dt):
+        super(DummyDynamics, self).__init__(dt)
+        
+        self.x = jacobian(self.value, 0)
+        self.u = jacobian(self.value, 1)
+
+    def value(self, x, u):
+        return x
+
+    @property
+    def x_dim(self):
+        return 4
+
+    @property
+    def u_dim(self):
+        return 2
+
+
+class DummyRenderer(Renderer):
+    def __init__(self):
+        super(DummyRenderer, self).__init__()
+
+
+    def render(self, image, x, u):
+        return image
+
+
+class DummyRewardSystem(object):
+    def __init__(self):
+        pass
+
+    def reset(self):
+        pass
+
+    def render(self, image):
+        return image
+
+    def evaluate(self, x, dt):
+        return 1.0
 
 
 class MPCEnvTest(unittest.TestCase):
@@ -13,9 +55,9 @@ class MPCEnvTest(unittest.TestCase):
         Test MPCEnv with normal vector state output.
         """
         dt = 0.03
-        dynamics = CarDynamics(dt)
-        renderer = CarRenderer()
-        reward_system = ObstacleRewardSystem()
+        dynamics = DummyDynamics(dt)
+        renderer = DummyRenderer()
+        reward_system = DummyRewardSystem()
 
         # Create environment with vector state output.
         env = MPCEnv(dynamics, renderer, reward_system, use_visual_state=False)
@@ -41,9 +83,9 @@ class MPCEnvTest(unittest.TestCase):
         Test MPCEnv with image state output.
         """
         dt = 0.03
-        dynamics = CarDynamics(dt)
-        renderer = CarRenderer()
-        reward_system = ObstacleRewardSystem()
+        dynamics = DummyDynamics(dt)
+        renderer = DummyRenderer()
+        reward_system = DummyRewardSystem()
 
         # Create environment with image state output.
         env = MPCEnv(dynamics, renderer, reward_system, use_visual_state=True)

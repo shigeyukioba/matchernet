@@ -3,11 +3,10 @@ import numpy as np
 import brica
 from brica import Component, VirtualTimeScheduler, Timing
 
-from mpcenv import MPCEnv
+from matchernet import MPCEnv, MPCEnvBundle, MPCEnvDebugMatcher
+
 from car import CarDynamics, CarRenderer
 from obstacle_reward_system import ObstacleRewardSystem
-
-from mpcenv_bundle import MPCEnvBundle, MPCEnvDebugMatcher
 
 
 def main():

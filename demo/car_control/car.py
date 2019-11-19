@@ -3,7 +3,7 @@ import autograd.numpy as np
 from autograd import jacobian
 import cv2
 
-from mpc import Dynamics, Renderer
+from matchernet import Dynamics, Renderer
 
 
 # Dynamics properties
