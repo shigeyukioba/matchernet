@@ -346,19 +346,3 @@ class MatcherEKF(Matcher):
 
         print5("5: dmu1={}".format(self.dmu1))
         print5("5: dSigma1={}".format(self.dSigma1))
-
-        self._state_record()
-
-def test_EKF():
-    """
-    Here is the least test of consistency of the classes
-     'BundleEKFContinuousTime' and 'MatcherEKF'.
-    See 'matchernet_ekf_test.py' for richer and fancyer tests and demonstrations of EKF.
-    """
-    b0 = BundleEKFContinuousTime("Bundle0",4)
-    b1 = BundleEKFContinuousTime("Bundle1",4)
-    m = MatcherEKF("Matcher01",b0, b1)
-    return m, b0, b1
-
-if __name__ == '__main__':
-    m, b0, b1 = test_EKF()
