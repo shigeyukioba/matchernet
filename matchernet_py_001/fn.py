@@ -46,7 +46,7 @@ class LinearFn(Fn):
         self.params = {"A":A}
 
     def value(self, x):
-        return np.dot( x, self.params["A"] )
+        return np.dot(x, self.params["A"] )
 
     def x(self, x):
         return self.params["A"]
@@ -68,7 +68,7 @@ class LinearFnXU(Fn):
         self.dim_out = dim_out
 
     def value(self, x, u):
-        return np.dot( x, self.params["A"] ) + np.dot( u, self.params["B"])
+        return np.dot(x, self.params["A"]) + np.dot(u, self.params["B"])
 
     def x(self, x, u):
         return self.params["A"]
