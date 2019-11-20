@@ -6,7 +6,7 @@ import matchernet
 
 
 class Observer(matchernet.Bundle):
-    '''Observer works as a Bundle that provides vector data at each time step of the MatcherNet simulation.
+    """Observer works as a Bundle that provides vector data at each time step of the MatcherNet simulation.
 
     Usage:
     Construct an observer by
@@ -28,7 +28,7 @@ class Observer(matchernet.Bundle):
 
     Note:
     When the vector data in buffer included  NaN  entries, they are regarded as missing entries and the Observer outpus a zero vector  mu  with covariance matrix  cov  of large eigen values. (See the function  missing_handler001()  for a default setting to construct the corresponding output. )
-    '''
+    """
     def __init__(self, name, buff):
         self.name = name
         self.buffer = buff
@@ -83,14 +83,15 @@ class Observer(matchernet.Bundle):
           # === Note: We may regard  "time_stamp"  as a real time rather than a counter in a future version.
 
     def print_state(self):
-        '''Prints the state of the self.'''
+        """Prints the state of the self.
+        """
         pt = self.ports_to_matchers[0]
         print("self.results[]={c}".format(c=self.results[pt]))
 
 def missing_handler001(mu,Sigma):
-    ''' A missing value handler function.
+    """A missing value handler function.
     It receives a vector data  mu  with a default covariance matrix  Sigma, find NaN in the vector  mu, and outputs a modified set of a vector  mu  and a covariance  cov.
-    '''
+    """
     if np.any(np.isnan(mu)):
         print3("Missing!")
         cov = Sigma * 1000
@@ -101,7 +102,8 @@ def missing_handler001(mu,Sigma):
 
 
 class ObserverMultiple(Observer):
-    '''A bundle that provides sequencial data'''
+    """A bundle that provides sequencial data
+    """
     def __init__(self, name, buff, mul):
         self.name = name
         self.mul = mul
