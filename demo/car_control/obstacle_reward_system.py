@@ -2,6 +2,8 @@
 import numpy as np
 import cv2
 
+from matchernet import RewardSystem
+
 
 class Reward(object):
     def __init__(self, pos, is_good, radius=0.1):
@@ -40,8 +42,9 @@ class Reward(object):
             return 0.0
 
 
-class ObstacleRewardSystem(object):
+class ObstacleRewardSystem(RewardSystem):
     def __init__(self):
+        super(ObstacleRewardSystem, self).__init__()
         self.rewards = []
 
     def reset(self):
@@ -63,6 +66,7 @@ class ObstacleRewardSystem(object):
         return image
 
     def evaluate(self, x, dt):
+        """ Evaluate reward based on current state """
         evaluated_reward = 0.0
         for reward in self.rewards:
             evaluated_reward += reward.evaluate(x, dt)

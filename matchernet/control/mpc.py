@@ -39,3 +39,17 @@ class Renderer(object):
 
     def render(self, image, x, u=None):
         raise NotImplementedError()
+
+
+class RewardSystem(object):
+    """
+    Base reward system class for MPC environment.
+    """
+    def __init__(self):
+        pass
+
+    def render(self, image):
+        raise NotImplementedError()
+
+    def evaluate(self, x, dt):
+        raise NotImplementedError()
