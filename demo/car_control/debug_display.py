@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+import argparse
+from distutils.util import strtobool
 import pygame, sys
 import cv2
 
@@ -64,7 +66,12 @@ class Display(object):
 
 
 def main():
-    recording = False
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--recording", type=strtobool,
+                        default="false")
+    args = parser.parse_args()    
+    
+    recording = args.recording
     display_size = (256, 256)
     
     dt = 0.03
