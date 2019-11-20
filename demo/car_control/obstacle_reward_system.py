@@ -52,9 +52,16 @@ class ObstacleRewardSystem(RewardSystem):
         
     def locate_rewards(self):
         self.rewards = []
-        good_reward = Reward(pos=np.array((0.3, 0.4), dtype=np.float32),
+
+        # Locate rewards to random locations
+        x0 = np.random.uniform(-0.8, 0.8, 1)
+        y0 = np.random.uniform(-0.8, 0.8, 1)
+        x1 = np.random.uniform(-0.8, 0.8, 1)
+        y1 = np.random.uniform(-0.8, 0.8, 1)
+        
+        good_reward = Reward(pos=np.array((x0, y0), dtype=np.float32),
                              is_good=True)
-        bad_reward = Reward(pos=np.array((0.2, -0.3), dtype=np.float32),
+        bad_reward = Reward(pos=np.array((x1, y1), dtype=np.float32),
                             is_good=False)
         self.rewards.append(good_reward)
         self.rewards.append(bad_reward)

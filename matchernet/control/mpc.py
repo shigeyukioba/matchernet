@@ -48,6 +48,9 @@ class RewardSystem(object):
     def __init__(self):
         pass
 
+    def reset(self):
+        raise NotImplementedError()
+
     def render(self, image):
         raise NotImplementedError()
 
