@@ -43,6 +43,10 @@ class Reward(object):
 
 
 class ObstacleRewardSystem(RewardSystem):
+    """ 
+    Reward definition for rectangle region environment with 
+    obstacle and reward objects. 
+    """
     def __init__(self):
         super(ObstacleRewardSystem, self).__init__()
         self.rewards = []

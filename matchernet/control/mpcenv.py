@@ -36,7 +36,7 @@ class MPCEnv(object):
         Reset the environment:
         
         Returns:
-          State
+          Current state after resetting
         """
         self.x = np.zeros((self.dynamics.x_dim,), dtype=np.float32)
         self.reward_system.reset()

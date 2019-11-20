@@ -4,6 +4,7 @@ import cv2
 
 
 class MovieWriter(object):
+    """ Movie output utility class. """
     def __init__(self, file_name, frame_size, fps):
         """
         frame_size is (w, h)

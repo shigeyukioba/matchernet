@@ -4,6 +4,9 @@ from matchernet import Bundle, Matcher
 
 
 class MPCEnvBundle(Bundle):
+    """
+    MPCEnv bundle class that communicates with matcher.
+    """
     def __init__(self, env):
         """
         Arguments:
@@ -43,6 +46,9 @@ class MPCEnvBundle(Bundle):
 
 
 class MPCEnvDebugMatcher(Matcher):
+    """
+    Debug Matcher implementation for MPCEnv bundle debugging.
+    """
     def __init__(self, *bundles):
         super(MPCEnvDebugMatcher, self).__init__("mpcenv_matcher", *bundles)
         self.timestamp = 0.0

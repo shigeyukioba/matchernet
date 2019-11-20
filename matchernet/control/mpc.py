@@ -2,9 +2,14 @@
 
 class Dynamics(object):
     """
-    Base class for MPC dynamics definition.
+    Base interfaces for MPC dynamics definition.
     """
     def __init__(self, dt):
+        """
+        Arguments:
+          dt 
+            timestap (second)
+        """
         # Timestep
         self._dt = dt
 
@@ -32,7 +37,7 @@ class Dynamics(object):
 
 class Renderer(object):
     """
-    Base class for MPC agent renderer.
+    Base interfaces for MPC agent renderer.
     """    
     def __init__(self):
         pass
@@ -43,7 +48,7 @@ class Renderer(object):
 
 class RewardSystem(object):
     """
-    Base reward system class for MPC environment.
+    Base interfaces system class for MPC environment.
     """
     def __init__(self):
         pass
