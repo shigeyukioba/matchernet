@@ -1,4 +1,9 @@
+import sys
+import os
+sys.path.append(os.getcwd())
+
 import numpy as np
+
 from matchernet_py_001.observer import Observer, ObserverMultiple, missing_handler001
 
 def test_missing_handler001():
