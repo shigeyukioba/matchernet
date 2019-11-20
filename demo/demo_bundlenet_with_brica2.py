@@ -31,8 +31,8 @@ class NullMatcher(object):
     def __init__(self, name, *bundles):
         super(NullMatcher, self).__init__()
         self.name = name
-        self.component = Component(self)
         self.result_state = {}
+        self.component = Component(self)
         for bundle in bundles:
             self.component.make_in_port(bundle.name)
             self.component.make_out_port(bundle.name)
@@ -53,9 +53,7 @@ class NullMatcher(object):
                 self.result_state[key].data["mu"] = (mean - mu[key]) * 0.1
         return self.result_state
 
-
-if __name__ == '__main__':
-
+def main():
     n = 4
 
     b0 = NullBundle("Bundle0", n)
@@ -78,11 +76,15 @@ if __name__ == '__main__':
     s.add_component(b1.component, bt)
     s.add_component(b2.component, bt)
 
-    s.add_component( m01.component, bm)
-    s.add_component( m02.component, bm)
-    s.add_component( m12.component, bm)
+    s.add_component(m01.component, bm)
+    s.add_component(m02.component, bm)
+    s.add_component(m12.component, bm)
 
     s.step()
     s.step()
     s.step()
     s.step()
+
+
+if __name__ == '__main__':
+    main()
