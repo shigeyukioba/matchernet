@@ -99,16 +99,6 @@ def missing_handler001(mu,Sigma):
         cov = Sigma
     return mu, cov
 
-def test_missing_handler001():
-    mu = np.array([1,2,np.nan])
-    Sigma = np.eye(3)
-    mu1, Sigma1 = missing_handler001(mu, Sigma)
-    print("mu",mu)
-    print("Sigma",Sigma)
-    print("mu1",mu1)
-    print("Sigma1",Sigma1)
-
-
 
 class ObserverMultiple(Observer):
     '''A bundle that provides sequencial data'''
@@ -125,50 +115,3 @@ class ObserverMultiple(Observer):
             z = np.concatenate( (z, b[j].copy()) )
         self.state.data["mu"] = z
         return z
-
-def test_observer():
-    print("=== Unit test of class Observer ===")
-    dim = 4
-    buffersize = 5
-    x = np.zeros((buffersize,dim),dtype=np.float32)
-    for i in range(buffersize):
-        x[i][0]=i
-
-    b0 = Observer("b0",x)
-    for i in range(buffersize*2):
-        b0.count_up()
-        print("get_state()=",b0.get_state() )
-
-    print("=== Unit test of class Observer without BriCA ===")
-    for i in range(buffersize*2):
-        b0(b0.state)
-        print("b0.results[state].data[mu]=",b0.results["state"].data["mu"])
-
-    print("=== Unit test of class ObserverMultiple ===")
-    mul = 3
-    b0 = ObserverMultiple("b0",x,mul)
-    for i in range(buffersize*2):
-        b0.count_up()
-        print("get_state()=",b0.get_state() )
-
-def test_ObserverWithMissing():
-    print("=== Unit test of class ObserverWithMissing ===")
-    dim = 4
-    buffersize = 2
-    x = np.zeros((buffersize,dim),dtype=np.float32)
-    for i in range(buffersize):
-        x[i][0]=i
-
-    x[1][2] = np.nan
-    b0 = ObserverWithMissing("b0",x)
-    for i in range(buffersize*2):
-        b0.count_up()
-        b0.set_results()
-        print4(b0.state.data)
-
-
-if __name__ == '__main__':
-    utils._print_level = 5
-    test_observer()
-    test_missing_handler001()
-    test_ObserverWithMissing()
