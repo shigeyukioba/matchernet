@@ -34,9 +34,6 @@ def print1(fm):
 def zeros( m ):
     return np.zeros( m ).astype(np.float32)
 
-def identity( m ):
-    return np.identity(self.m,dtype=np.float32)
-
 def regularize_cov_matrix( a, mineig=1e-5 ):
     """
     regularize the covariance matrix  a  so that its minimum eigen value is larger than  mineig.
