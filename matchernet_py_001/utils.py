@@ -68,15 +68,8 @@ def q_plot002( trange, mu, s, color='blue'):
     plt.plot(trange, mu, '-', color=color)
 
 def calc_matrix_F(A, dt):
-    #A = self.f.Jacobian( mu )
     n = A.shape[1]
     A2 = np.dot(A,A)
     A3 = np.dot(A2,A)
     F=np.identity(n,dtype=np.float32) + dt * A + dt*dt*A2/2.0 + dt**3 * A3/6.0
-    #print('F: ',F)
     return F
-    # return np.identity(self.n) + dt * A + dt*dt*A2/2.0
-
-if __name__ == '__main__':
-    a = np.array( [[5,1,1],[1,5,1],[0,0,0]], dtype=np.float32)
-    ar = regularize_cov_matrix(a)
