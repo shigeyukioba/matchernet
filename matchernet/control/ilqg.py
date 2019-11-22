@@ -23,13 +23,13 @@ class iLQG:
             print("iter={}".format(i))
             k_list, K_list = self.backward(x_list, u_list, T)
             x_list, u_list, diff = self.forward(x_list, u_list, x_init,
-                                                  k_list, K_list, T)
+                                                k_list, K_list, T)
 
             if(diff < stop_criteria):
                 print("it={}, diff={}".format(i, diff))
                 break
             
-        return x_list, u_list
+        return x_list, u_list, k_list, K_list
     
     def init_trajectory(self, x_init, u_zero, T):
         x_list = [x_init]

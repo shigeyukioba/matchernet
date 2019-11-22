@@ -5,11 +5,10 @@ from distutils.util import strtobool
 import pygame, sys
 import cv2
 
-from matchernet import MPCEnv
+from matchernet import MPCEnv, MovieWriter
 
 from car import CarDynamics, CarRenderer
 from obstacle_reward_system import ObstacleRewardSystem
-from utils import MovieWriter
 
 
 BLACK = (0, 0, 0)

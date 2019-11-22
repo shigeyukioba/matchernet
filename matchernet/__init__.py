@@ -5,3 +5,5 @@ from .matchernet import *
 from .control.mpc import *
 from .control.mpcenv_bundle import *
 from .control.mpcenv import *
+from .control.ilqg import *
+from .util.recording import *
