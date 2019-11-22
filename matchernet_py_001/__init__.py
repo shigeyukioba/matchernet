@@ -8,7 +8,7 @@ matchernet is a
 
 from matchernet_py_001.ekf import *
 from matchernet_py_001.fn import *
-from matchernet_py_001.matchernet *
+from matchernet_py_001.matchernet import *
 from matchernet_py_001.matchernet_null import *
 from matchernet_py_001.observer import *
 from matchernet_py_001.state import *
