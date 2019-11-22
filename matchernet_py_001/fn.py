@@ -14,7 +14,7 @@ class Fn(object):
     that BundleNet uses.
     """
     def __init__(self, dim_in, dim_out):
-        self.shape =(dim_in,dim_out)
+        self.shape =(dim_in, dim_out)
         self.params = {"none":0}
 
     def get_params(self):
@@ -26,11 +26,13 @@ class Fn(object):
           outputs a numpy array of shape (dim_out, 1)
         """
         return 0
+
     def x(self, x):
         """Numerically calculates df/dx
           outputs a numpy array of shape (dim_out, dim_in)
         """
         return 0
+
     def xx(self, x):
         """Numerically calculates df^2/dx^2
           outputs a numpy array of shape (dim_out, dim_in, dim_in)
@@ -42,17 +44,17 @@ class LinearFn(Fn):
     """
     def __init__(self, dim_in, dim_out):
         super(LinearFn, self).__init__(dim_in, dim_out)
-        A = np.zeros((dim_out,dim_in),dtype=np.float32)
+        A = np.zeros((dim_out, dim_in), dtype=np.float32)
         self.params = {"A":A}
 
     def value(self, x):
-        return np.dot(x, self.params["A"] )
+        return np.dot(x, self.params["A"])
 
     def x(self, x):
         return self.params["A"]
 
     def xx(self, x):
-        return np.zeros(self.shape,dtype=np.float32)
+        return np.zeros(self.shape, dtype=np.float32)
 
 class LinearFnXU(Fn):
     """Linear function y = np.dot( x, A ) + np.dot( u, B )
@@ -68,7 +70,7 @@ class LinearFnXU(Fn):
         self.dim_out = dim_out
 
     def value(self, x, u):
-        return np.dot(x, self.params["A"]) + np.dot(u, self.params["B"])
+        return np.dot( x, self.params["A"] ) + np.dot( u, self.params["B"])
 
     def x(self, x, u):
         return self.params["A"]
