@@ -57,7 +57,6 @@ class AnimGIFWriter(object):
         
     def close(self):
         delay = int(100 / self.fps)
-        print("delay = {}".format(delay))
         command = "convert -delay {} {}/*.png {}".format(delay,
                                                          self.tmp_dir_name,
                                                          self.file_name)

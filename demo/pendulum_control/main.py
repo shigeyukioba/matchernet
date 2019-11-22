@@ -10,13 +10,19 @@ def main():
     cost = PendulumCost()
     
     ilqg = iLQG(dynamics=dynamics, cost=cost)
-
+    
     T = 80
+    
     # Initial state
     x0 = np.array([np.pi, 0.0], dtype=np.float32)
-    x_list, u_list, k_list, K_list = ilqg.optimize(x0,
-                                                   T,
-                                                   iter_max=20)
+    
+    # Initial control sequence
+    u0 = np.zeros((T, 1), dtype=np.float32)
+    
+    x_list, u_list, K_list = ilqg.optimize(x0,
+                                           u0,
+                                           T,
+                                           iter_max=20)
     # (81) (80) (80) (80)
     renderer = PendulumRenderer()
 
@@ -44,8 +50,8 @@ def main():
                             [0.0, 0.1]], dtype=np.float32)
     x =  np.random.multivariate_normal(x0, initial_cov)
     
-    for x_t, u_t, k_t, K_t in zip(x_list, u_list, k_list, K_list):
-        u = u_t + k_t + K_t @ (x - x_t)
+    for x_t, u_t, K_t in zip(x_list, u_list, K_list):
+        u = u_t + K_t @ (x - x_t)
 
         # Add system noise to dynamics
         system_noise = np.random.multivariate_normal(np.zeros_like(x), Q * dynamics.dt)

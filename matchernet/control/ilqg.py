@@ -9,15 +9,17 @@ class iLQG:
 
     def optimize(self,
                  x_init,
+                 u_init,
                  T,
                  iter_max=20,
                  stop_criteria=1e-3):
 
         assert x_init.shape == (self.dynamics.x_dim,)
-
-        u_zero = np.zeros((self.dynamics.u_dim,))
+        assert u_init.shape == (T, self.dynamics.u_dim)
         
-        x_list, u_list = self.init_trajectory(x_init, u_zero, T)
+        x_list = self.init_trajectory(x_init, u_init, T)
+        
+        u_list = np.copy(u_init)
         
         for i in range(iter_max):
             print("iter={}".format(i))
@@ -29,17 +31,16 @@ class iLQG:
                 print("it={}, diff={}".format(i, diff))
                 break
             
-        return x_list, u_list, k_list, K_list
+        return x_list, u_list, K_list
     
-    def init_trajectory(self, x_init, u_zero, T):
+    def init_trajectory(self, x_init, u_init, T):
         x_list = [x_init]
-        u_list = [u_zero for i in range(T)]
         
         for i in range(T):
-            next_x = self.dynamics.value(x_list[i], u_list[i])
+            next_x = self.dynamics.value(x_list[i], u_init[i])
             x_list.append(next_x)
             
-        return x_list, u_list
+        return x_list
 
     def forward(self, x_list, u_list, x_init, k_list, K_list, T):
         next_x_list = [x_init]
