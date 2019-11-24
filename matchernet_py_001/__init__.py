@@ -16,7 +16,7 @@ from matchernet_py_001.state_space_model_2d import *
 from matchernet_py_001.utils import *
 
 __copyright__    = 'Copyright (C) 2019 Shigeyuki Oba'
-__version__      = '0.1'
+__version__      = '0.0.1'
 __license__      = 'BSD-3-Clause'
 __author__       = 'Uchihashi Kenshi'
 __author_email__ = 'uchihashi.kenshi@gmail.com'
