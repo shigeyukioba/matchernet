@@ -9,7 +9,6 @@ class MPCEnv(object):
                  dynamics,
                  renderer,
                  reward_system,
-                 Q=None,
                  use_visual_state=False):
         """
         Arguments:
@@ -19,8 +18,6 @@ class MPCEnv(object):
              Agent renderer
           reward_system:
              RewardSystem
-          Q:
-             System noise covariance (numpy nd-array)
           use_visual_state:
              Whether to use visual state output or not (bool)
         """
@@ -28,7 +25,6 @@ class MPCEnv(object):
         self.renderer = renderer
         self.reward_system = reward_system
         self.use_visual_state = use_visual_state
-        self.Q = Q
         self.reset()
         
     def reset(self):
@@ -70,11 +66,6 @@ class MPCEnv(object):
           (state, reward)
         """
         self.x = self.dynamics.value(self.x, action)
-
-        if self.Q is not None:
-            # Add system noise
-            self.x += np.random.multivariate_normal(np.zeros_like(self.x),
-                                                    self.Q * self.dynamics.dt)
         
         # Calculate reward
         reward = self.reward_system.evaluate(self.x, self.dynamics.dt)
