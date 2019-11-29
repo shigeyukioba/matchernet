@@ -147,9 +147,10 @@ if __name__ == '__main__':
 
     dt = 0.02
     num_steps = 200
-    args = sys.argv
-    print(args[1])
-    num_observers = int(args[1])
+    try:
+        num_observers = sys.argv
+    except:
+        num_observers = 2
 
     print( "num_observers={}".format(num_observers) )
 
