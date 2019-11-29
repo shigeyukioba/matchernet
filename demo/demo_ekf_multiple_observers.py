@@ -148,9 +148,9 @@ if __name__ == '__main__':
     dt = 0.02
     num_steps = 200
     try:
-        num_observers = sys.argv
+        num_observers = int(sys.argv[1])
     except:
-        num_observers = 2
+        num_observers = 5
 
     print( "num_observers={}".format(num_observers) )
 
