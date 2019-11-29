@@ -1,14 +1,12 @@
 # What is MatcherNet?
 
-MatcherNet is a modular and hierarchical state space modeling platform for dynamic system indentification and control. If you have a world of high-dimensional / multi-modal / multi-scale states and observations, MatcherNet provides you a simple and robust modeling process.
+MatcherNet is a modular and hierarchical state-space modeling platform for dynamic system identification and control. If you are working with a world model of high-dimensional / multi-modal / multi-scale states and observations for robotics, image processing, sensor networks, and their hybrid cases, MatcherNet may provide you a better solution.
 
-MatcherNet includes, Extended Kalman-filter (EKF), a non-linear extension of Kalman-filter, as a special case. If you design a pair of observation model p( y_t | x_t ) and dynamics model p( x_t+1 | x_t ), EKF calculates the posterior of the current state  p( x_t | y_1:t ). MatcherNet can divides the state variable into multiple parts x_t = (x_1t, x_2t, ..., x_kt) and manages the dynamics model for each parts. space model into multiple modules, and you can easily design each module and efficiently estimate the parameters.
+MatcherNet includes Extended Kalman-filter (EKF), a non-linear extension of Kalman-filter, as a special case. Design a pair of observation model p( y_t | x_t ) and dynamics model p( x_t+1 | x_t ), and EKF calculates the posterior of the current state p( x_t | y_1:t ). For MatcherNet, divide the state variable into multiple parts x_t = (x_1t, x_2t, ..., x_kt), design dynamics models for each part, and then, MatcherNet can manage them in a parallel and principled manner.
 
-MatcherNet can be used with PID, LQR (LQG), iLQR (iLQG) controlers. 
+MatcherNet includes system controllers, such as PID, iLQR (iLQG). Provide a control goal as a prior probability of the state variable, and the controller calculates the control signal that minimizes the current and future distance to the prior. 
 
-MatcherNet is consistent with the predictive coding framework, or free energy principle (FEP), of brain computing.
-
-MatcherNet efficiently work with multi-thread computing. 
+MatcherNet efficiently works with multi-thread computing. Modular division of state-space model lower the dimensionality of each state variable, and multiple modules run in parallel in a multi-core computing environment. 
 
 
 # How to install?
