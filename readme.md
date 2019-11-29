@@ -1,24 +1,25 @@
-* What is MatcherNet?
+# What is MatcherNet?
 
 MatcherNet is a modular and hierarchical state space modeling platform for dynamic system indentification and control. If you have a world of high-dimensional / multi-modal / multi-scale states and observations, MatcherNet provides you a simple and robust modeling process.
 
-Extended Kalman-filter (EKF), a non-linear extension of Kalman-filter, is a special case of MatcherNet. If you design a pair of observation model p( y_t | x_t ) and dynamics model p( x_t+1 | x_t ), EKF calculates the posterior of the current state  p( x_t | y_1:t ). MatcherNet divides the state space model into multiple modules, and you can easily design each module and efficiently estimate the parameters within parallel computation.
+MatcherNet includes, Extended Kalman-filter (EKF), a non-linear extension of Kalman-filter, as a special case. If you design a pair of observation model p( y_t | x_t ) and dynamics model p( x_t+1 | x_t ), EKF calculates the posterior of the current state  p( x_t | y_1:t ). MatcherNet can divides the state variable into multiple parts x_t = (x_1t, x_2t, ..., x_kt) and manages the dynamics model for each parts. space model into multiple modules, and you can easily design each module and efficiently estimate the parameters.
 
-MatcherNet is composed of two types of modules, Bundles and Matchers.
+MatcherNet can be used with PID, LQR (LQG), iLQR (iLQG) controlers. 
 
-A bundle  B1  manages dynamics model  p( x_t+1 | x_t )  and its state variable  x_t.
-Observation  y_t  is also a bundel
+MatcherNet is consistent with the predictive coding framework, or free energy principle (FEP), of brain computing.
 
-
-* How to install?
+MatcherNet efficiently work with multi-thread computing. 
 
 
-* How to try demos?
+# How to install?
+
+
+# How to try demos?
 
 
 
 
-** How to use at ARM server?
+### How to use at ARM server?
 Setting up virtual environment at the ARM server
 
 - First create a directory for the environments
