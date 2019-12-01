@@ -32,6 +32,10 @@ class NullMatcher(object):
         super(NullMatcher, self).__init__()
         self.name = name
         self.result_state = {}
+        
+        for bundle in bundles:
+            self.result_state[bundle.name] = copy.deepcopy(bundle.state)
+        
         self.component = Component(self)
         for bundle in bundles:
             self.component.make_in_port(bundle.name)
@@ -41,12 +45,12 @@ class NullMatcher(object):
 
             brica.connect(bundle.component, "state", self.component, bundle.name)
             brica.connect(self.component, bundle.name, bundle.component, name)
-            self.result_state[bundle.name] = copy.deepcopy(bundle.state)
 
     def __call__(self, inputs):
         mu = {}
         for key in inputs:
-            mu[key] = inputs[key].data["mu"]
+            if inputs[key] is not None:
+                mu[key] = inputs[key].data["mu"]
         mean = reduce(add, mu.values()) / len(inputs)
         for key in inputs:
             if inputs[key] is not None:
