@@ -1,0 +1,232 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>matchernet_py_001.matchernet &#8212; matchernet_py_001  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for matchernet_py_001.matchernet</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">matchernet.py</span>
+<span class="sd">=====</span>
+
+<span class="sd">This module contains basic abstract classes that the BundleNet</span>
+<span class="sd">architecture needs; &#39;Bundle&#39; and &#39;Matcher&#39;. It also includes</span>
+<span class="sd">their tests , function &#39;test_abstract_bm&#39;.</span>
+<span class="sd">It imports BriCA2 (impremented with C++)</span>
+<span class="sd">https://github.com/BriCA/BriCA2</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">brica</span>
+<span class="kn">from</span> <span class="nn">brica</span> <span class="k">import</span> <span class="n">Component</span><span class="p">,</span> <span class="n">VirtualTimeScheduler</span><span class="p">,</span> <span class="n">Timing</span>
+<span class="kn">from</span> <span class="nn">matchernet_py_001</span> <span class="k">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">matchernet_py_001.utils</span> <span class="k">import</span> <span class="n">print2</span><span class="p">,</span> <span class="n">print3</span><span class="p">,</span> <span class="n">print4</span>
+<span class="kn">from</span> <span class="nn">matchernet_py_001</span> <span class="k">import</span> <span class="n">state</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="n">zeros</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">zeros</span>
+
+<span class="n">_with_brica</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># A global flag to branch withBriCA2 and withoutBriCA versions</span>
+
+<div class="viewcode-block" id="Bundle"><a class="viewcode-back" href="../../matchernet_py_001.html#matchernet_py_001.matchernet.Bundle">[docs]</a><span class="k">class</span> <span class="nc">Bundle</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    &#39;Bundle&#39; is an abstract class that defines basic propaties of Bundles in a matchernet.</span>
+
+<span class="sd">    Each bundle has</span>
+<span class="sd">      a state</span>
+<span class="sd">      a state transision dynamics</span>
+<span class="sd">      arbitrary number of connections to Matchers</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">initial_state_object</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create a new &#39;Bundle&#39; instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">initial_state_object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">component</span> <span class="o">=</span> <span class="n">Component</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="o">.</span><span class="n">make_out_port</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The main routine that is called from brica.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span> <span class="c1"># key is one of the matcher names</span>
+            <span class="k">if</span> <span class="n">inputs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">accept_feedback</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">}</span>
+
+<div class="viewcode-block" id="Bundle.accept_feedback"><a class="viewcode-back" href="../../matchernet_py_001.html#matchernet_py_001.matchernet.Bundle.accept_feedback">[docs]</a>    <span class="k">def</span> <span class="nf">accept_feedback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fb_state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accepting the feedback state &#39;fb_state&#39; from one of the matchers</span>
+<span class="sd">        which is linking to the current bundle.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">print2</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> is accepting feedback&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Bundle.print_state"><a class="viewcode-back" href="../../matchernet_py_001.html#matchernet_py_001.matchernet.Bundle.print_state">[docs]</a>    <span class="k">def</span> <span class="nf">print_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Print the state of the current Bundle.</span>
+<span class="sd">        Args: None.</span>
+<span class="sd">        Returns: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">print2</span><span class="p">(</span><span class="s2">&quot;State of </span><span class="si">{n}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">print2</span><span class="p">(</span><span class="s2">&quot;self.state.data=</span><span class="si">{x}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">data</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Bundle.update"><a class="viewcode-back" href="../../matchernet_py_001.html#matchernet_py_001.matchernet.Bundle.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Update the state of the current Bundle.</span>
+<span class="sd">        This method should be override for any subclasses.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">print3</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> is updating&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span></div></div>
+
+<div class="viewcode-block" id="Matcher"><a class="viewcode-back" href="../../matchernet_py_001.html#matchernet_py_001.matchernet.Matcher">[docs]</a><span class="k">class</span> <span class="nc">Matcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    &#39;Matcher&#39; is an abstract class that defines basic propaties of Matchers in a matchernet.</span>
+<span class="sd">    Matcher is a component of matchernet.</span>
+<span class="sd">    It connects Bundles, calculates energy, and returns a feedback state for each Bundle.</span>
+<span class="sd">    Here, energy stands for a measure of contradiction among all the linking Bundles. The feedback stands for a signal that is used at the corresponding Bundle; the Bundle updates its state in order to decrease the energy.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">bundles</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">StatePlain</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># Own state of the current matcher</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bundles</span> <span class="o">=</span> <span class="n">bundles</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">component</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_component</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Matcher.update_component"><a class="viewcode-back" href="../../matchernet_py_001.html#matchernet_py_001.matchernet.Matcher.update_component">[docs]</a>    <span class="k">def</span> <span class="nf">update_component</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">component</span> <span class="o">=</span> <span class="n">Component</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundles</span><span class="p">:</span>
+            <span class="n">component</span><span class="o">.</span><span class="n">make_in_port</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">component</span><span class="o">.</span><span class="n">make_out_port</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">b</span><span class="o">.</span><span class="n">component</span><span class="o">.</span><span class="n">make_in_port</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">brica</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">component</span><span class="p">,</span> <span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="n">component</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">brica</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">component</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">print4</span><span class="p">(</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">b</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">component</span> <span class="o">=</span> <span class="n">component</span></div>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The main routine that is called from brica.</span>
+<span class="sd">        The input variable  &#39;inputs&#39;  is a python dictionary object that brings all the current states of bundles.</span>
+<span class="sd">        Ex.</span>
+
+<span class="sd">          inputs = {&quot;Bundle0&quot;, st0, &quot;Bundle1&quot;, st1}</span>
+
+<span class="sd">        The output variable &#39;results&#39; is a python dictionary object which brings all the feedback states to the corresponding bundles.</span>
+<span class="sd">        Ex.</span>
+
+<span class="sd">          results = {&quot;Bundle0&quot;, fbst0, &quot;Bundle1&quot;, fbst1}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">inputs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">accept_bundle_state</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span>
+
+<div class="viewcode-block" id="Matcher.accept_bundle_state"><a class="viewcode-back" href="../../matchernet_py_001.html#matchernet_py_001.matchernet.Matcher.accept_bundle_state">[docs]</a>    <span class="k">def</span> <span class="nf">accept_bundle_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">st</span><span class="p">):</span>
+        <span class="n">print2</span><span class="p">(</span><span class="s2">&quot;Matcher </span><span class="si">{}</span><span class="s2"> is accepting_bundle_state&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Matcher.update"><a class="viewcode-back" href="../../matchernet_py_001.html#matchernet_py_001.matchernet.Matcher.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_state</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Matcher.print_state"><a class="viewcode-back" href="../../matchernet_py_001.html#matchernet_py_001.matchernet.Matcher.print_state">[docs]</a>    <span class="k">def</span> <span class="nf">print_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Prints the state of the self.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">print3</span><span class="p">(</span><span class="s2">&quot;State of </span><span class="si">{n}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">print3</span><span class="p">(</span><span class="s2">&quot;self.state.data=</span><span class="si">{x}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+        <span class="n">print3</span><span class="p">(</span><span class="s2">&quot;self.results=</span><span class="si">{x}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">matchernet_py_001</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../matchernet_py_001.html">matchernet_py_001 package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Author.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

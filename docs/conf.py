@@ -18,13 +18,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'matchernet_py_001'
-copyright = '2019, Shigeyuki Oba'
-author = 'Shigeyuki Oba'
-
-# The short X.Y version
-version = '0.1'
-# The full version, including alpha/beta/rc tags
-release = 'beta 0.1'
+copyright = '2019, Author'
+author = 'Author'
 
 
 # -- General configuration ---------------------------------------------------
@@ -36,6 +31,8 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.todo',
+    'sphinx.ext.githubpages',
+    'sphinx.ext.mathjax'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -59,7 +56,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'haiku'
+html_theme = 'alabaster'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
