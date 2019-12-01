@@ -12,10 +12,11 @@ from matchernet_py_001 import state
 import copy
 
 class NullBundle(object):
-    def __init__(self, name, n):
+    def __init__(self, name, n, mu):
         super(NullBundle, self).__init__()
         self.name = name
         self.state = state.StateMuSigma(n)
+        self.state.data["mu"] = mu
         self.component = Component(self)
         self.component.make_out_port("state")
 
@@ -60,13 +61,9 @@ class NullMatcher(object):
 def main():
     n = 4
 
-    b0 = NullBundle("Bundle0", n)
-    b1 = NullBundle("Bundle1", n)
-    b2 = NullBundle("Bundle2", n)
-
-    b0.state.data["mu"] = np.array([0, 1, 0, 0]).astype(np.float32)
-    b1.state.data["mu"] = np.array([0, 0, 10, 0]).astype(np.float32)
-    b2.state.data["mu"] = np.array([0, 0, 0, 100]).astype(np.float32)
+    b0 = NullBundle("Bundle0", n, mu=np.array([0, 1, 0, 0]).astype(np.float32))
+    b1 = NullBundle("Bundle1", n, mu=np.array([0, 0, 10, 0]).astype(np.float32))
+    b2 = NullBundle("Bundle2", n, mu=np.array([0, 0, 0, 100]).astype(np.float32))
 
     m01 = NullMatcher("Matcher01", b0, b1)
     m02 = NullMatcher("Matcher02", b0, b2)
