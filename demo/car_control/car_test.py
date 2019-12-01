@@ -30,10 +30,8 @@ def jacobian_finite_difference(func, arg_index, *args):
 class CarDynamicsTest(unittest.TestCase):
     def test_car_dynamics(self):
         dt = 0.03
-        Q = np.identity(4) * 0.01
         
-        dynamics = CarDynamics(dt, Q)
-        dynamics_no_noise = CarDynamics(dt)
+        dynamics = CarDynamics(dt)
         
         x = np.zeros(4, dtype=np.float32)
         u = np.ones(2, dtype=np.float32)
@@ -47,7 +45,7 @@ class CarDynamicsTest(unittest.TestCase):
         self.assertEqual(fx.shape, (4,4))
 
         # Compare Jacobian value with numerical differentiation result
-        fx_n = jacobian_finite_difference(dynamics_no_noise.value, 0, x, u)
+        fx_n = jacobian_finite_difference(dynamics.value, 0, x, u)
         self.assertTrue(np.allclose(fx, fx_n, atol=1e-4))
 
         # Check shape of the Jacobian w.r.t. u
@@ -55,7 +53,7 @@ class CarDynamicsTest(unittest.TestCase):
         self.assertEqual(fu.shape, (4,2))
 
         # Compare Jacobian value with numerical differentiation result
-        fu_n = jacobian_finite_difference(dynamics_no_noise.value, 1, x, u)
+        fu_n = jacobian_finite_difference(dynamics.value, 1, x, u)
         self.assertTrue(np.allclose(fu, fu_n, atol=1e-4))
 
 
