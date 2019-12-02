@@ -1,3 +1,7 @@
+<img alt="PyPI" src="https://img.shields.io/pypi/v/matchernet">
+
+<img alt="APM" src="https://img.shields.io/apm/l/matchernet">
+
 # What is MatcherNet?
 
 MatcherNet is a modular and hierarchical state-space modeling platform for dynamic system identification and control. If you are working with a world model of high-dimensional / multi-modal / multi-scale states and observations for robotics, image processing, sensor networks, and their hybrid cases, MatcherNet may provide you a better solution.
