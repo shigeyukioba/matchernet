@@ -61,3 +61,22 @@ $ cd BriCA2
 
 activate the virtual environment
 $ pip install .
+
+# For more info
+
+## For Developer
+
+By releasing the test, you will be using the `pip install`, but if you use this, the development status will not be reflected until the version goes up.
+If you want to use the latest branch that you have modified or developed at hand, or you want to use the latest branch, raise the priority of the one that is currently in development.
+
+If you do it in a file, for example:
+
+```
+import sys
+import os
+sys.path.insert(1, os.getcwd())
+# When searching a library, the current directory has the next highest priority after the executable file path
+```
+
+If you want to do it from outside the file, for example, change the PYTHONPATH setting.
+
