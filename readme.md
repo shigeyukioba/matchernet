@@ -1,6 +1,4 @@
-<img alt="PyPI" src="https://img.shields.io/pypi/v/matchernet">
-
-<img alt="APM" src="https://img.shields.io/apm/l/matchernet">
+<img alt="PyPI" src="https://img.shields.io/pypi/v/matchernet"> <img alt="APM" src="https://img.shields.io/apm/l/matchernet">
 
 # What is MatcherNet?
 
