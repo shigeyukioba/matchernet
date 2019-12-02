@@ -30,6 +30,7 @@ def jacobian_finite_difference(func, arg_index, *args):
 class CarDynamicsTest(unittest.TestCase):
     def test_car_dynamics(self):
         dt = 0.03
+        
         dynamics = CarDynamics(dt)
         
         x = np.zeros(4, dtype=np.float32)

@@ -20,8 +20,16 @@ class CarDynamics(Dynamics):
     """
     Car movement dynamics.
     """
-    def __init__(self, dt):
+    def __init__(self, dt, Q=None):
+        """
+          dt
+            timestap (second)
+          Q:
+             System noise covariance (numpy nd-array)
+        """
         super(CarDynamics, self).__init__(dt)
+
+        self.Q = Q
         
         # Jacobian calculation with automatic differentiation
         self.x = jacobian(self.value, 0)
@@ -51,6 +59,11 @@ class CarDynamics(Dynamics):
     
         # New state
         x_new = x + dx
+
+        if self.Q is not None:
+            # Add system noise
+            x_new += np.random.multivariate_normal(np.zeros_like(x_new),
+                                                    self.Q * self.dt)
         
         # Limit x,y pos range For debugging)
         x_min = np.array([-1, -1, -np.inf, -np.inf], dtype=np.float32)
