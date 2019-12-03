@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-from matchernet import MovieWriter
+from matchernet import MovieWriter, AnimGIFWriter
 
-from link_arm import LinkArmRenderer
+from link_arm import LinkArmDynamics, LinkArmRenderer
 
     
 def concat_images(images):
@@ -34,25 +34,30 @@ def check_renderer():
     buffer_width = 128
     renderer0 = LinkArmRenderer(eye_from0, eye_to0, buffer_width)
     renderer1 = LinkArmRenderer(eye_from1, eye_to1, buffer_width)
-    renderer2 = LinkArmRenderer(eye_from2, eye_to2, buffer_width)    
-    
-    frame_size = 30
+    renderer2 = LinkArmRenderer(eye_from2, eye_to2, buffer_width)
 
-    movie_writer = MovieWriter("out.mov", (128*3+2, 128), 15)
-    
+    dynamics = LinkArmDynamics(dt=0.01)
+
+    x = np.array([1.0, 1.0, 0.0, 0.0], dtype=np.float32)
+    frame_size = 180
+
+    movie = MovieWriter("link_arm0.mov", (128*3+2, 128), 60)
+    anim_gif = AnimGIFWriter("link_arm0.gif", 60)
+
     for i in range(frame_size):
-        x = np.array([i * 0.01 * 5,
-                      i * 0.02 * 5,
-                      i * -0.005 * 5], dtype=np.float32)
+        u = np.zeros((2,), dtype=np.float32)
+        x = dynamics.value(x, u)
         image0 = renderer0.render(x)
         image1 = renderer1.render(x)
         image2 = renderer2.render(x)
 
         image = concat_images([image0, image1, image2])
 
-        movie_writer.add_frame(image)
+        movie.add_frame(image)
+        anim_gif.add_frame(image)        
 
-    movie_writer.close()
+    movie.close()
+    anim_gif.close()
 
 
 check_renderer()
