@@ -102,5 +102,9 @@ sys.path.insert(1, os.getcwd())
 # When searching a library, the current directory has the next highest priority after the executable file path
 ```
 
-If you want to do it from outside the file, for example, change the PYTHONPATH setting.
+If you want to do it from outside the file, for example, change the PYTHONPATH setting. for example,
+```bash
+export PYTHONPATH="/path/to/dir:$PYTHONPATH"
+```
+If you want to make the settings permanent, write the settings in `.bashrc` etc.
 
