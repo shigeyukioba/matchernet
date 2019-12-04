@@ -3,7 +3,6 @@ import numpy as np
 from matchernet_py_001 import fn
 from matchernet_py_001 import utils
 
-printDebug = True
 class StateSpaceModel2Dim(object):
     def __init__(self,dt):
         n=2
