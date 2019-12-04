@@ -9,7 +9,7 @@ from ctypes import POINTER
 from matchernet import Dynamics, Renderer
 
 from graphics import FrameBuffer, MultiSampleFrameBuffer
-from objmesh import ObjMesh
+from objmesh import ObjMesh, load_texture_in_data_dir
 from camera import Camera
 
 BG_COLOR = np.array([0.45, 0.82, 1.0, 1.0])
@@ -104,6 +104,9 @@ class LinkArmDynamics(Dynamics):
     def u_dim(self):
         return 2
 
+# Whether to use multi sample frame buffer    
+USE_MULTI_SAMPLE_FRAME_BUFFER = False
+
 
 class LinkArmRenderer(Renderer):
     def __init__(self, eye_from, eye_to, buffer_width=128):
@@ -111,12 +114,19 @@ class LinkArmRenderer(Renderer):
         
         # Invisible window to render into (shadow OpenGL context)
         self.shadow_window = pyglet.window.Window(width=1, height=1, visible=False)
-        #self.frame_buffer = FrameBuffer(buffer_width, buffer_width)
-        self.frame_buffer = MultiSampleFrameBuffer(buffer_width, buffer_width, 4)
-        self.camera = Camera(eye_from=eye_from, eye_to=eye_to)
+
+        if USE_MULTI_SAMPLE_FRAME_BUFFER:
+            self.frame_buffer = MultiSampleFrameBuffer(buffer_width, buffer_width, 2)
+        else:
+            self.frame_buffer = FrameBuffer(buffer_width, buffer_width)
         
+        self.camera = Camera(eye_from=eye_from, eye_to=eye_to)
+
         self.link_mesh = ObjMesh.get("link0")
         self.joint_mesh = ObjMesh.get("joint0")
+
+        self.link_textures  = [load_texture_in_data_dir("link{}".format(i)) for i in range(2)]
+        self.joint_textures = [load_texture_in_data_dir("joint{}".format(i)) for i in range(3)]
 
     def render(self, x):
         image = self.render_sub(self.frame_buffer, x)
@@ -126,21 +136,23 @@ class LinkArmRenderer(Renderer):
         
         return image
 
-    def render_link(self, pos, angle, scale):
+    def render_link(self, pos, angle, scale, index):
         angle_degree = rad2deg(angle)
         
         glPushMatrix()
         glTranslatef(*pos)
         glScalef(scale, scale, scale)
         glRotatef(angle_degree, 0, 0, 1)
-        self.link_mesh.render()
+        texture = self.link_textures[index]
+        self.link_mesh.render(texture)
         glPopMatrix()
 
-    def render_joint(self, pos, scale):
+    def render_joint(self, pos, scale, index):
         glPushMatrix()
         glTranslatef(*pos)
         glScalef(scale, scale, scale)
-        self.joint_mesh.render()
+        texture = self.joint_textures[index]
+        self.joint_mesh.render(texture)
         glPopMatrix()        
 
     def render_sub(self, frame_buffer, x):
@@ -174,7 +186,7 @@ class LinkArmRenderer(Renderer):
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
         glLightfv(GL_LIGHT0, GL_POSITION, vec(1.0, -1.0, -1.0, 0.0));
-        glLightfv(GL_LIGHT0, GL_AMBIENT, vec(0.8, 0.8, 0.8, 1.0))
+        glLightfv(GL_LIGHT0, GL_AMBIENT, vec(0.9, 0.9, 0.9, 1.0))
         glLightfv(GL_LIGHT0, GL_SPECULAR, vec(0, 0, 0, 0))
         glLightfv(GL_LIGHT0, GL_DIFFUSE, vec(1.0, 1.0, 1.0, 1.0))
         glEnable(GL_NORMALIZE)
@@ -190,13 +202,12 @@ class LinkArmRenderer(Renderer):
         glColor3f(*WHITE_COLOR)
 
         # Render links
-        # TODO: adjust scale and length
         link_length = 0.85
         link_scale = 0.5
         joint_scale = 0.15
         
         joint_pos = np.array([0,0,0], dtype=np.float32)
-        self.render_joint(joint_pos, joint_scale)
+        self.render_joint(joint_pos, joint_scale, 0)
         accum_angle = 0.0
 
         link_size = len(x) // 2
@@ -210,7 +221,7 @@ class LinkArmRenderer(Renderer):
             center_pos = joint_pos + link_vec * link_length * 0.5
             joint_pos = joint_pos + link_vec * link_length
             
-            self.render_link(center_pos, -accum_angle, link_scale)
-            self.render_joint(joint_pos, joint_scale)            
+            self.render_link(center_pos, -accum_angle, link_scale, i)
+            self.render_joint(joint_pos, joint_scale, i+1)            
         
         return frame_buffer.read()

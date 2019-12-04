@@ -59,6 +59,11 @@ def load_texture(tex_path):
     return tex
 
 
+def load_texture_in_data_dir(tex_name):
+    tex_path = get_file_path('data/textures', tex_name + '.png')
+    return load_texture(tex_path)
+
+
 class ObjMesh(object):
     """
     Load and render wavefront .OBJ model files
@@ -144,9 +149,8 @@ class ObjMesh(object):
 
             if prefix == 'usemtl':
                 mtl_name = tokens[0]
-                cur_mtl = materials[
-                    mtl_name] if mtl_name in materials else None
-
+                cur_mtl = materials[mtl_name] if mtl_name in materials else None
+                
             if prefix == 'f':
                 assert len(tokens) == 3, "only triangle faces are supported"
 
@@ -211,24 +215,11 @@ class ObjMesh(object):
             ('t2f', list_texcs.reshape(-1)), ('n3f', list_norms.reshape(-1)),
             ('c3f', list_color.reshape(-1)))
 
-        # Load the texture associated with this mesh
-        file_name = os.path.split(file_path)[-1]
-        tex_name = file_name.split('.')[0]
-        tex_path = get_file_path('data/textures', tex_name + '.png')
-
-        # Try to load the texture, if it exists
-        if os.path.exists(tex_path):
-            self.texture = load_texture(tex_path)
-        else:
-            self.texture = None
-
     def _load_mtl(self, model_path):
         mtl_path = model_path.split('.')[0] + '.mtl'
 
         if not os.path.exists(mtl_path):
             return {}
-
-        #print('loading materials from "%s"' % mtl_path)
 
         mtl_file = open(mtl_path, 'r')
 
@@ -263,10 +254,10 @@ class ObjMesh(object):
         
         return materials
 
-    def render(self):
-        if self.texture:
+    def render(self, texture=None):
+        if texture is not None:
             glEnable(GL_TEXTURE_2D)
-            glBindTexture(self.texture.target, self.texture.id)
+            glBindTexture(texture.target, texture.id)
         else:
             glDisable(GL_TEXTURE_2D)
 
