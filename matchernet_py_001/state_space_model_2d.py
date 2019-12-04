@@ -21,7 +21,7 @@ class StateSpaceModel2Dim(object):
     def simulation(self,dt, numSteps):
         x0=self.x
         for i in range(numSteps):
-            (x, y)=self.onestep(dt)
+            (x, y)=self.step(dt)
             if i==0:
                 self.xrec = x
                 self.yrec = y
@@ -31,7 +31,7 @@ class StateSpaceModel2Dim(object):
 
         return (self.xrec, self.yrec)
 
-    def onestep(self,dt):
+    def step(self, dt):
         F=self.F
         self.w = self.sigma_w * np.random.standard_normal(size=(1,self.n))
         #pdb.set_trace()
