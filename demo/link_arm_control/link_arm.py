@@ -109,16 +109,16 @@ USE_MULTI_SAMPLE_FRAME_BUFFER = False
 
 
 class LinkArmRenderer(Renderer):
-    def __init__(self, eye_from, eye_to, buffer_width=128):
+    def __init__(self, eye_from, eye_to, image_width=128):
         super(LinkArmRenderer, self).__init__()
         
         # Invisible window to render into (shadow OpenGL context)
         self.shadow_window = pyglet.window.Window(width=1, height=1, visible=False)
 
         if USE_MULTI_SAMPLE_FRAME_BUFFER:
-            self.frame_buffer = MultiSampleFrameBuffer(buffer_width, buffer_width, 2)
+            self.frame_buffer = MultiSampleFrameBuffer(image_width, image_width, 2)
         else:
-            self.frame_buffer = FrameBuffer(buffer_width, buffer_width)
+            self.frame_buffer = FrameBuffer(image_width, image_width)
         
         self.camera = Camera(eye_from=eye_from, eye_to=eye_to)
 
@@ -128,7 +128,7 @@ class LinkArmRenderer(Renderer):
         self.link_textures  = [load_texture_in_data_dir("link{}".format(i)) for i in range(2)]
         self.joint_textures = [load_texture_in_data_dir("joint{}".format(i)) for i in range(3)]
 
-    def render(self, x):
+    def render(self, x, u=None):
         image = self.render_sub(self.frame_buffer, x)
 
         # Change upside-down

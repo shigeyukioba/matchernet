@@ -15,9 +15,9 @@ class MPCEnv(object):
           dynamics:
              Agent dynamics
           renderer:
-             Agent renderer
+             Renderer or list of Renderer (Agent renderer)
           reward_system:
-             RewardSystem
+             RewardSystem or None
           use_visual_state:
              Whether to use visual state output or not (bool)
         """
@@ -27,15 +27,23 @@ class MPCEnv(object):
         self.use_visual_state = use_visual_state
         self.reset()
         
-    def reset(self):
+    def reset(self, x_init=None):
         """
         Reset the environment:
-        
+
+        Arguments:
+          x_init:
+             Initial state (can be None)
+
         Returns:
           Current state after resetting
         """
-        self.x = np.zeros((self.dynamics.x_dim,), dtype=np.float32)
-        self.reward_system.reset()
+        if x_init is None:
+            self.x = np.zeros((self.dynamics.x_dim,), dtype=np.float32)
+        else:
+            self.x = np.copy(x_init)
+        if self.reward_system is not None:
+            self.reward_system.reset()
         return self.get_state(action=np.zeros((self.dynamics.u_dim,)))
     
     def get_state(self, action):
@@ -45,14 +53,31 @@ class MPCEnv(object):
             return self.x
         
     def get_visual_state(self, action):
-        image = np.ones((IMAGE_WIDTH, IMAGE_WIDTH, 3), dtype=np.float32)
-
-        # Render rewards
-        self.reward_system.render(image)
-
-        # Render control object
-        self.renderer.render(image, self.x, action)
-        return image
+        if isinstance(self.renderer, list):
+            # For multi angle view rendering
+            renderer_size = len(self.renderer)
+            #image = np.ones((renderer_size, IMAGE_WIDTH, IMAGE_WIDTH, 3), dtype=np.float32)
+            images = []
+            for i in range(renderer_size):
+                # Render control object
+                image = self.renderer[i].render(self.x, action)
+                
+                # Render rewards
+                if self.reward_system is not None:
+                    self.reward_system.render(image)
+                images.append(image)
+            return np.stack(images)
+        else:
+            # For single angle view rendering
+            #image = np.ones((IMAGE_WIDTH, IMAGE_WIDTH, 3), dtype=np.float32)
+            # Render control object
+            image = self.renderer.render(self.x, action)
+            
+            # Render rewards
+            if self.reward_system is not None:
+                self.reward_system.render(image)
+            
+            return image
 
     def step(self, action):
         """
@@ -68,5 +93,8 @@ class MPCEnv(object):
         self.x = self.dynamics.value(self.x, action)
         
         # Calculate reward
-        reward = self.reward_system.evaluate(self.x, self.dynamics.dt)
+        if self.reward_system is not None:
+            reward = self.reward_system.evaluate(self.x, self.dynamics.dt)
+        else:
+            reward = 0.0
         return self.get_state(action), reward

@@ -85,8 +85,9 @@ class CarRenderer(Renderer):
     Car renderer.
     Used for MPCEnv when image output option is used.
     """
-    def __init__(self):
+    def __init__(self, image_width=256):
         super(CarRenderer, self).__init__()
+        self.image_width = image_width
 
     def draw_rotated_rect(self, image, x, y, w, h, angle, color):
         rect = ((x,y), (h, w), angle / np.pi * 180.0)
@@ -95,11 +96,11 @@ class CarRenderer(Renderer):
         image = cv2.drawContours(image, [box], 0, color, 1)
         return image
 
-    def render(self, image, x, u):
-        image_width = image.shape[1]
+    def render(self, x, u):
+        image = np.ones((self.image_width, self.image_width, 3), dtype=np.float32)
         
-        render_scale = image_width / 2.0
-        render_offset = image_width / 2.0
+        render_scale = self.image_width / 2.0
+        render_offset = self.image_width / 2.0
 
         agent_angle = x[2]
         

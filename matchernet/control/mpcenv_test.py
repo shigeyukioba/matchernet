@@ -30,9 +30,8 @@ class DummyRenderer(Renderer):
     def __init__(self):
         super(DummyRenderer, self).__init__()
 
-
-    def render(self, image, x, u):
-        return image
+    def render(self, x, u):
+        return np.ones([256, 256, 3], dtype=np.float32)
 
 
 class DummyRewardSystem(object):
@@ -110,6 +109,45 @@ class MPCEnvTest(unittest.TestCase):
 
             # Check reward is a scalar value
             self.assertEqual(type(reward), float)
+
+    def test_mpcenv_with_multiple_visual(self):
+        """
+        Test MPCEnv with multiple image state output.
+        """
+        dt = 0.03
+        dynamics = DummyDynamics(dt)
+        
+        renderer0 = DummyRenderer()
+        renderer1 = DummyRenderer()
+
+        renderer = [renderer0, renderer1]
+        reward_system = None
+
+        # Create environment with image state output.
+        env = MPCEnv(dynamics, renderer, reward_system, use_visual_state=True)
+
+        state = env.reset()
+        
+        # Check state shape, type and value range (0.0~1.0).
+        self.assertEqual(state.shape, (2, 256,256,3))
+        self.assertEqual(state.dtype, np.float32)
+        self.assertGreaterEqual(np.min(state), 0.0)
+        self.assertLessEqual(np.max(state), 1.0)
+
+        for i in range(10):
+            action = [0.1, 1.0]
+            state, reward = env.step(action)
+
+            # Check state shape, type and value range (0.0~1.0).
+            self.assertEqual(state.shape, (2,256,256,3))
+            self.assertEqual(state.dtype, np.float32)
+            self.assertGreaterEqual(np.min(state), 0.0)
+            self.assertLessEqual(np.max(state), 1.0)
+
+            # Check reward is a scalar value
+            self.assertEqual(type(reward), float)
+            # Check reward is zero becuase RewardSystem was not applied
+            self.assertEqual(reward, 0.0)
 
 
 if __name__ == '__main__':
