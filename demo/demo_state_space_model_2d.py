@@ -29,14 +29,14 @@ if __name__ == '__main__':
     formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
     logging.basicConfig(level=logging.INFO, format=formatter)
 
-    n_steps = 500
-    n_dim = 2
-    dt = 0.1
-    A = np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32)
-    g = fn.LinearFn(n_dim, n_dim)
-    sigma_w = 0.1
-    sigma_z = 0.1
-    x = np.array([0, 0], dtype=np.float32)
-    y = utils.zeros((1, 2))
-
-    demo_state_space_model_2dim(n_dim, A, g, sigma_w, sigma_z, x, y, n_steps, dt)
+    demo_state_space_model_2dim(
+        n_dim=2,
+        A=np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32),
+        g=fn.LinearFn(2, 2),
+        sigma_w=0.1,
+        sigma_z=0.1,
+        x=np.array([0, 0], dtype=np.float32),
+        y=utils.zeros((1, 2)),
+        n_steps=500,
+        dt=0.1
+    )
