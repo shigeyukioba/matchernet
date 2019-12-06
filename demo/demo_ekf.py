@@ -81,7 +81,7 @@ mu0 = np.array([[0,1.0]],dtype=np.float32)
 A0 = np.array([[-0.1,2],[-2,-0.1]],dtype=np.float32)
 ey2 = np.eye(2,dtype=np.float32)
 
-def test_BundleEKFContinuousTime01(dt, numSteps):
+def test_BundleEKFContinuousTime01(dt, n_steps):
     # test of BundleEKFContinuousTime with a two dimensional linear dynamics
     # dx = dt * F * x + Q * dw
     b = BundleEKFContinuousTime("B0",2)
@@ -92,20 +92,20 @@ def test_BundleEKFContinuousTime01(dt, numSteps):
     b.state.data["mu"] = mu0
 
     dummy_input = {} # list of matchers (#matcher=0)
-    for i in range(numSteps):
+    for i in range(n_steps):
         b(dummy_input)
 
     visualize_bundle_rec(b)
 
 
-def test_bundle_and_observer(dt, numSteps, yrec):
+def test_bundle_and_observer(dt, n_steps, yrec):
     b0 = observer.Observer("b0",yrec)
     b1 = BundleEKFContinuousTime("b1",2)
     b1.f.params["A"] = A0
     b1.state.data["mu"] = mu0
     b1.dt = dt
     dummy_input = {} # list of matchers (#matcher=0)
-    for i in range(numSteps):
+    for i in range(n_steps):
         b0(dummy_input)
         b1(dummy_input)
         y=b0.get_state()
@@ -114,11 +114,11 @@ def test_bundle_and_observer(dt, numSteps, yrec):
         else:
             yrec2 = np.concatenate((yrec2,y),axis=0)
 
-    timestamp=np.array(range(0,numSteps))
+    timestamp=np.array(range(0,n_steps))
     visualize_bundle_rec(b1,yrec2)
 
 
-def test_MatcherEKF01(dt,numSteps,yrec):
+def test_MatcherEKF01(dt,n_steps,yrec):
     '''
     Run a matchernet of the following structure
     b0 --- m01 --- b1
@@ -139,8 +139,8 @@ def test_MatcherEKF01(dt,numSteps,yrec):
 
 
     if _with_brica is False:
-        for i in range(numSteps):
-            print_flush("Step {}/{} with brica".format(i,numSteps))
+        for i in range(n_steps):
+            print_flush("Step {}/{} with brica".format(i,n_steps))
             inputs_to_m01 = {"b0":b0.state, "b1":b1.state}
             results = m01(inputs_to_m01)
             inputs_to_b0 = {"m01":results["b0"]}
@@ -157,8 +157,8 @@ def test_MatcherEKF01(dt,numSteps,yrec):
         s.add_component( b1.component, bt)
         s.add_component( m01.component, bm)
 
-        for i in range(numSteps*2):
-            print_flush("Step {}/{} with brica".format(i,numSteps))
+        for i in range(n_steps*2):
+            print_flush("Step {}/{} with brica".format(i,n_steps))
             s.step()
 
     visualize_bundle_rec(b0, yrec)
@@ -168,24 +168,32 @@ if __name__ == '__main__':
 
     utils._print_level = 2 #5 is the noisiest, 1 is the most quiet
 
-    if False:
-        print("===Starting UnitTest01===")
-        print("-- A simple test of Bundle with no Matcher")
-        plt.figure(1)
-        test_BundleEKFContinuousTime01(dt, numSteps)
-        plt.pause(0.2)
+    # if False:
+    #     print("===Starting UnitTest01===")
+    #     print("-- A simple test of Bundle with no Matcher")
+    #     plt.figure(1)
+    #     test_BundleEKFContinuousTime01(dt, n_steps)
+    #     plt.pause(0.2)
 
     dt = 0.02
-    numSteps = 500
+    n_steps = 500
 
     # preparing a list of three simulation sequences
     yrecs = []
     for i in range(1):
-        sm=StateSpaceModel2Dim(dt)
+        sm=StateSpaceModel2Dim(
+            n_dim=2,
+            A=np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32),
+            g=fn.LinearFn(2, 2),
+            sigma_w=0.1,
+            sigma_z=0.1,
+            x=np.array([0, 0], dtype=np.float32),
+            y=utils.zeros((1, 2))
+        )
         sm.A = A0
         sm.x = mu0[0]
         sm.dt = dt
-        (xrec,yrec)=sm.simulation(dt, numSteps)
+        (xrec,yrec)=sm.simulation(n_steps, dt)
         yrecs.append(yrec)
 
     plt.figure(0)
@@ -199,7 +207,7 @@ if __name__ == '__main__':
         print("===Starting UnitTest02===")
         print("-- A simple test of Bundle with Observer with no Matcher")
         plt.figure(2)
-        test_bundle_and_observer(dt, numSteps, yrec)
+        test_bundle_and_observer(dt, n_steps, yrec)
         plt.pause(0.2)
 
     if False:
@@ -208,7 +216,7 @@ if __name__ == '__main__':
         print("-- without brica")
         _with_brica = False
         plt.figure(4)
-        test_MatcherEKF01(dt, numSteps, yrec)
+        test_MatcherEKF01(dt, n_steps, yrec)
         plt.pause(0.2)
 
     if True:
@@ -217,7 +225,7 @@ if __name__ == '__main__':
         print("-- with brica")
         _with_brica = True
         plt.figure(3)
-        test_MatcherEKF01(dt, numSteps, yrecs[0])
+        test_MatcherEKF01(dt, n_steps, yrecs[0])
         plt.pause(0.2)
 
 
