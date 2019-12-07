@@ -68,7 +68,7 @@ class BundleEKFContinuousTime(Bundle):
         self.state = state.StateMuSigma(n)
         self._initialize_control_params()
         self._initialize_state(n)
-        self.f = fn.LinearFn(n,n)
+        self.f = fn.LinearFn(utils.zeros(2))
         #self.bw = matchernet.bundleWeight(numSteps)
         self.record = {}
         super(BundleEKFContinuousTime, self).__init__(self.name, self.state)
@@ -149,7 +149,7 @@ class BundleEKFContinuousTime(Bundle):
         mu = self.state.data["mu"]
         Sigma = self.state.data["Sigma"]
         Q = self.state.data["Q"]
-        A = self.f.x( mu )
+        A = self.f.dx(mu)
         # Note:  mu.shape = (1,n), A.shape = (n,n)
         matrix_F = utils.calc_matrix_F(A, dt)
         mu = np.dot( mu, matrix_F )
@@ -216,13 +216,9 @@ class MatcherEKF(Matcher):
     def _initialize_model(self):
         self.n = self.n0      # dim. of g0(x0), g1(x1)
         # self.g0 is an identity function as a default observation model
-        C0 = np.eye(self.n0,dtype=np.float32)
-        self.g0 = fn.LinearFn(dim_in=self.n0,dim_out=self.n)
-        self.g0.params["A"]=C0
+        self.g0 = fn.LinearFn(np.eye(self.n0,dtype=np.float32))
         # self.g1 is also an identity function
-        C1 = np.eye(self.n1,dtype=np.float32)
-        self.g1 = fn.LinearFn(dim_in=self.n1,dim_out=self.n)
-        self.g1.params["A"]=C1
+        self.g1 = fn.LinearFn(np.eye(self.n1,dtype=np.float32))
         self.lnL = 0
         self.err2 = 0
         self.id0 = 0
