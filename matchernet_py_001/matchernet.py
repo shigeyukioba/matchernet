@@ -9,13 +9,13 @@ It imports BriCA2 (impremented with C++)
 https://github.com/BriCA/BriCA2
 
 """
-
 import brica
 from brica import Component, VirtualTimeScheduler, Timing
+import copy
+
+from matchernet_py_001 import state
 from matchernet_py_001 import utils
 from matchernet_py_001.utils import print2, print3, print4
-from matchernet_py_001 import state
-import copy
 
 zeros = utils.zeros
 
@@ -58,8 +58,10 @@ class Bundle(object):
 
     def print_state(self):
         """ Print the state of the current Bundle.
-        Args: None.
-        Returns: None.
+        Args:
+            None.
+        Returns:
+            None.
         """
         print2("State of {n}".format(n=self.name))
         print2("self.state.data={x}".format(x=self.state.data))
@@ -76,6 +78,10 @@ class Matcher(object):
     Matcher is a component of matchernet.
     It connects Bundles, calculates energy, and returns a feedback state for each Bundle.
     Here, energy stands for a measure of contradiction among all the linking Bundles. The feedback stands for a signal that is used at the corresponding Bundle; the Bundle updates its state in order to decrease the energy.
+
+    Args:
+        name (str): matcher name.
+        *bundles (:class:`~chainer.Variable`):
     """
     def __init__(self, name, *bundles):
         self.name = name

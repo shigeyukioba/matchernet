@@ -5,10 +5,11 @@ matchernet.py
 This module contains a null demonstration of the BundleNet
 
 """
-from .matchernet import Bundle, Matcher
-from matchernet_py_001 import state
 from operator import add
 from functools import reduce
+
+from matchernet_py_001.matchernet import Bundle, Matcher
+from matchernet_py_001 import state
 
 
 class BundleNull(Bundle):

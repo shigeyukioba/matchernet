@@ -1,8 +1,8 @@
 import numpy as np
 
-from .utils import print1, print2, print3, print4, print5
 from matchernet_py_001 import matchernet
 from matchernet_py_001 import state
+from matchernet_py_001.utils import print1, print2, print3, print4, print5
 
 
 class Observer(matchernet.Bundle):

@@ -1,5 +1,7 @@
 import numpy as np
+
 from matchernet_py_001 import utils
+
 
 class State(object):
     """Class State is a state handler that maintains, serializes, and deserializes the state of Bundles or Matchers.

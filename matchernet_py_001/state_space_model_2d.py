@@ -2,6 +2,7 @@ import numpy as np
 
 from matchernet_py_001 import utils
 
+
 class StateSpaceModel2Dim(object):
 
     def __init__(self, n_dim, A, g, sigma_w, sigma_z, x, y):
