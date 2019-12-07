@@ -101,9 +101,9 @@ class BundleEKFContinuousTime(Bundle):
         self.state.data["time_stamp"] = self.state.data["time_stamp"] + self.dt
         self.callcount = self.callcount+1
 
-    def _initialize_state(self,n):
-        mu = utils.zeros((1,n))
-        Sigma = 1.0 * np.identity(self.n,dtype=np.float32)
+    def _initialize_state(self, n):
+        mu = utils.zeros(n)
+        Sigma = 1.0 * np.identity(self.n, dtype=np.float32)
         Q = 1.0 * np.identity(self.n)
         self.state.data["id"] = self.id
         self.state.data["mu"] = mu
