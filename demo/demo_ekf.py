@@ -77,7 +77,7 @@ def visualize_bundle_rec(b, y_rec=None):
 #  Test functions for the matchernet_ekf.py
 #=======================================================================
 
-mu0 = np.array([[0, 1.0]], dtype=np.float32)
+mu0 = np.array([0, 1.0], dtype=np.float32)
 A0 = np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32)
 ey2 = np.eye(2, dtype=np.float32)
 
@@ -130,7 +130,7 @@ def test_MatcherEKF01(dt, n_steps, y_rec):
     b0.f = fn.LinearFn(A0)
     b0.state.data["mu"] = mu0
     b0.dt = dt
-    b0.state.data["mu"][0][1] = 2
+    b0.state.data["mu"][1] = 2
     b0.state.data["Sigma"] = 2 * ey2
 
     m01 = MatcherEKF("m01", b0, b1)
@@ -190,7 +190,7 @@ if __name__ == '__main__':
             y=utils.zeros((1, 2))
         )
         sm.A = A0
-        sm.x = mu0[0]
+        sm.x = mu0
         sm.dt = dt
         (x_rec, y_rec) = sm.simulation(n_steps, dt)
         yrecs.append(y_rec)
