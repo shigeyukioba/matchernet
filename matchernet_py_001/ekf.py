@@ -102,13 +102,10 @@ class BundleEKFContinuousTime(Bundle):
         self.callcount = self.callcount+1
 
     def _initialize_state(self, n):
-        mu = utils.zeros(n)
-        Sigma = 1.0 * np.identity(self.n, dtype=np.float32)
-        Q = 1.0 * np.identity(self.n)
         self.state.data["id"] = self.id
-        self.state.data["mu"] = mu
-        self.state.data["Sigma"] = Sigma
-        self.state.data["Q"] = Q
+        self.state.data["mu"] = utils.zeros(n)
+        self.state.data["Sigma"] = 1.0 * np.identity(self.n, dtype=np.float32)
+        self.state.data["Q"] = 1.0 * np.identity(self.n)
 
     def accept_feedback(self,fbst):
         """Overriding matchernet.Bundle.accept_feedback()
