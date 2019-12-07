@@ -87,8 +87,7 @@ def test_BundleEKFContinuousTime01(dt, n_steps):
     b = BundleEKFContinuousTime("B0", 2)
     b.dt = dt
     b.print_state()
-    b.f = fn.LinearFn(2, 2)
-    b.f.params["A"] = A0
+    b.f = fn.LinearFn(A0)
     b.state.data["mu"] = mu0
 
     dummy_input = {} # list of matchers (#matcher=0)
@@ -101,7 +100,7 @@ def test_BundleEKFContinuousTime01(dt, n_steps):
 def test_bundle_and_observer(dt, n_steps, y_rec):
     b0 = observer.Observer("b0", y_rec)
     b1 = BundleEKFContinuousTime("b1", 2)
-    b1.f.params["A"] = A0
+    b1.f = fn.LinearFn(A0)
     b1.state.data["mu"] = mu0
     b1.dt = dt
     dummy_input = {} # list of matchers (#matcher=0)
@@ -128,7 +127,7 @@ def test_MatcherEKF01(dt, n_steps, y_rec):
     b1.obs_noise_covariance = 2 * ey2
 
     b0 = BundleEKFContinuousTime("b0", 2)
-    b0.f.params["A"] = A0
+    b0.f = fn.LinearFn(A0)
     b0.state.data["mu"] = mu0
     b0.dt = dt
     b0.state.data["mu"][0][1] = 2
@@ -184,7 +183,7 @@ if __name__ == '__main__':
         sm=StateSpaceModel2Dim(
             n_dim=2,
             A=np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32),
-            g=fn.LinearFn(2, 2),
+            g=fn.LinearFn(utils.zeros(2)),
             sigma_w=0.1,
             sigma_z=0.1,
             x=np.array([0, 0], dtype=np.float32),
