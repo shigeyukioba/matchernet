@@ -121,7 +121,7 @@ class BundleEKFContinuousTime(Bundle):
         dSigma = fbst.data["Sigma"]
         mu = self.state.data["mu"]
         Sigma = self.state.data["Sigma"]
-        Q = self.state.data["Q"]
+        # Q = self.state.data["Q"]
 
         print4("dmu={}".format(dmu))
         print4("dSigma={}".format(dSigma))
@@ -147,10 +147,10 @@ class BundleEKFContinuousTime(Bundle):
         Sigma = self.state.data["Sigma"]
         Q = self.state.data["Q"]
         A = self.f.dx(mu)
-        # Note:  mu.shape = (1,n), A.shape = (n,n)
+        # Note:  mu.shape = (n, ), A.shape = (n,n)
         matrix_F = utils.calc_matrix_F(A, dt)
-        mu = np.dot( mu, matrix_F )
-        Sigma = dt * Q + np.dot( np.dot( matrix_F.T,  Sigma), matrix_F )
+        mu = np.dot(matrix_F, mu)
+        Sigma = dt * Q + np.dot(np.dot(matrix_F.T, Sigma), matrix_F)
         self.state.data["mu"] = mu
         self.state.data["Sigma"] = Sigma
         # ["time_stamp"] is updated in the method self._countup()
