@@ -32,7 +32,7 @@ if __name__ == '__main__':
     demo_state_space_model_2dim(
         n_dim=2,
         A=np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32),
-        g=fn.LinearFn(2, 2),
+        g=fn.LinearFn(utils.zeros(2)),
         sigma_w=0.1,
         sigma_z=0.1,
         x=np.array([0, 0], dtype=np.float32),
