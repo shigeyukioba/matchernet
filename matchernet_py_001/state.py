@@ -21,7 +21,7 @@ class State(object):
     """
     def __init__(self, n):
         self.n = n
-        self.data = {"mu":utils.zeros((1,n))}
+        self.data = {"mu":utils.zeros(n)}
 
 class StatePlain(State):
     """StatePlain is a State that handles plain numpy.array.
@@ -48,7 +48,7 @@ class StateMuSigmaDiag(State):
         super(StateMuSigmaDiag,self).__init__(n)
         self.data["id"] = 1
         self.data["time_stamp"] = 0
-        self.data["mu"] = utils.zeros((1,n))
+        self.data["mu"] = utils.zeros(n)
         self.data["sigma"] = np.diag(np.eye(self.n, dtype=np.float32))
 
 class StateMuSigma(State):
@@ -66,5 +66,5 @@ class StateMuSigma(State):
         super(StateMuSigma,self).__init__(n)
         self.data["id"] = 1
         self.data["time_stamp"] = 0
-        self.data["mu"] = utils.zeros((1,n))
+        self.data["mu"] = utils.zeros(n)
         self.data["Sigma"] = np.eye(n, dtype=np.float32)
