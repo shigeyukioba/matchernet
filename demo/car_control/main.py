@@ -57,7 +57,7 @@ def main():
     x_list, u_list, K_list = ilqg.optimize(x0,
                                            u0,
                                            T,
-                                           iter_max=30)
+                                           iter_max=50)
 
     x = x0
     

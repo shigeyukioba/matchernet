@@ -201,5 +201,5 @@ class CarCost(object):
             else:
                 # More far = Smaller cost (Mor far is better
                 x_cost -= sigmoid(1.0 * distance) * 0.5
-        u_cost = 0.5 * (u[0]**2) + 0.5 * (u[1]**2)
+        u_cost = 0.01 * (u[0]**2) + 0.5 * (u[1]**2)
         return x_cost + u_cost
