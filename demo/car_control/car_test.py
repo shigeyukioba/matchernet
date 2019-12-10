@@ -2,7 +2,7 @@
 import numpy as np
 import unittest
 
-from car import CarDynamics
+from car import CarDynamics, CarCost, CarObstacle
 
 
 def jacobian_finite_difference(func, arg_index, *args):
@@ -57,5 +57,28 @@ class CarDynamicsTest(unittest.TestCase):
         self.assertTrue(np.allclose(fu, fu_n, atol=1e-4))
 
 
+class CarCostTest(unittest.TestCase):
+    def test_car_cost(self):
+        obstacles = []
+        obstacle0 = CarObstacle(pos=np.array([0.5, 0.0], dtype=np.float32),
+                                is_good=False)
+        obstacles.append(obstacle0)
+        obstacle1 = CarObstacle(pos=np.array([0.5, 0.3], dtype=np.float32),
+                                is_good=True)
+        obstacles.append(obstacle1)
+        
+        cost = CarCost(obstacles)
+
+        x = np.zeros((4,), dtype=np.float32)
+        u = np.zeros((2,), dtype=np.float32)
+
+        l = cost.value(x, u, 0)
+        print(l)
+        lx = cost.x(x, u, 0)
+        print(lx)
+        lu = cost.u(x, u, 0)
+        print(lu)
+        
+        
 if __name__ == '__main__':
     unittest.main()

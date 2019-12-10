@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import autograd.numpy as np
-from autograd import jacobian
+from autograd import jacobian, grad
 import cv2
 
 from matchernet import Dynamics, Renderer
@@ -166,3 +166,40 @@ class CarRenderer(Renderer):
                                        agent_angle,
                                        (0,0,1))
         return image
+
+
+class CarObstacle(object):
+    def __init__(self, pos, is_good):
+        self.pos = pos
+        self.is_good = is_good
+
+
+class CarCost(object):
+    """
+    Car cost function for obstacle avoidance.
+    """
+    def __init__(self, obstacles):
+        self.obstacles = obstacles
+        self.x  = grad(self.value, 0)
+        self.u  = grad(self.value, 1)
+        self.xx = jacobian(self.x, 0)
+        self.uu = jacobian(self.u, 1)
+        self.ux = jacobian(self.u, 0)
+
+    def value(self, x, u, t):
+        def sigmoid(x):
+            return 1.0 / (1.0 + np.exp(-x))
+
+        x_cost = 0.0
+        for obstacle in self.obstacles:
+            dx = x[0] - obstacle.pos[0]
+            dy = x[1] - obstacle.pos[1]
+            distance = np.sqrt(dx * dx + dy * dy)
+            if obstacle.is_good:
+                # More far = Larger cost (Nearer is better)
+                x_cost += sigmoid(1.0 * distance)
+            else:
+                # More far = Smaller cost (Mor far is better
+                x_cost -= sigmoid(1.0 * distance) * 0.5
+        u_cost = 0.5 * (u[0]**2) + 0.5 * (u[1]**2)
+        return x_cost + u_cost
