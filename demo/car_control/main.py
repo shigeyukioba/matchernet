@@ -42,7 +42,8 @@ def main():
     
     ilqg = iLQG(dynamics=dynamics, cost=cost)
 
-    T = 120
+    #T = 120
+    T = 140
     
     # Initial state
     x0 = np.array([0.0, 0.0, 0.0, 0.0], dtype=np.float32)

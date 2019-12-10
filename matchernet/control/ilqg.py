@@ -100,6 +100,11 @@ class iLQG:
             Qxx = lxx + fx.T @ Vxx @ fx
             Quu = luu + fu.T @ Vxx @ fu
             Qux = lux + fu.T @ Vxx @ fx
+
+            # Regularlize
+            # TODO: add adaptive adjustment for lambd
+            lambd = 0.1
+            Quu = Quu + np.eye(self.dynamics.u_dim) + lambd
             
             assert Qx.shape  == (self.dynamics.x_dim,)
             assert Qu.shape  == (self.dynamics.u_dim,)
