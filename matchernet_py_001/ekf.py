@@ -68,9 +68,10 @@ class BundleEKFContinuousTime(Bundle):
         self.state = state.StateMuSigma(n)
         self._initialize_control_params()
         self._initialize_state(n)
-        self.f = fn.LinearFn(utils.zeros(2))
+        self.f = fn.LinearFn(utils.zeros((1, 2)))
         #self.bw = matchernet.bundleWeight(numSteps)
         self.record = {}
+        self._first_call_of_state_record = True
         super(BundleEKFContinuousTime, self).__init__(self.name, self.state)
 
     def __call__(self, inputs):
@@ -85,6 +86,7 @@ class BundleEKFContinuousTime(Bundle):
         self.step_dynamics(self.dt)
         self._countup()
         self.state.data["Sigma"] = utils.regularize_cov_matrix(self.state.data["Sigma"])
+        self._state_record()
         print3("1: mu={}".format(self.state.data["mu"]))
 
         return {"state": self.state}
@@ -100,6 +102,19 @@ class BundleEKFContinuousTime(Bundle):
         self.id = self.id+1
         self.state.data["time_stamp"] = self.state.data["time_stamp"] + self.dt
         self.callcount = self.callcount+1
+
+    def _state_record(self):
+        mu = np.array(self.state.data["mu"], dtype=np.float32)
+        sigma = np.array([np.diag(self.state.data["Sigma"])], dtype=np.float32)
+        ts = np.array([self.state.data["time_stamp"]], dtype=np.float32)
+
+        if self._first_call_of_state_record is True:
+            self.record = {"mu": mu, "diagSigma": sigma, "time_stamp": ts}
+            self._first_call_of_state_record = False
+        else:
+            self.record["mu"] = np.vstack((self.record["mu"], mu))
+            self.record["diagSigma"] = np.concatenate((self.record["diagSigma"], sigma), axis=0)
+            self.record["time_stamp"] = np.concatenate((self.record["time_stamp"], ts), axis=0)
 
     def _initialize_state(self, n):
         self.state.data["id"] = self.id
@@ -148,9 +163,9 @@ class BundleEKFContinuousTime(Bundle):
         Q = self.state.data["Q"]
         A = self.f.dx(mu)
         # Note:  mu.shape = (n, ), A.shape = (n,n)
-        matrix_F = utils.calc_matrix_F(A, dt)
-        mu = np.dot(matrix_F, mu)
-        Sigma = dt * Q + np.dot(np.dot(matrix_F.T, Sigma), matrix_F)
+        F = utils.calc_matrix_F(A, dt)
+        mu = np.dot(F, mu)
+        Sigma = dt * Q + np.dot(np.dot(F.T, Sigma), F)
         self.state.data["mu"] = mu
         self.state.data["Sigma"] = Sigma
         # ["time_stamp"] is updated in the method self._countup()
@@ -197,9 +212,9 @@ class MatcherEKF(Matcher):
 
     where  C0 = (dg0/dx)  and  C1 = (dg1/dx)  are Jacobian matrices. Note that C0 and C1 are identity matrices and  S = Sigma0 + Sigma1  holds in the simplest case.
     """
-    def __init__(self,name,b0,b1): # b0 and b1 are the Bundles to be linked to the current Matcher
+    def __init__(self, name, b0, b1): # b0 and b1 are the Bundles to be linked to the current Matcher
         self.name = name
-        super(MatcherEKF, self).__init__(name, b0,b1)
+        super(MatcherEKF, self).__init__(name, b0, b1)
         self.b0name = b0.name
         self.b1name = b1.name
         self.n0 = b0.state.n # dim. of B0
@@ -213,9 +228,9 @@ class MatcherEKF(Matcher):
     def _initialize_model(self):
         self.n = self.n0      # dim. of g0(x0), g1(x1)
         # self.g0 is an identity function as a default observation model
-        self.g0 = fn.LinearFn(np.eye(self.n0,dtype=np.float32))
+        self.g0 = fn.LinearFn(np.eye(self.n0, dtype=np.float32))
         # self.g1 is also an identity function
-        self.g1 = fn.LinearFn(np.eye(self.n1,dtype=np.float32))
+        self.g1 = fn.LinearFn(np.eye(self.n1, dtype=np.float32))
         self.lnL = 0
         self.err2 = 0
         self.id0 = 0
@@ -224,7 +239,7 @@ class MatcherEKF(Matcher):
     def print_state(self):
         print2("== Printing the matcher's state")
         print2("name={}".format(self.name))
-        print2("b0={}, b1={}".format(self.b0name,self.b1name))
+        print2("b0={}, b1={}".format(self.b0name, self.b1name))
         print2("n0={}, n1={}, n={}".format(self.n0, self.n1, self.n))
 
     def __call__(self, inputs):
@@ -242,6 +257,39 @@ class MatcherEKF(Matcher):
         """
         self.update(inputs)
         return self.results
+
+    def _state_record(self):
+        """Storing records of current MatcherEKF
+        """
+        b0 = self.b0state
+        b1 = self.b1state
+        fbst0 = self.results[self.b0name]
+        fbst1 = self.results[self.b1name]
+        # feedback from the current Matcher to the Bundle b1
+        mu0 = np.array(b0.data["mu"])
+        sigma0 = np.array([np.diag(b0.data["Sigma"])], dtype=np.float32)
+        mu1 = np.array(b1.data["mu"])
+        sigma1 = np.array([np.diag(b1.data["Sigma"])], dtype=np.float32)
+        dmu1 = np.array(fbst1.data["mu"])
+        dsigma1 = np.array([np.diag(fbst1.data["Sigma"])], dtype=np.float32)
+
+        if self._first_call_of_state_record == 1:
+            self.record = {
+                "mu0": mu0,
+                "diagSigma0": sigma0,
+               "mu1": mu1,
+               "diagSigma1": sigma1,
+               "dmu1": dmu1,
+               "diagDSigma1": dsigma1
+            }
+            self._first_call_of_state_record = 0
+        else:
+            self.record["mu0"] = np.vstack((self.record["mu0"], mu0))
+            self.record["diagSigma0"] = np.concatenate((self.record["diagSigma0"], sigma0), axis=0)
+            self.record["mu1"] = np.vstack((self.record["mu1"], mu1))
+            self.record["diagSigma1"] = np.concatenate((self.record["diagSigma1"], sigma1), axis=0)
+            self.record["dmu1"] = np.vstack((self.record["dmu1"], dmu1))
+            self.record["diagDSigma1"] = np.concatenate((self.record["diagDSigma1"], dsigma1), axis=0)
 
     def forward(self):
         """Main method that evaluates the error and derivatives.
@@ -271,21 +319,22 @@ class MatcherEKF(Matcher):
         z = self.g0.value(self.mu0) - self.g1.value(self.mu1)
         C0 = self.g0.x(self.mu0)
         C1 = self.g1.x(self.mu1)
-        S = np.dot( np.dot(C0.T, self.Sigma0), C0) + np.dot( np.dot(C1.T, self.Sigma1), C1)
-        SI = np.matrix(S).I
-        print5("z={z}, S={S}".format(z=z,S=S))
-        dum_sign, slogdet = np.linalg.slogdet( S )
-        self.lnL_t -= np.dot( np.dot( z, SI), z.T ) / 2.0
-        self.err2 += np.dot(z,z.T)[0,0]
-        self.lnL_t -= slogdet /2.0
-        K0 = np.dot( np.dot( self.Sigma0, C0), SI)
-        K1 = np.dot( np.dot( self.Sigma1, C1), SI)
-        self.dmu0 = -np.dot( z, K0.T )   #### HERE it is fixed! ####
-        self.dmu1 = np.dot( z, K1.T )
-        self.dSigma0 = np.dot( K0, np.dot( C0.T, self.Sigma0) )
-        self.dSigma1 = np.dot( K1, np.dot( C1.T, self.Sigma1) )
-        self.lnL += self.lnL_t[0,0]
-        print3("lnL_t = {lnLt}, lnL = {lnL}".format(lnLt=self.lnL_t,lnL=self.lnL))
+        S = np.dot(np.dot(C0.T, self.Sigma0), C0) + np.dot(np.dot(C1.T, self.Sigma1), C1)
+        SI = np.linalg.inv(S)
+        print5("z={z}, S={S}".format(z=z, S=S))
+        dum_sign, logdet = np.linalg.slogdet(S)
+        self.lnL_t -= np.dot(np.dot(z, SI), z.T) / 2.0
+        self.err2 += np.dot(z, z.T)
+        self.lnL_t -= logdet / 2.0
+        K0 = np.dot(np.dot(self.Sigma0, C0), SI)
+        K1 = np.dot(np.dot(self.Sigma1, C1), SI)
+
+        self.dmu0 = -np.dot(K0, z)   #### HERE it is fixed! ####
+        self.dmu1 = np.dot(K1, z)
+        self.dSigma0 = np.dot(K0, np.dot(C0.T, self.Sigma0))
+        self.dSigma1 = np.dot(K1, np.dot(C1.T, self.Sigma1))
+        self.lnL += self.lnL_t
+        print3("lnL_t = {lnLt}, lnL = {lnL}".format(lnLt=self.lnL_t, lnL=self.lnL))
 
     def backward(self):
         """Updates the observation models
@@ -299,10 +348,9 @@ class MatcherEKF(Matcher):
         """method self.update()
          is called from self.__call__()
         """
-        self.b0state = inputs[self.b0name]
-        d0 = self.b0state.data
-        self.b1state = inputs[self.b1name]
-        d1 = self.b1state.data
+        self.b0state, self.b1state = inputs[self.b0name], inputs[self.b1name]
+        d0, d1 = self.b0state.data, self.b1state.data
+
         self.mu0 = d0["mu"]
         self.Sigma0 = d0["Sigma"]
         self.ts0 = d0["time_stamp"]
