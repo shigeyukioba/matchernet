@@ -62,13 +62,13 @@ class BundleEKFContinuousTime(Bundle):
     for a similar class with trainable dynamics function.
 
     """
-    def __init__(self, name, n):
+    def __init__(self, name, n, f):
         self.n = n # Dimsnsionarity of the state variable
         self.name = name
         self.state = state.StateMuSigma(n)
         self._initialize_control_params()
         self._initialize_state(n)
-        self.f = fn.LinearFn(utils.zeros((1, 2)))
+        self.f = f
         #self.bw = matchernet.bundleWeight(numSteps)
         self.record = {}
         self._first_call_of_state_record = True
@@ -277,10 +277,10 @@ class MatcherEKF(Matcher):
             self.record = {
                 "mu0": mu0,
                 "diagSigma0": sigma0,
-               "mu1": mu1,
-               "diagSigma1": sigma1,
-               "dmu1": dmu1,
-               "diagDSigma1": dsigma1
+                "mu1": mu1,
+                "diagSigma1": sigma1,
+                "dmu1": dmu1,
+                "diagDSigma1": dsigma1
             }
             self._first_call_of_state_record = 0
         else:
