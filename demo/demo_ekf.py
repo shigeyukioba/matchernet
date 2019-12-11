@@ -11,6 +11,8 @@ from matchernet_py_001 import utils
 from matchernet_py_001.utils import print_flush
 
 logger = logging.getLogger(__name__)
+formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
+logging.basicConfig(level=logging.INFO, format=formatter)
 
 
 def visualize_bundle_rec(b, y_rec=None):
@@ -62,7 +64,7 @@ ey2 = np.eye(2, dtype=np.float32)
 def test_BundleEKFContinuousTime01(dt, n_steps):
     b = BundleEKFContinuousTime("B0", 2, fn.LinearFn(A0))
     b.dt = dt
-    b.logger_state(logger)
+    b.logger_state()
     b.state.data["mu"] = mu0
 
     dummy_input = {} # list of matchers (#matcher=0)
@@ -106,7 +108,6 @@ def test_MatcherEKF01(dt, n_steps, y_rec):
     b0.state.data["Sigma"] = 2 * ey2
 
     m01 = MatcherEKF("m01", b0, b1)
-    m01.print_state()
 
 
     if _with_brica is False:
@@ -136,9 +137,6 @@ def test_MatcherEKF01(dt, n_steps, y_rec):
 
 
 if __name__ == '__main__':
-    formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
-    logging.basicConfig(level=logging.INFO, format=formatter)
-
     # if False:
     #     print("===Starting UnitTest01===")
     #     print("-- A simple test of Bundle with no Matcher")
