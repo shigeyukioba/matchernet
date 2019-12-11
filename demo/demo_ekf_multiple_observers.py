@@ -1,4 +1,6 @@
 import sys
+import logging
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 from brica import Component, VirtualTimeScheduler, Timing
@@ -7,10 +9,13 @@ from matchernet_py_001.ekf import BundleEKFContinuousTime, MatcherEKF
 from matchernet_py_001.observer import Observer
 from matchernet_py_001.state_space_model_2d import StateSpaceModel2Dim
 from matchernet_py_001 import utils
-from matchernet_py_001.utils import print1, print2, print3, print4, print_flush
+from matchernet_py_001.utils import print_flush
+
+logger = logging.getLogger(__name__)
+formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
+logging.basicConfig(level=logging.INFO, format=formatter)
 
 _with_brica = True
-import time
 
 mu0 = np.array([[0,1.0]],dtype=np.float32)
 A0 = np.array([[-0.1,2],[-2,-0.1]],dtype=np.float32)
@@ -73,7 +78,6 @@ def prepare_data(dt, num_steps, num_observers):
         sm.dt = dt
         (xrec,yrec)=sm.simulation(dt, num_steps)
         yrecs.append(yrec)
-    print(" ")
     return yrecs
 
 def include_random_missing(y):
@@ -142,9 +146,6 @@ def visualize_bundle_rec(b, yrec=None):
 
 
 if __name__ == '__main__':
-
-    utils._print_level = 1 #5 is the noisiest, 1 is the most quiet
-
     dt = 0.02
     num_steps = 200
     try:
@@ -152,7 +153,7 @@ if __name__ == '__main__':
     except:
         num_observers = 5
 
-    print( "num_observers={}".format(num_observers) )
+    logger.debug("num_observers={}".format(num_observers))
 
     # preparing a list simulation sequences
     yrecs = prepare_data(dt, num_steps, num_observers)
@@ -164,7 +165,4 @@ if __name__ == '__main__':
     start = time.time()
     ekf_test_multiple_observer(dt, num_steps, num_observers, yrecs)
     elapsed_time = time.time() - start
-    print("")
-    print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
-
-    #plt.pause(100)
+    logger.info("elapsed_time:{0}".format(elapsed_time) + "[sec]")
