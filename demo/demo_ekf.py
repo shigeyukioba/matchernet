@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import matplotlib.pyplot as plt
 from brica import Component, VirtualTimeScheduler, Timing
@@ -10,6 +11,7 @@ from matchernet_py_001 import utils
 from matchernet_py_001.utils import print1, print2, print3, print4, print_flush
 
 _with_brica = True
+logger = logging.getLogger(__name__)
 
 #=======================================================================
 #  Visualization functions for the matchernet_ekf.py
@@ -84,10 +86,9 @@ ey2 = np.eye(2, dtype=np.float32)
 def test_BundleEKFContinuousTime01(dt, n_steps):
     # test of BundleEKFContinuousTime with a two dimensional linear dynamics
     # dx = dt * F * x + Q * dw
-    b = BundleEKFContinuousTime("B0", 2)
+    b = BundleEKFContinuousTime("B0", 2, fn.LinearFn(A0))
     b.dt = dt
     b.print_state()
-    b.f = fn.LinearFn(A0)
     b.state.data["mu"] = mu0
 
     dummy_input = {} # list of matchers (#matcher=0)
@@ -99,8 +100,7 @@ def test_BundleEKFContinuousTime01(dt, n_steps):
 
 def test_bundle_and_observer(dt, n_steps, y_rec):
     b0 = observer.Observer("b0", y_rec)
-    b1 = BundleEKFContinuousTime("b1", 2)
-    b1.f = fn.LinearFn(A0)
+    b1 = BundleEKFContinuousTime("b1", 2, fn.LinearFn(A0))
     b1.state.data["mu"] = mu0
     b1.dt = dt
     dummy_input = {} # list of matchers (#matcher=0)
@@ -111,23 +111,22 @@ def test_bundle_and_observer(dt, n_steps, y_rec):
         if i == 0:
             y_rec2 = y
         else:
-            y_rec2 = np.concatenate((y_rec2, y), axis=0)
+            y_rec2 = np.vstack((y_rec2, y))
 
     timestamp = np.array(range(0, n_steps))
     visualize_bundle_rec(b1, y_rec2)
 
 
 def test_MatcherEKF01(dt, n_steps, y_rec):
-    '''
+    """
     Run a matchernet of the following structure
     b0 --- m01 --- b1
-    '''
+    """
 
     b1 = observer.Observer("b1", y_rec)
     b1.obs_noise_covariance = 2 * ey2
 
-    b0 = BundleEKFContinuousTime("b0", 2)
-    b0.f = fn.LinearFn(A0)
+    b0 = BundleEKFContinuousTime("b0", 2, fn.LinearFn(A0))
     b0.state.data["mu"] = mu0
     b0.dt = dt
     b0.state.data["mu"][1] = 2
@@ -164,6 +163,8 @@ def test_MatcherEKF01(dt, n_steps, y_rec):
 
 
 if __name__ == '__main__':
+    formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
+    logging.basicConfig(level=logging.INFO, format=formatter)
 
     utils._print_level = 2 #5 is the noisiest, 1 is the most quiet
 
@@ -202,7 +203,7 @@ if __name__ == '__main__':
         plt.title("sequence {}".format(i))
     plt.pause(1)
 
-    if False:
+    if True:
         print("===Starting UnitTest02===")
         print("-- A simple test of Bundle with Observer with no Matcher")
         plt.figure(2)
@@ -218,7 +219,7 @@ if __name__ == '__main__':
         test_MatcherEKF01(dt, n_steps, y_rec)
         plt.pause(0.2)
 
-    if True:
+    if False:
         print("===Starting UnitTest04===")
         print("-- A simple test to link a Bundle, a Observer, and a Matcher")
         print("-- with brica")
