@@ -8,30 +8,19 @@ from matchernet_py_001 import fn
 from matchernet_py_001 import observer
 from matchernet_py_001.state_space_model_2d import StateSpaceModel2Dim
 from matchernet_py_001 import utils
-from matchernet_py_001.utils import print1, print2, print3, print4, print_flush
+from matchernet_py_001.utils import print_flush
 
-_with_brica = True
 logger = logging.getLogger(__name__)
 
-#=======================================================================
-#  Visualization functions for the matchernet_ekf.py
-#=======================================================================
+
 def visualize_bundle_rec(b, y_rec=None):
 
     mu_rec = b.record["mu"]
     sigma_rec = b.record["diagSigma"]
     time_stamp = b.record["time_stamp"]
-    n_steps = mu_rec.shape[0]
-    timestamp = np.array(range(0, n_steps))
 
-    print3("mu_rec.shape={}".format(mu_rec.shape))
-    print3("mu_rec.dtype={}".format(mu_rec.dtype))
-    print3("sigma_rec.shape={}".format(sigma_rec.shape))
-    print3("sigma_rec.dtype={}".format(sigma_rec.dtype))
-    print3("timestamp.shape={}".format(timestamp.shape))
-    print4("mu_rec={}".format(mu_rec))
-    print4("sigma_rec={}".format(sigma_rec))
-    print4("timestamp={}".format(timestamp))
+    logger.debug("mu_rec={}".format(mu_rec))
+    logger.debug("sigma_rec={}".format(sigma_rec))
 
     plt.subplot(221)
     plt.plot(mu_rec[:, 0], mu_rec[:, 1])
@@ -39,17 +28,9 @@ def visualize_bundle_rec(b, y_rec=None):
     plt.ylabel("Y")
     plt.title("Trajectory")
 
-
     plt.subplot(222)
     yd = mu_rec[:, 0] - sigma_rec[:, 0]
     yu = mu_rec[:, 0] + sigma_rec[:, 0]
-    print4("sigma_rec[:,0]={}".format(sigma_rec[:, 0]))
-    print4("mu_rec[:,0]={}".format(mu_rec[:, 0]))
-    print3("mu_rec[:,0].shape={}".format(mu_rec[:, 0].shape))
-    print3("sigma_rec[:,0].shape={}".format(sigma_rec[:, 0].shape))
-    print3("mu_rec[:,1].shape={}".format(mu_rec[:, 1].shape))
-    print3("sigma_rec[:,1].shape={}".format(sigma_rec[:, 1].shape))
-    print3("yu.shape={}".format(yu.shape))
     plt.fill_between(time_stamp, yd, yu, facecolor='y', alpha=0.5)
     plt.plot(time_stamp, mu_rec[:, 0])
     plt.ylabel("X")
@@ -60,7 +41,6 @@ def visualize_bundle_rec(b, y_rec=None):
     yu = mu_rec[:, 1] + sigma_rec[:, 1]
     plt.fill_between(time_stamp, yd, yu, facecolor='y', alpha=0.5)
     plt.plot(time_stamp, mu_rec[:, 1])
-    #plt.scatter(range(0, 5000-1), mu_rec[:, 0])
     plt.ylabel("Y")
     plt.xlabel("time")
 
@@ -75,20 +55,14 @@ def visualize_bundle_rec(b, y_rec=None):
         plt.scatter(time_stamp, y_rec[:, 1], s=2)
 
 
-#=======================================================================
-#  Test functions for the matchernet_ekf.py
-#=======================================================================
-
 mu0 = np.array([0, 1.0], dtype=np.float32)
 A0 = np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32)
 ey2 = np.eye(2, dtype=np.float32)
 
 def test_BundleEKFContinuousTime01(dt, n_steps):
-    # test of BundleEKFContinuousTime with a two dimensional linear dynamics
-    # dx = dt * F * x + Q * dw
     b = BundleEKFContinuousTime("B0", 2, fn.LinearFn(A0))
     b.dt = dt
-    b.print_state()
+    b.logger_state(logger)
     b.state.data["mu"] = mu0
 
     dummy_input = {} # list of matchers (#matcher=0)
@@ -103,7 +77,7 @@ def test_bundle_and_observer(dt, n_steps, y_rec):
     b1 = BundleEKFContinuousTime("b1", 2, fn.LinearFn(A0))
     b1.state.data["mu"] = mu0
     b1.dt = dt
-    dummy_input = {} # list of matchers (#matcher=0)
+    dummy_input = {}
     for i in range(n_steps):
         b0(dummy_input)
         b1(dummy_input)
@@ -113,7 +87,6 @@ def test_bundle_and_observer(dt, n_steps, y_rec):
         else:
             y_rec2 = np.vstack((y_rec2, y))
 
-    timestamp = np.array(range(0, n_steps))
     visualize_bundle_rec(b1, y_rec2)
 
 
@@ -155,8 +128,8 @@ def test_MatcherEKF01(dt, n_steps, y_rec):
         s.add_component(b1.component, bt)
         s.add_component(m01.component, bm)
 
-        for i in range(n_steps * 2):
-            print_flush("Step {}/{} with brica".format(i, n_steps))
+        for i in range(n_steps):
+            print_flush("Step {}/{} with brica".format(i, n_steps+1))
             s.step()
 
     visualize_bundle_rec(b0, y_rec)
@@ -165,8 +138,6 @@ def test_MatcherEKF01(dt, n_steps, y_rec):
 if __name__ == '__main__':
     formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
     logging.basicConfig(level=logging.INFO, format=formatter)
-
-    utils._print_level = 2 #5 is the noisiest, 1 is the most quiet
 
     # if False:
     #     print("===Starting UnitTest01===")
@@ -203,29 +174,23 @@ if __name__ == '__main__':
         plt.title("sequence {}".format(i))
     plt.pause(1)
 
-    if True:
-        print("===Starting UnitTest02===")
-        print("-- A simple test of Bundle with Observer with no Matcher")
+    if False:
+        logger.info("-- A simple test of Bundle with Observer with no Matcher")
         plt.figure(2)
         test_bundle_and_observer(dt, n_steps, y_rec)
-        plt.pause(0.2)
 
     if False:
-        print("===Starting UnitTest03===")
-        print("-- A simple test to link a Bundle, a Observer, and a Matcher")
-        print("-- without brica")
         _with_brica = False
+        logger.info("-- A simple test to link a Bundle, a Observer, and a Matcher")
+        logger.info("-- with brica: {}".format(_with_brica))
         plt.figure(4)
         test_MatcherEKF01(dt, n_steps, y_rec)
-        plt.pause(0.2)
 
-    if False:
-        print("===Starting UnitTest04===")
-        print("-- A simple test to link a Bundle, a Observer, and a Matcher")
-        print("-- with brica")
-        _with_brica = True
+    if True:
+        _with_brica = False
+        logger.info("-- A simple test to link a Bundle, a Observer, and a Matcher")
+        logger.info("-- with brica: {}".format(_with_brica))
         plt.figure(3)
-        test_MatcherEKF01(dt, n_steps, yrecs[0])
-        plt.pause(0.2)
+        test_MatcherEKF01(dt, n_steps, y_rec)
 
-    plt.pause(5.0)
+    plt.pause(5)
