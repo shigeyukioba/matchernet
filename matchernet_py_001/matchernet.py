@@ -9,18 +9,22 @@ It imports BriCA2 (impremented with C++)
 https://github.com/BriCA/BriCA2
 
 """
+import logging
 import brica
 from brica import Component, VirtualTimeScheduler, Timing
 import copy
 
 from matchernet_py_001 import state
 from matchernet_py_001 import utils
-from matchernet_py_001.utils import print2, print3, print4
+
+logger = logging.getLogger(__name__)
+formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
+logging.basicConfig(level=logging.INFO, format=formatter)
 
 zeros = utils.zeros
 
 _with_brica = True
-# A global flag to branch withBriCA2 and withoutBriCA versions
+
 
 class Bundle(object):
     """
@@ -31,9 +35,10 @@ class Bundle(object):
       a state transision dynamics
       arbitrary number of connections to Matchers
     """
-    def __init__(self, name, initial_state_object):
+    def __init__(self, name, initial_state_object, logger=logger):
         """ Create a new 'Bundle' instance.
         """
+        self.logger = logger
         self.name = name
         self.state = initial_state_object
         self.component = Component(self)
@@ -54,23 +59,22 @@ class Bundle(object):
         Accepting the feedback state 'fb_state' from one of the matchers
         which is linking to the current bundle.
         """
-        print2("{} is accepting feedback".format(self.name))
+        self.logger.debug("{} is accepting feedback".format(self.name))
 
-    def print_state(self):
+    def logger_state(self):
         """ Print the state of the current Bundle.
         Args:
             None.
         Returns:
             None.
         """
-        print2("State of {n}".format(n=self.name))
-        print2("self.state.data={x}".format(x=self.state.data))
+        self.logger.debug("State of {n}: {x}".format(n=self.name, x=self.state.data))
 
     def update(self, inputs):
         """ Update the state of the current Bundle.
         This method should be override for any subclasses.
         """
-        print3("{} is updating".format(self.name))
+        self.logger.debug("{} is updating".format(self.name))
 
 class Matcher(object):
     """
@@ -83,7 +87,8 @@ class Matcher(object):
         name (str): matcher name.
         *bundles (:class:`~chainer.Variable`):
     """
-    def __init__(self, name, *bundles):
+    def __init__(self, name, *bundles, logger=logger):
+        self.logger = logger
         self.name = name
         self.state = state.StatePlain(1) # Own state of the current matcher
         self.results = {}
@@ -101,7 +106,7 @@ class Matcher(object):
             bundle.component.make_in_port(self.name)
             brica.connect(bundle.component, "state", self.component, bundle.name)
             brica.connect(self.component, bundle.name, bundle.component, self.name)
-            print4( "{}".format(bundle.state.data))
+            self.logger.debug("{}".format(bundle.state.data))
 
     def __call__(self, inputs):
         """
@@ -124,14 +129,8 @@ class Matcher(object):
         return self.results
 
     def accept_bundle_state(self, st):
-        print2("Matcher {} is accepting_bundle_state".format(self.name))
+        self.logger.debug("Matcher {} is accepting_bundle_state".format(self.name))
 
     def update(self, inputs):
-        self.print_state()
-
-    def print_state(self):
-        """Prints the state of the self.
-        """
-        print3("State of {n}".format(n=self.name))
-        print3("self.state.data={x}".format(x=self.state.data))
-        print3("self.results={x}".format(x=self.results))
+        self.logger.debug("State of {n}: {x}".format(n=self.name, x=self.state.data))
+        self.logger.debug("self.results={x}".format(x=self.results))

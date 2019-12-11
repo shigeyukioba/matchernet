@@ -7,34 +7,6 @@ def print_flush(s):
     sys.stdout.write("\r"+s)
     sys.stdout.flush()
 
-# print variants for debug
-_print_level = 1
-
-
-def print5(fm):
-    if _print_level>5:
-        print(fm)
-
-
-def print4(fm):
-    if _print_level>4:
-        print(fm)
-
-
-def print3(fm):
-    if _print_level>3:
-        print(fm)
-
-
-def print2(fm):
-    if _print_level>2:
-        print(fm)
-
-
-def print1(fm):
-    if _print_level>1:
-        print(fm)
-
 
 def zeros(size):
     return np.zeros(size).astype(np.float32)

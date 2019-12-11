@@ -5,15 +5,21 @@ matchernet.py
 This module contains a null demonstration of the BundleNet
 
 """
+import logging
 from operator import add
 from functools import reduce
 
 from matchernet_py_001.matchernet import Bundle, Matcher
 from matchernet_py_001 import state
 
+logger = logging.getLogger(__name__)
+formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
+logging.basicConfig(level=logging.INFO, format=formatter)
+
 
 class BundleNull(Bundle):
-    def __init__(self, name, n, delay=0):
+    def __init__(self, name, n, delay=0, logger=logger):
+        self.logger = logger
         self.name = name
         # self.delay = delay
         self.delay = -1
@@ -24,7 +30,7 @@ class BundleNull(Bundle):
         self.state.data["mu"] += fb_state.data["mu"]
 
     def update(self, inputs):
-        print("Updating {}".format(self.name))
+        self.logger.debug("Updating {}".format(self.name))
         #if(self.delay):
             # ref = time.clock_gettime(time.CLOCK_MONOTONIC)
         #elapsed = 0

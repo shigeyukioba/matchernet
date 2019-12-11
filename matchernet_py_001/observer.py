@@ -1,8 +1,12 @@
+import logging
 import numpy as np
 
 from matchernet_py_001 import matchernet
 from matchernet_py_001 import state
-from matchernet_py_001.utils import print1, print2, print3, print4, print5
+
+logger = logging.getLogger(__name__)
+formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
+logging.basicConfig(level=logging.INFO, format=formatter)
 
 
 class Observer(matchernet.Bundle):
@@ -29,7 +33,8 @@ class Observer(matchernet.Bundle):
     Note:
     When the vector data in buffer included  NaN  entries, they are regarded as missing entries and the Observer outpus a zero vector  mu  with covariance matrix  cov  of large eigen values. (See the function  missing_handler001()  for a default setting to construct the corresponding output. )
     """
-    def __init__(self, name, buff):
+    def __init__(self, name, buff, logger=logger):
+        self.logger = logger
         self.name = name
         self.buffer = buff
         self.counter = -1
@@ -51,7 +56,6 @@ class Observer(matchernet.Bundle):
         #    if inputs[key] is not None:
         #        self.accept_feedback(inputs[key]) # Doing nothing
 
-        print2("=== In Bundle {}".format(self.name))
         self.count_up()
         self.set_results()
         return self.results
@@ -71,29 +75,23 @@ class Observer(matchernet.Bundle):
     def get_state(self):
         b = self.get_buffer()
         z = b[self.counter].copy()
-        return z # returning [[1,2,3,...]] rather than [1,2,3,...]
+        return z
 
     def set_results(self):
         q = self.get_state()
-        mu, Sigma = self.missing_handler(np.array(q, dtype=np.float32), self.obs_noise_covariance)
+        mu, Sigma = self.missing_handler(np.array(q, dtype=np.float32), self.obs_noise_covariance, self.logger)
         self.state.data["mu"] = mu
         self.state.data["Sigma"] = Sigma
         self.state.data["time_stamp"] = self.counter
         self.results = {"state": self.state}
           # === Note: We may regard  "time_stamp"  as a real time rather than a counter in a future version.
 
-    def print_state(self):
-        """Prints the state of the self.
-        """
-        pt = self.ports_to_matchers[0]
-        print("self.results[]={c}".format(c=self.results[pt]))
-
-def missing_handler001(mu, Sigma):
+def missing_handler001(mu, Sigma, logger):
     """A missing value handler function.
     It receives a vector data  mu  with a default covariance matrix  Sigma, find NaN in the vector  mu, and outputs a modified set of a vector  mu  and a covariance  cov.
     """
     if np.any(np.isnan(mu)):
-        print3("Missing!")
+        logger.error("Missing!")
         cov = Sigma * 1000
         mu = np.zeros(mu.shape)
     else:

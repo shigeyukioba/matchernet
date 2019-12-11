@@ -1,14 +1,15 @@
+import logging
 import numpy as np
 
 from matchernet_py_001 import fn
 from matchernet_py_001.matchernet import Bundle, Matcher
 from matchernet_py_001 import state
 from matchernet_py_001 import utils
-from matchernet_py_001.utils import print1, print2, print3, print4, print5
 
-#=======================================================================
-#  BundleEKFContinuousTime
-#=======================================================================
+logger = logging.getLogger(__name__)
+formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
+logging.basicConfig(level=logging.INFO, format=formatter)
+
 
 class BundleEKFContinuousTime(Bundle):
     """Class BundleEKFContinuousTime is a Bundle part of an extended Kalman filter (EKF) model implemented as the BundleNet.
@@ -62,32 +63,31 @@ class BundleEKFContinuousTime(Bundle):
     for a similar class with trainable dynamics function.
 
     """
-    def __init__(self, name, n, f):
+    def __init__(self, name, n, f, logger=logger):
+        self.logger = logger
         self.n = n # Dimsnsionarity of the state variable
         self.name = name
         self.state = state.StateMuSigma(n)
+        super(BundleEKFContinuousTime, self).__init__(self.name, self.state)
         self._initialize_control_params()
         self._initialize_state(n)
         self.f = f
         #self.bw = matchernet.bundleWeight(numSteps)
         self.record = {}
         self._first_call_of_state_record = True
-        super(BundleEKFContinuousTime, self).__init__(self.name, self.state)
 
     def __call__(self, inputs):
         """The main routine that is called from brica.
         """
-        print2("=== In Bundle {}".format(self.name))
         for key in inputs: # key is one of the matcher names
             if inputs[key] is not None:
-                print2("==   accepting feedback from {}".format(key))
+                self.logger.debug("accepting feedback from {}".format(key))
                 self.accept_feedback(inputs[key])
-        print3("1: mu={}".format(self.state.data["mu"]))
         self.step_dynamics(self.dt)
         self._countup()
         self.state.data["Sigma"] = utils.regularize_cov_matrix(self.state.data["Sigma"])
         self._state_record()
-        print3("1: mu={}".format(self.state.data["mu"]))
+        self.logger.debug("mu={}".format(self.state.data["mu"]))
 
         return {"state": self.state}
 
@@ -99,16 +99,16 @@ class BundleEKFContinuousTime(Bundle):
         self.lr = 0.0001 # Leaning rate for dynamics  f
 
     def _countup(self):
-        self.id = self.id+1
+        self.id = self.id + 1
         self.state.data["time_stamp"] = self.state.data["time_stamp"] + self.dt
-        self.callcount = self.callcount+1
+        self.callcount = self.callcount + 1
 
     def _state_record(self):
         mu = np.array(self.state.data["mu"], dtype=np.float32)
         sigma = np.array([np.diag(self.state.data["Sigma"])], dtype=np.float32)
         ts = np.array([self.state.data["time_stamp"]], dtype=np.float32)
 
-        if self._first_call_of_state_record is True:
+        if self._first_call_of_state_record:
             self.record = {"mu": mu, "diagSigma": sigma, "time_stamp": ts}
             self._first_call_of_state_record = False
         else:
@@ -138,8 +138,8 @@ class BundleEKFContinuousTime(Bundle):
         Sigma = self.state.data["Sigma"]
         # Q = self.state.data["Q"]
 
-        print4("dmu={}".format(dmu))
-        print4("dSigma={}".format(dSigma))
+        self.logger.debug("dmu={}".format(dmu))
+        self.logger.debug("dSigma={}".format(dSigma))
         weight = 1.0
 
         self.state.data["mu"] = (mu + weight*dmu).astype(np.float32)
@@ -170,9 +170,6 @@ class BundleEKFContinuousTime(Bundle):
         self.state.data["Sigma"] = Sigma
         # ["time_stamp"] is updated in the method self._countup()
 
-#=======================================================================
-#  Matcher_EKF
-#=======================================================================
 
 class MatcherEKF(Matcher):
     """Class MatcherEKF is a Matcher part of an extended Kalman filter (EKF) model implemented as the BundleNet.
@@ -212,14 +209,15 @@ class MatcherEKF(Matcher):
 
     where  C0 = (dg0/dx)  and  C1 = (dg1/dx)  are Jacobian matrices. Note that C0 and C1 are identity matrices and  S = Sigma0 + Sigma1  holds in the simplest case.
     """
-    def __init__(self, name, b0, b1): # b0 and b1 are the Bundles to be linked to the current Matcher
+    def __init__(self, name, b0, b1, logger=logger):
+        self.logger = logger
         self.name = name
         super(MatcherEKF, self).__init__(name, b0, b1)
         self.b0name = b0.name
         self.b1name = b1.name
         self.n0 = b0.state.n # dim. of B0
         self.n1 = b1.state.n # dim. of B1
-        self._first_call_of_state_record = 1
+        self._first_call_of_state_record = True
         self._initialize_model()
         self.ts0_recent = -1 # the most recent value of the time_stamp of b0
         self.ts1_recent = -1 # that of b1
@@ -235,12 +233,6 @@ class MatcherEKF(Matcher):
         self.err2 = 0
         self.id0 = 0
         self.id1 = 0
-
-    def print_state(self):
-        print2("== Printing the matcher's state")
-        print2("name={}".format(self.name))
-        print2("b0={}, b1={}".format(self.b0name, self.b1name))
-        print2("n0={}, n1={}, n={}".format(self.n0, self.n1, self.n))
 
     def __call__(self, inputs):
         """The main routine that is called from brica.
@@ -273,7 +265,7 @@ class MatcherEKF(Matcher):
         dmu1 = np.array(fbst1.data["mu"])
         dsigma1 = np.array([np.diag(fbst1.data["Sigma"])], dtype=np.float32)
 
-        if self._first_call_of_state_record == 1:
+        if self._first_call_of_state_record:
             self.record = {
                 "mu0": mu0,
                 "diagSigma0": sigma0,
@@ -282,7 +274,7 @@ class MatcherEKF(Matcher):
                 "dmu1": dmu1,
                 "diagDSigma1": dsigma1
             }
-            self._first_call_of_state_record = 0
+            self._first_call_of_state_record = False
         else:
             self.record["mu0"] = np.vstack((self.record["mu0"], mu0))
             self.record["diagSigma0"] = np.concatenate((self.record["diagSigma0"], sigma0), axis=0)
@@ -311,17 +303,14 @@ class MatcherEKF(Matcher):
            In other words, user may provide a fixed noise matrix  Sigma0 = R  in the observer in order to set the observation noise model.
            Missing observation can be described as temporally setting of large diagonal elements of  Sigma0.
         """
-        print3("Matcher_EKF forward")
+        self.logger.debug("Matcher_EKF forward")
         self.lnL_t = 0
         #self.R = self.Sigma0 + self.Sigma1
-        print4("mu0_shape={}".format(self.mu0.shape))
-        print4("mu1_shape={}".format(self.mu1.shape))
         z = self.g0.value(self.mu0) - self.g1.value(self.mu1)
         C0 = self.g0.x(self.mu0)
         C1 = self.g1.x(self.mu1)
         S = np.dot(np.dot(C0.T, self.Sigma0), C0) + np.dot(np.dot(C1.T, self.Sigma1), C1)
         SI = np.linalg.inv(S)
-        print5("z={z}, S={S}".format(z=z, S=S))
         dum_sign, logdet = np.linalg.slogdet(S)
         self.lnL_t -= np.dot(np.dot(z, SI), z.T) / 2.0
         self.err2 += np.dot(z, z.T)
@@ -334,7 +323,7 @@ class MatcherEKF(Matcher):
         self.dSigma0 = np.dot(K0, np.dot(C0.T, self.Sigma0))
         self.dSigma1 = np.dot(K1, np.dot(C1.T, self.Sigma1))
         self.lnL += self.lnL_t
-        print3("lnL_t = {lnLt}, lnL = {lnL}".format(lnLt=self.lnL_t, lnL=self.lnL))
+        self.logger.debug("lnL_t = {lnLt}, lnL = {lnL}".format(lnLt=self.lnL_t, lnL=self.lnL))
 
     def backward(self):
         """Updates the observation models
@@ -342,7 +331,7 @@ class MatcherEKF(Matcher):
         if they are variables.
         (to be implemented soon)
         """
-        print2("{} backward".format(self.name))
+        self.logger.debug("{} backward".format(self.name))
 
     def update(self, inputs):
         """method self.update()
@@ -358,16 +347,15 @@ class MatcherEKF(Matcher):
         self.Sigma1 = d1["Sigma"]
         self.ts1 = d1["time_stamp"]
 
-        print2("=== In Matcher {}".format(self.name))
-        print5("5: mu0={}".format(self.mu0))
-        print5("5: Sigma0={}".format(self.Sigma0))
-        print5("5: mu1={}".format(self.mu1))
-        print5("5: Sigma1={}".format(self.Sigma1))
+        self.logger.debug("mu0={}".format(self.mu0))
+        self.logger.debug("Sigma0={}".format(self.Sigma0))
+        self.logger.debug("mu1={}".format(self.mu1))
+        self.logger.debug("Sigma1={}".format(self.Sigma1))
 
         if self.ts0 == self.ts0_recent:
-            print2("  b0.state is not updated")
+            self.logger.debug("b0.state is not updated")
         if self.ts1 == self.ts1_recent:
-            print2("  b1.state is not updated")
+            self.logger.debug("b1.state is not updated")
         self.ts0_recent = self.ts0
         self.ts1_recent = self.ts1
 
@@ -378,9 +366,3 @@ class MatcherEKF(Matcher):
         self.results[self.b0name].data["Sigma"] = self.dSigma0.astype(np.float32)
         self.results[self.b1name].data["mu"] = self.dmu1.astype(np.float32)
         self.results[self.b1name].data["Sigma"] = self.dSigma1.astype(np.float32)
-
-        print5("5: dmu0={}".format(self.dmu0))
-        print5("5: dSigma0={}".format(self.dSigma0))
-
-        print5("5: dmu1={}".format(self.dmu1))
-        print5("5: dSigma1={}".format(self.dSigma1))
