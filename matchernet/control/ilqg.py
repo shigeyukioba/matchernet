@@ -103,7 +103,9 @@ class iLQG:
 
             # Regularlize
             # TODO: add adaptive adjustment for lambd
-            lambd = 0.1
+            #lambd = 0.1
+            #lambd = 0.5
+            lambd = 0.3
             Quu = Quu + np.eye(self.dynamics.u_dim) + lambd
             
             assert Qx.shape  == (self.dynamics.x_dim,)

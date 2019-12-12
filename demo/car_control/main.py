@@ -38,40 +38,60 @@ def main():
     obstacle1 = CarObstacle(pos=np.array([0.5, 0.3], dtype=np.float32),
                             is_good=True)
     obstacles.append(obstacle1)
+    obstacle2 = CarObstacle(pos=np.array([0.8, 0.6], dtype=np.float32),
+                            is_good=False)
+    obstacles.append(obstacle2)
+    obstacle3 = CarObstacle(pos=np.array([0.6, 0.8], dtype=np.float32),
+                            is_good=True)
+    obstacles.append(obstacle3)
     cost = CarCost(obstacles)
     
     ilqg = iLQG(dynamics=dynamics, cost=cost)
 
-    #T = 120
-    T = 140
-    
     # Initial state
     x0 = np.array([0.0, 0.0, 0.0, 0.0], dtype=np.float32)
-    
-    # Initial control sequence
-    u0 = np.zeros((T, 2), dtype=np.float32)
 
     movie = MovieWriter("car_ilqg0.mov", (256, 256), 60)
     anim_gif = AnimGIFWriter("car_ilqg0.gif", 60)
-    
-    x_list, u_list, K_list = ilqg.optimize(x0,
-                                           u0,
-                                           T,
-                                           iter_max=50)
 
-    x = x0
-    
-    for x_t, u_t, K_t in zip(x_list, u_list, K_list):
-        u = u_t + K_t @ (x - x_t)
-        next_x = dynamics.value(x, u)
-        x = next_x
+    T = 50
+    receding_T = 10
+
+    # Initial control sequence
+    u0 = np.zeros((T, 2), dtype=np.float32)
+
+    for i in range(20):
+        print("i={}".format(i))
+        iter_max = 10
         
-        image = renderer.render(x, u)
-        render_obstacles(image, obstacles)
+        x_list, u_list, K_list = ilqg.optimize(x0,
+                                               u0,
+                                               T,
+                                               iter_max=iter_max)
         
-        image = (image * 255.0).astype(np.uint8)
-        movie.add_frame(image)
-        anim_gif.add_frame(image)
+        x = x0
+        
+        for i in range(receding_T):
+            x_t = x_list[i]
+            u_t = u_list[i]
+            K_t = K_list[i]
+            u = u_t + K_t @ (x - x_t)
+            next_x = dynamics.value(x, u)
+            x = next_x
+        
+            image = renderer.render(x, u)
+            render_obstacles(image, obstacles)
+        
+            image = (image * 255.0).astype(np.uint8)
+            movie.add_frame(image)
+            anim_gif.add_frame(image)
+
+        # Set next initial state
+        x0 = x
+
+        # Set next initial control signals by copying remaining control signals.
+        u0 = np.zeros((T, 2), dtype=np.float32)
+        u0[:T-receding_T,:] = np.array(u_list, dtype=np.float32)[receding_T:,:]
         
     movie.close()
     anim_gif.close()
