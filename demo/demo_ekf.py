@@ -133,7 +133,7 @@ def test_MatcherEKF01(dt, n_steps, y_rec):
             print_flush("Step {}/{} with brica".format(i, n_steps+1))
             s.step()
 
-    visualize_bundle_rec(b0, y_rec)
+    # visualize_bundle_rec(b0, y_rec)
 
 
 if __name__ == '__main__':
@@ -177,15 +177,15 @@ if __name__ == '__main__':
         plt.figure(2)
         test_bundle_and_observer(dt, n_steps, y_rec)
 
-    if False:
-        _with_brica = False
+    if True:
+        _with_brica = True
         logger.info("-- A simple test to link a Bundle, a Observer, and a Matcher")
         logger.info("-- with brica: {}".format(_with_brica))
         plt.figure(4)
         test_MatcherEKF01(dt, n_steps, y_rec)
 
-    if True:
-        _with_brica = False
+    if False:
+        _with_brica = True
         logger.info("-- A simple test to link a Bundle, a Observer, and a Matcher")
         logger.info("-- with brica: {}".format(_with_brica))
         plt.figure(3)
