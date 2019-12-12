@@ -68,13 +68,13 @@ class BundleEKFContinuousTime(Bundle):
         self.n = n # Dimsnsionarity of the state variable
         self.name = name
         self.state = state.StateMuSigma(n)
-        super(BundleEKFContinuousTime, self).__init__(self.name, self.state)
         self._initialize_control_params()
         self._initialize_state(n)
         self.f = f
         #self.bw = matchernet.bundleWeight(numSteps)
         self.record = {}
         self._first_call_of_state_record = True
+        super(BundleEKFContinuousTime, self).__init__(self.name, self.state)
 
     def __call__(self, inputs):
         """The main routine that is called from brica.
@@ -143,7 +143,7 @@ class BundleEKFContinuousTime(Bundle):
         weight = 1.0
 
         self.state.data["mu"] = (mu + weight*dmu).astype(np.float32)
-        self.state.data["Sigma"] = (Sigma - weight*dSigma).astype(np.float32)
+        self.state.data["Sigma"] = (Sigma + weight*dSigma).astype(np.float32)
         #self.Q = (1-weight*self.lr) * Q + weight*self.lr * np.dot(dmu.T,dmu)
 
     def step_dynamics(self, dt):
@@ -320,8 +320,8 @@ class MatcherEKF(Matcher):
 
         self.dmu0 = -np.dot(K0, z)   #### HERE it is fixed! ####
         self.dmu1 = np.dot(K1, z)
-        self.dSigma0 = np.dot(K0, np.dot(C0.T, self.Sigma0))
-        self.dSigma1 = np.dot(K1, np.dot(C1.T, self.Sigma1))
+        self.dSigma0 = -np.dot(K0, np.dot(C0.T, self.Sigma0))
+        self.dSigma1 = -np.dot(K1, np.dot(C1.T, self.Sigma1))
         self.lnL += self.lnL_t
         self.logger.debug("lnL_t = {lnLt}, lnL = {lnL}".format(lnLt=self.lnL_t, lnL=self.lnL))
 
