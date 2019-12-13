@@ -24,8 +24,33 @@ def render_obstacles(image, obstacles):
                            (rx, ry), int(radius * render_scale),
                            reward_color, -1)
     return image
-    
 
+
+def render_trajectory(image, x_list):
+    image_width = image.shape[1]
+    render_scale = image_width / 2.0
+    render_offset = image_width / 2.0
+    
+    for i in range(len(x_list) - 1):
+        x0 = int(x_list[i][0] * render_scale + render_offset)
+        y0 = int(x_list[i][1] * render_scale + render_offset)
+        x1 = int(x_list[i+1][0] * render_scale + render_offset)
+        y1 = int(x_list[i+1][1] * render_scale + render_offset)
+        image = cv2.line(image, (x0,y0), (x1,y1), (0.25, 0.5, 0.25), 1)
+
+
+def render_time_step(image, time_step):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.putText(img=image,
+                text="time={}".format(time_step),
+                org=(5, 10),
+                fontFace=font,
+                fontScale=0.3,
+                color=(0,0,0),
+                thickness=1,
+                lineType=cv2.LINE_AA)
+
+    
 def main():
     dynamics = CarDynamics(dt=0.03)
 
@@ -60,6 +85,8 @@ def main():
     # Initial control sequence
     u0 = np.zeros((T, 2), dtype=np.float32)
 
+    time_step = 0
+
     for i in range(20):
         print("i={}".format(i))
         iter_max = 10
@@ -81,10 +108,15 @@ def main():
         
             image = renderer.render(x, u)
             render_obstacles(image, obstacles)
-        
+
+            render_trajectory(image, x_list[i:])
+            render_time_step(image, time_step)
+            
             image = (image * 255.0).astype(np.uint8)
             movie.add_frame(image)
             anim_gif.add_frame(image)
+
+            time_step += 1
 
         # Set next initial state
         x0 = x
