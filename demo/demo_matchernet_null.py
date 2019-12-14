@@ -1,6 +1,3 @@
-import sys
-import os
-sys.path.append(os.getcwd())
 import time
 from brica import VirtualTimeScheduler, Timing
 from matchernet_py_001.matchernet_null import BundleNull, MatcherNull2
@@ -10,9 +7,9 @@ def test_null():
     b1   = BundleNull("Bundle1", 4, 200)
     b2   = BundleNull("Bundle2", 4, 300)
 
-    b0.state.data["mu"][0][1] = 1
-    b1.state.data["mu"][0][2] = 10
-    b2.state.data["mu"][0][3] = 100
+    b0.state.data["mu"][1] = 1
+    b1.state.data["mu"][2] = 10
+    b2.state.data["mu"][3] = 100
 
     m01 = MatcherNull2("Matcher01",b0,b1)
     m02 = MatcherNull2("Matcher02",b0,b2)
