@@ -66,7 +66,7 @@ def ekf_test_multiple_observer(dt, numSteps, num_observers, yrecs):
         print_flush("Step {}/{} with brica".format(i, numSteps))
         s.step()
 
-    visualize_bundle_rec(b0, yrecs[0])
+    # visualize_bundle_rec(b0, yrecs[0])
 
 def prepare_data(dt, num_steps, num_observers):
     y_recs = []
