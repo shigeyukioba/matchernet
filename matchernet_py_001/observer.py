@@ -91,7 +91,7 @@ def missing_handler001(mu, Sigma, logger):
     It receives a vector data  mu  with a default covariance matrix  Sigma, find NaN in the vector  mu, and outputs a modified set of a vector  mu  and a covariance  cov.
     """
     if np.any(np.isnan(mu)):
-        logger.error("Missing!")
+        logger.debug("Missing!")
         cov = Sigma * 1000
         mu = np.zeros(mu.shape)
     else:
