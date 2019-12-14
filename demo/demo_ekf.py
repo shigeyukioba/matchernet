@@ -16,7 +16,6 @@ logging.basicConfig(level=logging.INFO, format=formatter)
 
 
 def visualize_bundle_rec(b, y_rec=None):
-
     mu_rec = b.record["mu"]
     sigma_rec = b.record["diagSigma"]
     time_stamp = b.record["time_stamp"]
@@ -61,13 +60,14 @@ mu0 = np.array([0, 1.0], dtype=np.float32)
 A0 = np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32)
 ey2 = np.eye(2, dtype=np.float32)
 
+
 def test_BundleEKFContinuousTime01(dt, n_steps):
     b = BundleEKFContinuousTime("B0", 2, fn.LinearFn(A0))
     b.dt = dt
     b.logger_state()
     b.state.data["mu"] = mu0
 
-    dummy_input = {} # list of matchers (#matcher=0)
+    dummy_input = {}  # list of matchers (#matcher=0)
     for i in range(n_steps):
         b(dummy_input)
 
@@ -109,7 +109,6 @@ def test_MatcherEKF01(dt, n_steps, y_rec):
 
     m01 = MatcherEKF("m01", b0, b1)
 
-
     if _with_brica is False:
         for i in range(n_steps):
             print_flush("Step {}/{} with brica".format(i, n_steps))
@@ -130,10 +129,10 @@ def test_MatcherEKF01(dt, n_steps, y_rec):
         s.add_component(m01.component, bm)
 
         for i in range(n_steps):
-            print_flush("Step {}/{} with brica".format(i, n_steps+1))
+            print_flush("Step {}/{} with brica".format(i, n_steps + 1))
             s.step()
 
-    # visualize_bundle_rec(b0, y_rec)
+            # visualize_bundle_rec(b0, y_rec)
 
 
 if __name__ == '__main__':
@@ -150,7 +149,7 @@ if __name__ == '__main__':
     # preparing a list of three simulation sequences
     yrecs = []
     for i in range(1):
-        sm=StateSpaceModel2Dim(
+        sm = StateSpaceModel2Dim(
             n_dim=2,
             A=np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32),
             g=fn.LinearFn(utils.zeros(2)),
@@ -167,7 +166,7 @@ if __name__ == '__main__':
 
     plt.figure(0)
     for i in range(1):
-        plt.subplot(2, 2, i+1)
+        plt.subplot(2, 2, i + 1)
         plt.scatter(yrecs[i][:, 0], yrecs[i][:, 1], s=2)
         plt.title("sequence {}".format(i))
     plt.pause(1)
