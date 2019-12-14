@@ -7,6 +7,8 @@ from matchernet_py_001.state_space_model_2d import StateSpaceModel2Dim
 from matchernet_py_001 import utils
 
 logger = logging.getLogger(__name__)
+
+
 def demo_state_space_model_2dim(n_dim, A, g, sigma_w, sigma_z, x, y, n_steps, dt):
     ssm = StateSpaceModel2Dim(n_dim, A, g, sigma_w, sigma_z, x, y)
     x_series, y_series = ssm.simulation(n_steps, dt)
@@ -14,7 +16,7 @@ def demo_state_space_model_2dim(n_dim, A, g, sigma_w, sigma_z, x, y, n_steps, dt
     logger.info('y: {}'.format(y_series))
 
     plt.subplot(211)
-    timestamp=np.array(range(0, n_steps))
+    timestamp = np.array(range(0, n_steps))
     plt.plot(timestamp, x_series[:, 0])
     plt.scatter(timestamp, y_series[:, 0], s=1)
     plt.title("test_state_space_model_2Dim")
@@ -24,6 +26,7 @@ def demo_state_space_model_2dim(n_dim, A, g, sigma_w, sigma_z, x, y, n_steps, dt
     plt.scatter(timestamp, y_series[:, 1], s=1)
     plt.ylabel("Y")
     plt.show()
+
 
 if __name__ == '__main__':
     formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
