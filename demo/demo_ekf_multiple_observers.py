@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO, format=formatter)
 
 _with_brica = True
 
-mu0 = np.array([[0, 1.0]], dtype=np.float32)
+mu0 = np.array([0, 1.0], dtype=np.float32)
 A0 = np.array([[-0.1, 2],[-2, -0.1]], dtype=np.float32)
 ey2 = np.eye(2, dtype=np.float32)
 
@@ -30,7 +30,7 @@ def ekf_test_multiple_observer(dt, numSteps, num_observers, yrecs):
        --- m03 --- b3
     where b1, b2, and b3 are Observers
     """
-    b0 = BundleEKFContinuousTime("b0", 2, A0 * 0.5)
+    b0 = BundleEKFContinuousTime("b0", 2, fn.LinearFn(A0 * 0.5))
     b0.state.data["mu"] = mu0
     b0.state.data["Sigma"] = 2 * ey2
     b0.dt = dt
@@ -66,7 +66,7 @@ def ekf_test_multiple_observer(dt, numSteps, num_observers, yrecs):
         print_flush("Step {}/{} with brica".format(i, numSteps))
         s.step()
 
-    # visualize_bundle_rec(b0, yrecs[0])
+    visualize_bundle_rec(b0, yrecs[0])
 
 def prepare_data(dt, num_steps, num_observers):
     y_recs = []
@@ -82,21 +82,19 @@ def prepare_data(dt, num_steps, num_observers):
             y=utils.zeros((1, 2))
         )
         sm.dt = dt
-        (xrec, y_rec) = sm.simulation(dt, num_steps)
+        (x_rec, y_rec) = sm.simulation(num_steps, dt)
         y_recs.append(y_rec)
     return y_recs
 
-def include_random_missing(y):
+def include_random_missing(y, num_steps):
     num_channels = len(y)
-    num_timestep = len(y[:, 0])
     for c in range(num_channels):
         y[c] = miss_hmm(y[c])
         plt.subplot(num_channels, 1, c+1)
-        for i in range(num_timestep):
+        for i in range(num_steps):
             if np.isnan(y[c][i, 0]):
                 plt.plot([i, i], [-1, 1], '-', color='gray', linewidth='3')
         plt.plot(y[c], '.-')
-
     return y
 
 def miss_hmm(y):
@@ -108,12 +106,9 @@ def miss_hmm(y):
     return y
 
 def visualize_bundle_rec(b, yrec=None):
-
     murec = b.record["mu"]
     sigmarec = b.record["diagSigma"]
     time_stamp = b.record["time_stamp"]
-    numofTimesteps = murec.shape[0]
-    timestamp = np.array(range(0, numofTimesteps))
 
     plt.subplot(221)
     plt.plot(murec[:, 0], murec[:, 1])
@@ -136,7 +131,6 @@ def visualize_bundle_rec(b, yrec=None):
     yu = murec[:, 1] + sigmarec[:, 1]
     plt.fill_between(time_stamp, yd, yu, facecolor='y', alpha=0.5)
     plt.plot(time_stamp, murec[:, 1])
-    #plt.scatter(range(0,5000-1),murec[:,0])
     plt.ylabel("Y")
     plt.xlabel("time")
 
@@ -160,15 +154,13 @@ if __name__ == '__main__':
         num_observers = 5
 
     logger.debug("num_observers={}".format(num_observers))
-
-    # preparing a list simulation sequences
-    yrecs = prepare_data(dt, num_steps, num_observers)
+    y_recs = prepare_data(dt, num_steps, num_observers)
     plt.figure(1)
-    yrecs = include_random_missing(yrecs)
+    y_recs = include_random_missing(y_recs, num_steps)
     plt.pause(0.5)
 
     plt.figure(2)
     start = time.time()
-    ekf_test_multiple_observer(dt, num_steps, num_observers, yrecs)
+    ekf_test_multiple_observer(dt, num_steps, num_observers, y_recs)
     elapsed_time = time.time() - start
     logger.info("elapsed_time:{0}".format(elapsed_time) + "[sec]")
