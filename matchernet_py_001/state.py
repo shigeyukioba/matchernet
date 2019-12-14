@@ -19,19 +19,23 @@ class State(object):
     and deserialized with a method  deserialize() as.
     B0.deserialize(q)
     """
+
     def __init__(self, n):
         self.n = n
-        self.data = {"mu":utils.zeros(n)}
+        self.data = {"mu": utils.zeros(n)}
+
 
 class StatePlain(State):
     """StatePlain is a State that handles plain numpy.array.
     """
-    def __init__(self, n ):
+
+    def __init__(self, n):
         """Initializer takes a dimensionarity of the vector.
         """
         self.n = n
-        #super().__init__(self.n)
+        # super().__init__(self.n)
         super(StatePlain, self).__init__(self.n)
+
 
 class StateMuSigmaDiag(State):
     """StateMuSigmaDiag is a state handler that handles
@@ -43,13 +47,15 @@ class StateMuSigmaDiag(State):
         n x n matrix "Sigma" and n vector "sigma",
         respectively.
     """
+
     def __init__(self, n):
         self.n = n
-        super(StateMuSigmaDiag,self).__init__(n)
+        super(StateMuSigmaDiag, self).__init__(n)
         self.data["id"] = 1
         self.data["time_stamp"] = 0
         self.data["mu"] = utils.zeros(n)
         self.data["sigma"] = np.diag(np.eye(self.n, dtype=np.float32))
+
 
 class StateMuSigma(State):
     """StateMuSigma is a state handler that handles
@@ -61,9 +67,10 @@ class StateMuSigma(State):
         n x n matrix "Sigma" and n vector "sigma",
         respectively.
     """
+
     def __init__(self, n):
         self.n = n
-        super(StateMuSigma,self).__init__(n)
+        super(StateMuSigma, self).__init__(n)
         self.data["id"] = 1
         self.data["time_stamp"] = 0
         self.data["mu"] = utils.zeros(n)

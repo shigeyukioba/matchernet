@@ -31,16 +31,18 @@ class BundleNull(Bundle):
 
     def update(self, inputs):
         self.logger.debug("Updating {}".format(self.name))
-        #if(self.delay):
-            # ref = time.clock_gettime(time.CLOCK_MONOTONIC)
-        #elapsed = 0
-        #while elapsed < self.delay:
-            # elapsed = time.clock_gettime(time.CLOCK_MONOTONIC) - ref
+        # if(self.delay):
+        # ref = time.clock_gettime(time.CLOCK_MONOTONIC)
+        # elapsed = 0
+        # while elapsed < self.delay:
+        # elapsed = time.clock_gettime(time.CLOCK_MONOTONIC) - ref
+
 
 class MatcherNull2(Matcher):
     """MatcherNull is a Matcher that connects two BundleNull s
     """
-    def __init__(self,name,b0,b1):
+
+    def __init__(self, name, b0, b1):
         self.name = name
         super(MatcherNull2, self).__init__(self.name, b0, b1)
 

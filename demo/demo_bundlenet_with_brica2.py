@@ -1,5 +1,6 @@
 import sys
 import os
+
 sys.path.append(os.getcwd())
 
 from operator import add
@@ -10,6 +11,7 @@ import brica
 from brica import Component, VirtualTimeScheduler, Timing
 from matchernet_py_001 import state
 import copy
+
 
 class NullBundle(object):
     def __init__(self, name, n, mu):
@@ -33,10 +35,10 @@ class NullMatcher(object):
         super(NullMatcher, self).__init__()
         self.name = name
         self.result_state = {}
-        
+
         for bundle in bundles:
             self.result_state[bundle.name] = copy.deepcopy(bundle.state)
-        
+
         self.component = Component(self)
         for bundle in bundles:
             self.component.make_in_port(bundle.name)
@@ -57,6 +59,7 @@ class NullMatcher(object):
             if inputs[key] is not None:
                 self.result_state[key].data["mu"] = (mean - mu[key]) * 0.1
         return self.result_state
+
 
 def main():
     n = 4

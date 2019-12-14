@@ -15,6 +15,7 @@ class Fn(object):
     """An abstract class to implement numerical function
     that BundleNet uses.
     """
+
     def __init__(self, A):
         self.A = A
         self.x = jacobian(self.value, 0)
@@ -33,6 +34,7 @@ class Fn(object):
 class LinearFn(Fn):
     """Linear function y = np.dot(A, x) and its derivatives.
     """
+
     def __init__(self, A):
         super(LinearFn, self).__init__(A)
         self.A = A
@@ -48,6 +50,7 @@ class LinearFnXU(object):
     .. note:: The shapes of matrix A and matrix B must match
 
     """
+
     def __init__(self, A, B):
         self.A = A
         self.B = B

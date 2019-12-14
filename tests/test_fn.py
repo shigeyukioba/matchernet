@@ -1,11 +1,10 @@
 import unittest
-
 import numpy as np
+
 from matchernet_py_001.fn import LinearFn, LinearFnXU
 
 
 class TestLinearFn(unittest.TestCase):
-
     def setUp(self):
         self.x = np.array([10, 20, 30], dtype=np.float32)
         self.test_A_patterns = [
@@ -32,7 +31,6 @@ class TestLinearFn(unittest.TestCase):
 
 
 class TestLinearFnXU(unittest.TestCase):
-
     def setUp(self):
         self.x = np.array([10, 20, 30], dtype=np.float32)
         self.u = np.array([5, 15, 25], dtype=np.float32)
@@ -70,6 +68,7 @@ class TestLinearFnXU(unittest.TestCase):
             with self.subTest():
                 actual_du = f.du(self.x, self.u)
                 self.assertIsNone(np.testing.assert_array_equal(expected_du, actual_du))
+
 
 if __name__ == '__main__':
     unittest.main()

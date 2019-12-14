@@ -35,6 +35,7 @@ class Bundle(object):
       a state transision dynamics
       arbitrary number of connections to Matchers
     """
+
     def __init__(self, name, initial_state_object, logger=logger):
         """ Create a new 'Bundle' instance.
         """
@@ -47,7 +48,7 @@ class Bundle(object):
     def __call__(self, inputs):
         """ The main routine that is called from brica.
         """
-        for key in inputs: # key is one of the matcher names
+        for key in inputs:  # key is one of the matcher names
             if inputs[key] is not None:
                 self.accept_feedback(inputs[key])
 
@@ -76,6 +77,7 @@ class Bundle(object):
         """
         self.logger.debug("{} is updating".format(self.name))
 
+
 class Matcher(object):
     """
     'Matcher' is an abstract class that defines basic propaties of Matchers in a matchernet.
@@ -87,10 +89,11 @@ class Matcher(object):
         name (str): matcher name.
         *bundles (:class:`~chainer.Variable`):
     """
+
     def __init__(self, name, *bundles, logger=logger):
         self.logger = logger
         self.name = name
-        self.state = state.StatePlain(1) # Own state of the current matcher
+        self.state = state.StatePlain(1)  # Own state of the current matcher
         self.results = {}
         self.bundles = bundles
         for bundle in self.bundles:

@@ -1,12 +1,9 @@
-import sys
-import os
-sys.path.append(os.getcwd())
-
 from brica import VirtualTimeScheduler, Timing
 
 from matchernet_py_001 import utils
 from matchernet_py_001 import state
 from matchernet_py_001.matchernet import Bundle, Matcher
+
 
 def test_abstract_bm():
     st = state.StateMuSigma(4)

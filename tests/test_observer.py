@@ -1,16 +1,10 @@
-import sys
-import os
-sys.path.append(os.getcwd())
-
 import unittest
-
 import numpy as np
 
 from matchernet_py_001.observer import Observer, ObserverMultiple, missing_handler001
 
 
 class TestMissingHandler001(unittest.TestCase):
-
     def test_complete(self):
         test_mu_patterns = [
             np.array([1, 2, 3]),
@@ -37,8 +31,8 @@ class TestMissingHandler001(unittest.TestCase):
                 self.assertIsNone(np.testing.assert_array_equal(expected_mu, actual_mu))
                 self.assertIsNone(np.testing.assert_array_equal(expected_sigma, actual_sigma))
 
-class TestObserver(unittest.TestCase):
 
+class TestObserver(unittest.TestCase):
     def setUp(self):
         self.dim = 6
         self.buffersize = 10
@@ -78,6 +72,7 @@ class TestObserver(unittest.TestCase):
                     _[0] = (j + k) % self.buffersize
                     expected = _ if k == 0 else np.concatenate([expected, _])
                 self.assertIsNone(np.testing.assert_array_equal(expected, actual))
+
 
 if __name__ == '__main__':
     unittest.main()

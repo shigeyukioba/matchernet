@@ -33,6 +33,7 @@ class Observer(matchernet.Bundle):
     Note:
     When the vector data in buffer included  NaN  entries, they are regarded as missing entries and the Observer outpus a zero vector  mu  with covariance matrix  cov  of large eigen values. (See the function  missing_handler001()  for a default setting to construct the corresponding output. )
     """
+
     def __init__(self, name, buff, logger=logger):
         self.logger = logger
         self.name = name
@@ -43,16 +44,16 @@ class Observer(matchernet.Bundle):
         self.state = state.StateMuSigma(self.dim)
         self.obs_noise_covariance = 1000 * np.eye(self.dim, dtype=np.float32)
         self.missing_handler = missing_handler001
-            # default setting of missing value handler function
+        # default setting of missing value handler function
         self.set_results()
-            # set the first value with large obs_noise_covariance
-            # for an initial value
+        # set the first value with large obs_noise_covariance
+        # for an initial value
         super(Observer, self).__init__(self.name, self.state)
 
     def __call__(self, inputs):
         """ The main routine that is called from brica.
         """
-        #for key in inputs: # key is one of the matcher names
+        # for key in inputs: # key is one of the matcher names
         #    if inputs[key] is not None:
         #        self.accept_feedback(inputs[key]) # Doing nothing
 
@@ -84,7 +85,8 @@ class Observer(matchernet.Bundle):
         self.state.data["Sigma"] = Sigma
         self.state.data["time_stamp"] = self.counter
         self.results = {"state": self.state}
-          # === Note: We may regard  "time_stamp"  as a real time rather than a counter in a future version.
+        # === Note: We may regard  "time_stamp"  as a real time rather than a counter in a future version.
+
 
 def missing_handler001(mu, Sigma, logger):
     """A missing value handler function.
@@ -102,6 +104,7 @@ def missing_handler001(mu, Sigma, logger):
 class ObserverMultiple(Observer):
     """A bundle that provides sequencial data
     """
+
     def __init__(self, name, buff, mul):
         self.name = name
         self.mul = mul

@@ -63,15 +63,16 @@ class BundleEKFContinuousTime(Bundle):
     for a similar class with trainable dynamics function.
 
     """
+
     def __init__(self, name, n, f, logger=logger):
         self.logger = logger
-        self.n = n # Dimsnsionarity of the state variable
+        self.n = n  # Dimsnsionarity of the state variable
         self.name = name
         self.state = state.StateMuSigma(n)
         self._initialize_control_params()
         self._initialize_state(n)
         self.f = f
-        #self.bw = matchernet.bundleWeight(numSteps)
+        # self.bw = matchernet.bundleWeight(numSteps)
         self.record = {}
         self._first_call_of_state_record = True
         super(BundleEKFContinuousTime, self).__init__(self.name, self.state)
@@ -79,7 +80,7 @@ class BundleEKFContinuousTime(Bundle):
     def __call__(self, inputs):
         """The main routine that is called from brica.
         """
-        for key in inputs: # key is one of the matcher names
+        for key in inputs:  # key is one of the matcher names
             if inputs[key] is not None:
                 self.logger.debug("accepting feedback from {}".format(key))
                 self.accept_feedback(inputs[key])
@@ -96,7 +97,7 @@ class BundleEKFContinuousTime(Bundle):
         self.dt = 0.01
         self.callcount = 0
         self.is_optimizer_ready = False
-        self.lr = 0.0001 # Leaning rate for dynamics  f
+        self.lr = 0.0001  # Leaning rate for dynamics  f
 
     def _countup(self):
         self.id = self.id + 1
@@ -122,7 +123,7 @@ class BundleEKFContinuousTime(Bundle):
         self.state.data["Sigma"] = 1.0 * np.identity(self.n, dtype=np.float32)
         self.state.data["Q"] = 1.0 * np.identity(self.n)
 
-    def accept_feedback(self,fbst):
+    def accept_feedback(self, fbst):
         """Overriding matchernet.Bundle.accept_feedback()
         This method updates the state of the current Bundle with accepting a feedback, fbst, from each Matcher linking from the current Bundle, according to the following update rule.
 
@@ -142,9 +143,9 @@ class BundleEKFContinuousTime(Bundle):
         self.logger.debug("dSigma={}".format(dSigma))
         weight = 1.0
 
-        self.state.data["mu"] = (mu + weight*dmu).astype(np.float32)
-        self.state.data["Sigma"] = (Sigma + weight*dSigma).astype(np.float32)
-        #self.Q = (1-weight*self.lr) * Q + weight*self.lr * np.dot(dmu.T,dmu)
+        self.state.data["mu"] = (mu + weight * dmu).astype(np.float32)
+        self.state.data["Sigma"] = (Sigma + weight * dSigma).astype(np.float32)
+        # self.Q = (1-weight*self.lr) * Q + weight*self.lr * np.dot(dmu.T,dmu)
 
     def step_dynamics(self, dt):
         """This method updates  self.state  using the dynamics model,
@@ -209,22 +210,23 @@ class MatcherEKF(Matcher):
 
     where  C0 = (dg0/dx)  and  C1 = (dg1/dx)  are Jacobian matrices. Note that C0 and C1 are identity matrices and  S = Sigma0 + Sigma1  holds in the simplest case.
     """
+
     def __init__(self, name, b0, b1, logger=logger):
         self.logger = logger
         self.name = name
         super(MatcherEKF, self).__init__(name, b0, b1)
         self.b0name = b0.name
         self.b1name = b1.name
-        self.n0 = b0.state.n # dim. of B0
-        self.n1 = b1.state.n # dim. of B1
+        self.n0 = b0.state.n  # dim. of B0
+        self.n1 = b1.state.n  # dim. of B1
         self._first_call_of_state_record = True
         self._initialize_model()
-        self.ts0_recent = -1 # the most recent value of the time_stamp of b0
-        self.ts1_recent = -1 # that of b1
+        self.ts0_recent = -1  # the most recent value of the time_stamp of b0
+        self.ts1_recent = -1  # that of b1
         self.update_component()
 
     def _initialize_model(self):
-        self.n = self.n0      # dim. of g0(x0), g1(x1)
+        self.n = self.n0  # dim. of g0(x0), g1(x1)
         # self.g0 is an identity function as a default observation model
         self.g0 = fn.LinearFn(np.eye(self.n0, dtype=np.float32))
         # self.g1 is also an identity function
@@ -305,7 +307,7 @@ class MatcherEKF(Matcher):
         """
         self.logger.debug("Matcher_EKF forward")
         self.lnL_t = 0
-        #self.R = self.Sigma0 + self.Sigma1
+        # self.R = self.Sigma0 + self.Sigma1
         z = self.g0.value(self.mu0) - self.g1.value(self.mu1)
         C0 = self.g0.x(self.mu0)
         C1 = self.g1.x(self.mu1)
@@ -318,7 +320,7 @@ class MatcherEKF(Matcher):
         K0 = np.dot(np.dot(self.Sigma0, C0), SI)
         K1 = np.dot(np.dot(self.Sigma1, C1), SI)
 
-        self.dmu0 = -np.dot(K0, z)   #### HERE it is fixed! ####
+        self.dmu0 = -np.dot(K0, z)  #### HERE it is fixed! ####
         self.dmu1 = np.dot(K1, z)
         self.dSigma0 = -np.dot(K0, np.dot(C0.T, self.Sigma0))
         self.dSigma1 = -np.dot(K1, np.dot(C1.T, self.Sigma1))
