@@ -31,12 +31,11 @@ assert url
 with open('readme.md', encoding='utf-8') as f:
     long_description = f.read()
 
-
 setup(
     name=package_name,
     packages=[package_name],
 
-    version=version,
+    version="0.0.2",
 
     license=license,
 
@@ -50,6 +49,7 @@ setup(
 
     description='',
     long_description=long_description,
+    long_description_content_type = "text/markdown",
     keywords='kalman filter, neural net',
 
     classifiers=[
