@@ -1,4 +1,5 @@
 import logging
+from log import logging_conf
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -6,6 +7,7 @@ from matchernet_py_001 import fn
 from matchernet_py_001.state_space_model_2d import StateSpaceModel2Dim
 from matchernet_py_001 import utils
 
+logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
 
 
@@ -29,9 +31,6 @@ def demo_state_space_model_2dim(n_dim, A, g, sigma_w, sigma_z, x, y, n_steps, dt
 
 
 if __name__ == '__main__':
-    formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
-    logging.basicConfig(level=logging.INFO, format=formatter)
-
     demo_state_space_model_2dim(
         n_dim=2,
         A=np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32),
