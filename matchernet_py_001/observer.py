@@ -1,12 +1,12 @@
 import logging
+from log import logging_conf
 import numpy as np
 
 from matchernet_py_001 import matchernet
 from matchernet_py_001 import state
 
+logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
-formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
-logging.basicConfig(level=logging.INFO, format=formatter)
 
 
 class Observer(matchernet.Bundle):
@@ -35,7 +35,7 @@ class Observer(matchernet.Bundle):
     """
 
     def __init__(self, name, buff, logger=logger):
-        self.logger = logger
+        self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
         self.buffer = buff
         self.counter = -1

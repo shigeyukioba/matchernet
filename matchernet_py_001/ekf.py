@@ -212,7 +212,7 @@ class MatcherEKF(Matcher):
     """
 
     def __init__(self, name, b0, b1, logger=logger):
-        self.logger = logger
+        self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
         super(MatcherEKF, self).__init__(name, b0, b1)
         self.b0name = b0.name

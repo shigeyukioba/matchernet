@@ -6,20 +6,20 @@ This module contains a null demonstration of the BundleNet
 
 """
 import logging
+from log import logging_conf
 from operator import add
 from functools import reduce
 
 from matchernet_py_001.matchernet import Bundle, Matcher
 from matchernet_py_001 import state
 
+logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
-formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
-logging.basicConfig(level=logging.INFO, format=formatter)
 
 
 class BundleNull(Bundle):
     def __init__(self, name, n, delay=0, logger=logger):
-        self.logger = logger
+        self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
         # self.delay = delay
         self.delay = -1

@@ -1,3 +1,5 @@
+import logging
+from log import logging_conf
 from operator import add
 from functools import reduce
 import numpy as np
@@ -7,10 +9,14 @@ from brica import Component, VirtualTimeScheduler, Timing
 from matchernet_py_001 import state
 import copy
 
+logging_conf.set_logger_config("./log/logging.json")
+logger = logging.getLogger(__name__)
+
 
 class NullBundle(object):
-    def __init__(self, name, n, mu):
+    def __init__(self, name, n, mu, logger=logger):
         super(NullBundle, self).__init__()
+        self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
         self.state = state.StateMuSigma(n)
         self.state.data["mu"] = mu
@@ -21,7 +27,7 @@ class NullBundle(object):
         for key in inputs:
             if inputs[key] is not None:
                 self.state.data["mu"] += inputs[key].data["mu"]
-        print("{} state: {}".format(self.name, self.state.data["mu"]))
+        logger.debug("{} state: {}".format(self.name, self.state.data["mu"]))
         return {"state": self.state}
 
 

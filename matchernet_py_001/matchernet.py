@@ -10,6 +10,7 @@ https://github.com/BriCA/BriCA2
 
 """
 import logging
+from log import logging_conf
 import brica
 from brica import Component, VirtualTimeScheduler, Timing
 import copy
@@ -17,9 +18,8 @@ import copy
 from matchernet_py_001 import state
 from matchernet_py_001 import utils
 
+logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
-formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
-logging.basicConfig(level=logging.INFO, format=formatter)
 
 zeros = utils.zeros
 
@@ -39,7 +39,7 @@ class Bundle(object):
     def __init__(self, name, initial_state_object, logger=logger):
         """ Create a new 'Bundle' instance.
         """
-        self.logger = logger
+        self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
         self.state = initial_state_object
         self.component = Component(self)
@@ -91,7 +91,7 @@ class Matcher(object):
     """
 
     def __init__(self, name, *bundles, logger=logger):
-        self.logger = logger
+        self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
         self.state = state.StatePlain(1)  # Own state of the current matcher
         self.results = {}
