@@ -1,8 +1,3 @@
-import sys
-import os
-
-sys.path.append(os.getcwd())
-
 from operator import add
 from functools import reduce
 import numpy as np
