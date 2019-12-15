@@ -1,4 +1,5 @@
 import logging
+from log import logging_conf
 import numpy as np
 
 from matchernet_py_001 import fn
@@ -6,9 +7,8 @@ from matchernet_py_001.matchernet import Bundle, Matcher
 from matchernet_py_001 import state
 from matchernet_py_001 import utils
 
+logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
-formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
-logging.basicConfig(level=logging.INFO, format=formatter)
 
 
 class BundleEKFContinuousTime(Bundle):
@@ -65,7 +65,7 @@ class BundleEKFContinuousTime(Bundle):
     """
 
     def __init__(self, name, n, f, logger=logger):
-        self.logger = logger
+        self.logger = logger.getChild(self.__class__.__name__)
         self.n = n  # Dimsnsionarity of the state variable
         self.name = name
         self.state = state.StateMuSigma(n)

@@ -1,5 +1,6 @@
 import sys
 import logging
+from log import logging_conf
 import time
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,11 +13,8 @@ from matchernet_py_001.state_space_model_2d import StateSpaceModel2Dim
 from matchernet_py_001 import utils
 from matchernet_py_001.utils import print_flush
 
+logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
-formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
-logging.basicConfig(level=logging.INFO, format=formatter)
-
-_with_brica = True
 
 mu0 = np.array([0, 1.0], dtype=np.float32)
 A0 = np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32)

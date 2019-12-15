@@ -1,4 +1,5 @@
 import logging
+from log import logging_conf
 import numpy as np
 import matplotlib.pyplot as plt
 from brica import Component, VirtualTimeScheduler, Timing
@@ -10,9 +11,8 @@ from matchernet_py_001.state_space_model_2d import StateSpaceModel2Dim
 from matchernet_py_001 import utils
 from matchernet_py_001.utils import print_flush
 
+logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
-formatter = '[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s'
-logging.basicConfig(level=logging.INFO, format=formatter)
 
 
 def visualize_bundle_rec(b, y_rec=None):
