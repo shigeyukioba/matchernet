@@ -12,6 +12,7 @@ def main():
     ilqg = iLQG(dynamics=dynamics, cost=cost)
     
     T = 80
+    iter_max = 50
     
     # Initial state
     x0 = np.array([np.pi, 0.0], dtype=np.float32)
@@ -22,7 +23,7 @@ def main():
     x_list, u_list, K_list = ilqg.optimize(x0,
                                            u0,
                                            T,
-                                           iter_max=20)
+                                           iter_max=iter_max)
     # (81) (80) (80) (80)
     renderer = PendulumRenderer()
 

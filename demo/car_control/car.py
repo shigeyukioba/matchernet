@@ -186,7 +186,7 @@ class CarCost(object):
         self.uu = jacobian(self.u, 1)
         self.ux = jacobian(self.u, 0)
 
-    def value(self, x, u, t):
+    def value(self, x, u):
         def sigmoid(x):
             return 1.0 / (1.0 + np.exp(-x))
 
@@ -201,5 +201,12 @@ class CarCost(object):
             else:
                 # More far = Smaller cost (Mor far is better
                 x_cost -= sigmoid(1.0 * distance) * 0.5
-        u_cost = 0.01 * (u[0]**2) + 0.5 * (u[1]**2)
-        return x_cost + u_cost
+
+        if u is not None:
+            # Running cost
+            u_cost = 0.01 * (u[0]**2) + 0.5 * (u[1]**2)
+            return x_cost + u_cost
+        else:
+            # Terminal cost
+            return x_cost
+

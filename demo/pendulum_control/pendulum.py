@@ -55,13 +55,22 @@ class PendulumCost:
         self.uu = jacobian(self.u, 1)
         self.ux = jacobian(self.u, 0)
 
-    def value(self, x, u, t):
+    def value(self, x, u):
+        """ Calculate cost.
+        If u is None, cost is calculated as terminal cost. If u is not None,
+        then cost is calculated as running cost.
+        """
         def angle_normalize(x):
             return (((x+np.pi) % (2*np.pi)) - np.pi)
         
         th    = x[0]
         thdot = x[1]
-        cost = angle_normalize(th)**2 + 0.1*thdot**2 + 0.001 * (u[0]**2)
+        if u is not None:
+            # Runnning cost
+            cost = angle_normalize(th)**2 + 0.1 * thdot**2 + 0.001 * (u[0]**2)
+        else:
+            # Terminal cost
+            cost = angle_normalize(th)**2 + 0.1 * thdot**2
         return cost
 
 

@@ -64,11 +64,9 @@ class iLQG:
         k_list = []
         K_list = []
 
-        u_zero = np.zeros_like(u_list[0])
-
         # Derivatives of the terminal cost
-        lx  = self.cost.x( x_list[T], u_zero, T)
-        lxx = self.cost.xx(x_list[T], u_zero, T)
+        lx  = self.cost.x( x_list[T], None)
+        lxx = self.cost.xx(x_list[T], None)
         
         Vx  = lx  # (x_dim,)
         Vxx = lxx # (x_dim,x_dim)
@@ -87,12 +85,12 @@ class iLQG:
             fx = self.dynamics.x(x, u)
             fu = self.dynamics.u(x, u)
 
-            # Derivatives of the cost
-            lx  = self.cost.x( x, u, t)
-            lxx = self.cost.xx(x, u, t)
-            lu  = self.cost.u( x, u, t)
-            luu = self.cost.uu(x, u, t)
-            lux = self.cost.ux(x, u, t)
+            # Derivatives of the running cost
+            lx  = self.cost.x( x, u)
+            lxx = self.cost.xx(x, u)
+            lu  = self.cost.u( x, u)
+            luu = self.cost.uu(x, u)
+            lux = self.cost.ux(x, u)
 
             # Derivatives of the Q function
             Qx  = lx  + fx.T @ Vx
@@ -103,9 +101,8 @@ class iLQG:
 
             # Regularlize
             # TODO: add adaptive adjustment for lambd
-            #lambd = 0.1
-            #lambd = 0.5
             lambd = 0.3
+            #lambd = 0.0
             Quu = Quu + np.eye(self.dynamics.u_dim) + lambd
             
             assert Qx.shape  == (self.dynamics.x_dim,)
