@@ -72,12 +72,21 @@ class CarCostTest(unittest.TestCase):
         x = np.zeros((4,), dtype=np.float32)
         u = np.zeros((2,), dtype=np.float32)
 
-        l = cost.value(x, u, 0)
+        t = 0
+        
+        l_terminal = cost.value(x, None, t)
+        print(l_terminal)
+        
+        l = cost.value(x, u, t)
         print(l)
-        lx = cost.x(x, u, 0)
+        
+        lx = cost.x(x, u, t)
         print(lx)
-        lu = cost.u(x, u, 0)
+        
+        lu = cost.u(x, u, t)
         print(lu)
+
+        cloned_cost = cost.clone()
         
         
 if __name__ == '__main__':

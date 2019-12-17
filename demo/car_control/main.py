@@ -7,7 +7,7 @@ from car import CarDynamics, CarCost, CarRenderer, CarObstacle
 import cv2
 
 
-def render_obstacles(image, obstacles):
+def render_obstacles(image, obstacles, t):
     image_width = image.shape[1]
     render_scale = image_width / 2.0
     render_offset = image_width / 2.0
@@ -15,10 +15,13 @@ def render_obstacles(image, obstacles):
     for obstacle in obstacles:
         rx = int(obstacle.pos[0] * render_scale + render_offset)
         ry = int(obstacle.pos[1] * render_scale + render_offset)
+        rate = obstacle.calc_rate(t)
+        if rate > 1.0:
+            rate = 1.0
         if obstacle.is_good:
-            reward_color = (1,0,0)
+            reward_color = (1, 1-rate, 1-rate)
         else:
-            reward_color = (0,0,0)
+            reward_color = (1-rate, 1-rate, 1-rate)
         radius = 0.1
         image = cv2.circle(image,
                            (rx, ry), int(radius * render_scale),
@@ -87,13 +90,15 @@ def main():
 
     time_step = 0
 
-    for i in range(20):
-        print("i={}".format(i))
+    #for j in range(20):
+    for j in range(1): #..
+        print("loop={}".format(j))
         iter_max = 10
         
         x_list, u_list, K_list = ilqg.optimize(x0,
                                                u0,
                                                T,
+                                               start_time_step=time_step,
                                                iter_max=iter_max)
         
         x = x0
@@ -107,7 +112,7 @@ def main():
             x = next_x
         
             image = renderer.render(x, u)
-            render_obstacles(image, obstacles)
+            render_obstacles(image, obstacles, time_step * dynamics.dt)
 
             render_trajectory(image, x_list[i:])
             render_time_step(image, time_step)

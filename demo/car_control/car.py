@@ -2,6 +2,7 @@
 import autograd.numpy as np
 from autograd import jacobian, grad
 import cv2
+import copy
 
 from matchernet import Dynamics, Renderer
 
@@ -172,6 +173,28 @@ class CarObstacle(object):
     def __init__(self, pos, is_good):
         self.pos = pos
         self.is_good = is_good
+        self.radius = 0.1
+        self.hit_time = -1.0
+
+    def apply_state(self, x, t):
+        if self.hit_time >= 0.0:
+            # Already hit
+            return
+        elif self.contains(x):
+            # If agent pos was in this region
+            self.hit_time = t
+
+    def contains(self, x):
+        agent_pos = x[:2]
+        d = agent_pos - self.pos
+        return np.sum(d**2) < self.radius**2
+
+    def calc_rate(self, t):
+        if self.hit_time >= 0.0:
+            # TODO: calculate rate
+            return 0.0
+        else:
+            return 1.0
 
 
 class CarCost(object):
@@ -180,13 +203,22 @@ class CarCost(object):
     """
     def __init__(self, obstacles):
         self.obstacles = obstacles
+
         self.x  = grad(self.value, 0)
         self.u  = grad(self.value, 1)
         self.xx = jacobian(self.x, 0)
         self.uu = jacobian(self.u, 1)
         self.ux = jacobian(self.u, 0)
 
-    def value(self, x, u):
+    def clone(self):
+        cost = CarCost(copy.deepcopy(self.obstacles))
+        return cost
+
+    def apply_state(self, x, t):
+        for obstacle in self.obstacles:
+            obstacle.apply_state(x, t)
+
+    def value(self, x, u, t):
         def sigmoid(x):
             return 1.0 / (1.0 + np.exp(-x))
 
@@ -197,10 +229,10 @@ class CarCost(object):
             distance = np.sqrt(dx * dx + dy * dy)
             if obstacle.is_good:
                 # More far = Larger cost (Nearer is better)
-                x_cost += sigmoid(1.0 * distance)
+                x_cost += 1.0 * sigmoid(1.0 * distance) * obstacle.calc_rate(x)
             else:
                 # More far = Smaller cost (Mor far is better
-                x_cost -= sigmoid(1.0 * distance) * 0.5
+                x_cost -= 0.5 * sigmoid(1.0 * distance) * obstacle.calc_rate(x)
 
         if u is not None:
             # Running cost
@@ -209,4 +241,3 @@ class CarCost(object):
         else:
             # Terminal cost
             return x_cost
-

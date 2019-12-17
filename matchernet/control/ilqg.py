@@ -5,27 +5,37 @@ import numpy as np
 class iLQG:
     def __init__(self, dynamics, cost):
         self.dynamics = dynamics
-        self.cost = cost
+        self.stored_cost = cost
 
     def optimize(self,
                  x_init,
                  u_init,
                  T,
+                 start_time_step=0,
                  iter_max=20,
                  stop_criteria=1e-3):
 
         assert x_init.shape == (self.dynamics.x_dim,)
         assert u_init.shape == (T, self.dynamics.u_dim)
         
-        x_list = self.init_trajectory(x_init, u_init, T)
+        self.start_time_step = start_time_step
+        
+        # Clone cost
+        cost = self.stored_cost.clone()
+        
+        x_list = self.init_trajectory(x_init, u_init, T, cost)
         
         u_list = np.copy(u_init)
         
         for i in range(iter_max):
             print("iter={}".format(i))
-            k_list, K_list = self.backward(x_list, u_list, T)
+            k_list, K_list = self.backward(x_list, u_list, T, cost)
+
+            # Clone cost
+            cost = self.stored_cost.clone()
+            
             x_list, u_list, diff = self.forward(x_list, u_list, x_init,
-                                                k_list, K_list, T)
+                                                k_list, K_list, T, cost)
 
             if(diff < stop_criteria):
                 print("it={}, diff={}".format(i, diff))
@@ -33,16 +43,17 @@ class iLQG:
             
         return x_list, u_list, K_list
     
-    def init_trajectory(self, x_init, u_init, T):
+    def init_trajectory(self, x_init, u_init, T, cost):
         x_list = [x_init]
         
         for i in range(T):
+            cost.apply_state(x_list[i], (self.start_time_step + i) * self.dynamics.dt)
             next_x = self.dynamics.value(x_list[i], u_init[i])
             x_list.append(next_x)
             
         return x_list
 
-    def forward(self, x_list, u_list, x_init, k_list, K_list, T):
+    def forward(self, x_list, u_list, x_init, k_list, K_list, T, cost):
         next_x_list = [x_init]
         next_u_list = []
         
@@ -50,6 +61,8 @@ class iLQG:
         alpha = 1.0
         
         for t in range(T):
+            cost.apply_state(next_x_list[t], (self.start_time_step + t) * self.dynamics.dt)
+            
             next_u = u_list[t] + alpha * k_list[t] + \
                      K_list[t] @ (next_x_list[t] - x_list[t])
             next_u_list.append(next_u)
@@ -60,13 +73,13 @@ class iLQG:
 
         return next_x_list, next_u_list, diff
 
-    def backward(self, x_list, u_list, T):
+    def backward(self, x_list, u_list, T, cost):
         k_list = []
         K_list = []
 
         # Derivatives of the terminal cost
-        lx  = self.cost.x( x_list[T], None)
-        lxx = self.cost.xx(x_list[T], None)
+        lx  = cost.x( x_list[T], None, self.start_time_step * self.dynamics.dt)
+        lxx = cost.xx(x_list[T], None, self.start_time_step * self.dynamics.dt)
         
         Vx  = lx  # (x_dim,)
         Vxx = lxx # (x_dim,x_dim)
@@ -86,11 +99,11 @@ class iLQG:
             fu = self.dynamics.u(x, u)
 
             # Derivatives of the running cost
-            lx  = self.cost.x( x, u)
-            lxx = self.cost.xx(x, u)
-            lu  = self.cost.u( x, u)
-            luu = self.cost.uu(x, u)
-            lux = self.cost.ux(x, u)
+            lx  = cost.x( x, u, (self.start_time_step+t) * self.dynamics.dt)
+            lxx = cost.xx(x, u, (self.start_time_step+t) * self.dynamics.dt)
+            lu  = cost.u( x, u, (self.start_time_step+t) * self.dynamics.dt)
+            luu = cost.uu(x, u, (self.start_time_step+t) * self.dynamics.dt)
+            lux = cost.ux(x, u, (self.start_time_step+t) * self.dynamics.dt)
 
             # Derivatives of the Q function
             Qx  = lx  + fx.T @ Vx
