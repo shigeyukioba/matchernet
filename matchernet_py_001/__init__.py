@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-
-"""
-matchernet
-=====
-matchernet is a
-"""
-
 from matchernet_py_001.ekf import *
 from matchernet_py_001.fn import *
 from matchernet_py_001.matchernet import *
@@ -18,8 +10,8 @@ from matchernet_py_001.utils import *
 __copyright__ = 'Copyright (C) 2019 Shigeyuki Oba'
 __version__ = '0.0.1'
 __license__ = 'BSD-3-Clause'
-__author__ = 'Uchihashi Kenshi'
-__author_email__ = 'uchihashi.kenshi@gmail.com'
+__author__ = 'Shigeyuki Oba'
+__author_email__ = 'oba@i.kyoto-u.ac.jp'
 __url__ = 'https://github.com/shigeyukioba/matchernet'
 __all__ = [
     "ekf",
