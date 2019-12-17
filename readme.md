@@ -38,16 +38,17 @@ See also jupyter notebooks under the `/examples` directory.
 3.8.* is not supported.
 ### Set up virtual environment
 ```bash
-$ mkdir ~/virt_env
-$ cd ~/virt_env
-$ virtualenv -p Python3 mn
-$ workon mn
+mkdir ~/virt_env
+cd ~/virt_env
+virtualenv -p Python3 mn
+workon mn
 ```
 ### Install libraries
 ```bash
 pip3 install brica2==0.5
 pip3 install matplotlib==3.1.1
 pip3 install numpy==1.17.3 
+pip3 install autograd==1.3
 pip3 install -i https://test.pypi.org/simple/ matchernet-py-001==0.0.2
 ```
 ### Modify PYTHONPATH
