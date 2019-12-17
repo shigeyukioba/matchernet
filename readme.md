@@ -21,10 +21,43 @@ pip install -i https://test.pypi.org/simple/ matchernet-py-001
 ```
 
 # How to try demos?
-There is a demo file under the `/demos` directory and a jupyter notebook under the `/examples` directory.
+See demo files under the `/demos` directory.
+```bash
+Python3 demos/demo_ekf.py
+```
 
+See also jupyter notebooks under the `/examples` directory.
 
-### How to use at ARM server?
+# How to set up in detail?
+## For MacOSX
+### Install Python 3.7.2
+3.8.* is not supported.
+### Set up virtual environment
+```bash
+$ mkdir ~/virt_env
+$ cd ~/virt_env
+$ virtualenv -p Python3 mn
+$ workon mn
+```
+### Install libraries
+```bash
+pip3 install brica2==0.5
+pip3 install matplotlib==3.1.1
+pip3 install numpy==1.17.3 
+pip3 install -i https://test.pypi.org/simple/ matchernet-py-001==0.0.2
+```
+### Modify PYTHONPATH
+```bash
+export PYTHONPATH="/path/to/dir:$PYTHONPATH"
+```
+You need this if you are to modify files in the matchernet original packages.
+
+### Run a demo
+```bash
+Python3 demos/demo_ekf.py
+```
+
+## For ARM server
 Setting up virtual environment at the ARM server
 
 - First create a directory for the environments
