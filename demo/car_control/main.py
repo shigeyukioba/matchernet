@@ -90,8 +90,7 @@ def main():
 
     time_step = 0
 
-    #for j in range(20):
-    for j in range(1): #..
+    for j in range(20):
         print("loop={}".format(j))
         iter_max = 10
         
