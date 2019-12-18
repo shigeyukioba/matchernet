@@ -2,9 +2,11 @@
 
 # What is MatcherNet?
 
-## What is it in short?
-MatcherNet is a modular and hierarchical state-space model for dynamic system identification and control. If you are working with a world model of high-dimensional / multi-modal / multi-scale states and observations for robotics, image processing, sensor networks, and their hybrid cases, MatcherNet may provide you a solution better than a large state space model, a large end-to-end deep neural network, etc.
+## What is it?
+MatcherNet is a probabilistic state-space model for dynamic system identification and control. With MatcherNet, you can easily design a dynamic world model of high-dimensional / multi-modal / multi-scale states and observations for robotics, image processing, sensor networks, and their hybrid cases. MatcherNet may provide you a solution better than a large state space model, a deep neural network of end-to-end structure, etc.
 
+<img alt="MatcherNet" src="MatcherNet.png"> 
+                                                                                                  
 ## MatcherNet as a state space model
 MatcherNet includes Extended Kalman-filter (EKF), a non-linear extension of Kalman-filter, as a special case. Design a pair of observation model p( y_t | x_t ) and dynamics model p( x_t+1 | x_t ), and EKF calculates the posterior of the current state p( x_t | y_1:t ). For MatcherNet, divide the state variable into multiple parts x_t = (x_1t, x_2t, ..., x_kt), design dynamics models for each part, and then, MatcherNet can manage them in a parallel and principled manner.
 
@@ -14,6 +16,9 @@ MatcherNet includes system controllers, such as PID, iLQR (iLQG). Provide a cont
 ## MatcherNet and mupti-thread computing
 MatcherNet efficiently works with multi-thread computing. Modular division of state-space model lower the dimensionality of each state variable, and multiple modules run in parallel in a multi-core computing environment. 
 
+## Acknowledgment
+MatcherNet was developped with support by the New Energy and Industrial Technology Development Organization (NEDO), Japan.
+and by Post-K application development for exploratory challenges from the MEXT, Japan.
 
 # How to install?
 The alpha version has been tested and released below:
