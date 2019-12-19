@@ -21,6 +21,8 @@ For MatcherNet, the user may divide the observed variable  y  and the state vari
 MatcherNet includes system controllers, such as PID, iLQR (iLQG). Provide a control goal as a prior probability of the state variable, and the controller calculates the control signal that minimizes the current and future distance to the prior. 
 
 ## MatcherNet and mupti-thread computing
+<img alt="MatcherNet" src="mn_parallel.png" height="200">
+
 MatcherNet efficiently works with multi-thread computing. Modular division of state-space model lower the dimensionality of each state variable, and multiple modules run in parallel in a multi-core computing environment. 
 
 ## Acknowledgment
