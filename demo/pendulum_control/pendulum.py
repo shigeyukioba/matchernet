@@ -2,16 +2,17 @@
 import autograd.numpy as np
 from autograd import jacobian, grad
 
+from matchernet import Dynamics, Renderer, Cost
+
 import cv2
 
 
-class PendulumDynamics(object):
+class PendulumDynamics(Dynamics):
     """
     Inverted pendulum dynamics.
     """
     def __init__(self, dt):
-        # Timestep
-        self._dt = dt
+        super(PendulumDynamics, self).__init__(dt)
 
         # Constants
         self.g = 10.0
@@ -39,23 +40,21 @@ class PendulumDynamics(object):
     def u_dim(self):
         return 1
 
-    @property
-    def dt(self):
-        return self._dt
 
-
-class PendulumCost:
+class PendulumCost(Cost):
     """
     Inverted pendulum cost function.
     """
     def __init__(self):
+        super(PendulumCost, self).__init__()
+        
         self.x  = grad(self.value, 0)
         self.u  = grad(self.value, 1)
         self.xx = jacobian(self.x, 0)
         self.uu = jacobian(self.u, 1)
         self.ux = jacobian(self.u, 0)
 
-    def value(self, x, u):
+    def value(self, x, u, t):
         """ Calculate cost.
         If u is None, cost is calculated as terminal cost. If u is not None,
         then cost is calculated as running cost.
@@ -79,12 +78,13 @@ ROD_LENGTH = 0.5
 ROD_WIDTH  = 0.05
 
 
-class PendulumRenderer(object):
+class PendulumRenderer(Renderer):
     """
     Inverted pendulum renderer.
     """
-    def __init__(self):
-        pass
+    def __init__(self, image_width=256):
+        super(PendulumRenderer, self).__init__()
+        self.image_width = image_width
 
     def draw_rotated_rect(self, image, x, y, w, h, angle, color):
         rect = ((x,y), (h, w), angle / np.pi * 180.0)
@@ -93,11 +93,11 @@ class PendulumRenderer(object):
         image = cv2.drawContours(image, [box], 0, color, -1)
         return image
 
-    def render(self, image, x, u):
-        image_width = image.shape[1]
+    def render(self, x, u):
+        image = np.ones((self.image_width, self.image_width, 3), dtype=np.float32)
         
-        render_scale = image_width / 2.0
-        render_offset = image_width / 2.0
+        render_scale = self.image_width / 2.0
+        render_offset = self.image_width / 2.0
 
         # TODO: angleを修正
         angle = x[0] - np.pi * 0.5

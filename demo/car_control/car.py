@@ -4,7 +4,7 @@ from autograd import jacobian, grad
 import cv2
 import copy
 
-from matchernet import Dynamics, Renderer
+from matchernet import Dynamics, Renderer, Cost
 
 
 # Dynamics properties
@@ -197,13 +197,14 @@ class CarObstacle(object):
             return 1.0
 
 
-class CarCost(object):
+class CarCost(Cost):
     """
     Car cost function for obstacle avoidance.
     """
     def __init__(self, obstacles):
+        super(CarCost, self).__init__()
         self.obstacles = obstacles
-
+        
         self.x  = grad(self.value, 0)
         self.u  = grad(self.value, 1)
         self.xx = jacobian(self.x, 0)
@@ -222,6 +223,10 @@ class CarCost(object):
         def sigmoid(x):
             return 1.0 / (1.0 + np.exp(-x))
 
+        def sharp_edge(x):
+            #return 1.0 - np.exp(- np.power(10.0 * x, 2))
+            return 1.0 - np.exp(-np.power(10.0 * x, 0.5))
+
         x_cost = 0.0
         for obstacle in self.obstacles:
             dx = x[0] - obstacle.pos[0]
@@ -229,6 +234,7 @@ class CarCost(object):
             distance = np.sqrt(dx * dx + dy * dy)
             if obstacle.is_good:
                 # More far = Larger cost (Nearer is better)
+                #x_cost += 1.0 * sharp_edge(1.0 * distance) * obstacle.calc_rate(x)
                 x_cost += 1.0 * sigmoid(1.0 * distance) * obstacle.calc_rate(x)
             else:
                 # More far = Smaller cost (Mor far is better

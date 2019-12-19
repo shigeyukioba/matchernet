@@ -61,3 +61,17 @@ class RewardSystem(object):
 
     def evaluate(self, x, dt):
         raise NotImplementedError()
+
+
+class Cost(object):
+    def __init__(self):
+        pass
+
+    def clone(self):
+        return self
+
+    def apply_state(self, x, t):
+        pass
+
+    def value(self, x, u, t):
+        raise NotImplementedError()

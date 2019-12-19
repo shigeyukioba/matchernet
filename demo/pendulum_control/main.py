@@ -25,14 +25,13 @@ def main():
                                            T,
                                            iter_max=iter_max)
     # (81) (80) (80) (80)
-    renderer = PendulumRenderer()
+    renderer = PendulumRenderer(image_width=256)
 
     # Record target trajectory
     movie = MovieWriter("pendulum_ilqg_trajectory0.mov", (256, 256), 30)
     for x, u in zip(x_list, u_list):
-        image = np.ones((256, 256, 3), dtype=np.float32)
-        renderer.render(image, x, u)
-
+        image = renderer.render(x, u)
+        
         image = (image * 255.0).astype(np.uint8)
         movie.add_frame(image)
 
@@ -58,9 +57,7 @@ def main():
         system_noise = np.random.multivariate_normal(np.zeros_like(x), Q * dynamics.dt)
         next_x = dynamics.value(x, u) + system_noise
         
-        image = np.ones((256, 256, 3), dtype=np.float32)
-        renderer.render(image, x, u)
-        
+        image = renderer.render(x, u)
         image = (image * 255.0).astype(np.uint8)
         
         movie.add_frame(image)
@@ -70,7 +67,7 @@ def main():
         
     movie.close()
     anim_gif.close()
-    
+
     
 
 if __name__ == '__main__':

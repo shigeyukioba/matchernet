@@ -2,7 +2,25 @@
 import numpy as np
 
 
-class iLQG:
+class Regularization:
+    def __init__(self):
+        self.lambd         = 0.1
+        self.d_lambda      = 1.0
+        self.lambda_factor = 1.6
+        self.lambda_max    = 1e10
+        self.lambda_min    = 1e-6
+    
+    def on_diverge(self):
+        self.d_lambda = max(self.d_lambda * self.lambda_factor, self.lambda_factor)
+        self.lambd = max(self.lambd * self.d_lambda, self.lambda_min)
+        self.lambd = min(self.lambd, self.lambda_max)
+
+    def get_current_lamba(self):
+        return self.lambd
+
+    
+
+class iLQG(object):
     def __init__(self, dynamics, cost):
         self.dynamics = dynamics
         self.stored_cost = cost
@@ -26,10 +44,21 @@ class iLQG:
         x_list = self.init_trajectory(x_init, u_init, T, cost)
         
         u_list = np.copy(u_init)
+
+        self.regularization = Regularization()
         
         for i in range(iter_max):
             print("iter={}".format(i))
-            k_list, K_list = self.backward(x_list, u_list, T, cost)
+
+            for j in range(10):
+                lambd = self.regularization.get_current_lamba()
+                diverged, k_list, K_list = self.backward(x_list, u_list, T, cost, lambd)
+                if not diverged:
+                    break
+                else:
+                    self.regularization.on_diverge()
+                    print("update lambda={}".format(
+                        self.regularization.get_current_lamba()))
 
             # Clone cost
             cost = self.stored_cost.clone()
@@ -41,7 +70,9 @@ class iLQG:
                 print("it={}, diff={}".format(i, diff))
                 break
             
-        return x_list, u_list, K_list
+        return np.array(x_list, dtype=np.float32), \
+            np.array(u_list, dtype=np.float32), \
+            np.array(K_list, dtype=np.float32)
     
     def init_trajectory(self, x_init, u_init, T, cost):
         x_list = [x_init]
@@ -73,7 +104,7 @@ class iLQG:
 
         return next_x_list, next_u_list, diff
 
-    def backward(self, x_list, u_list, T, cost):
+    def backward(self, x_list, u_list, T, cost, lambd):
         k_list = []
         K_list = []
 
@@ -86,6 +117,8 @@ class iLQG:
         
         assert Vx.shape  == (self.dynamics.x_dim,)
         assert Vxx.shape == (self.dynamics.x_dim, self.dynamics.x_dim)
+
+        diverged = False
         
         for t in range(T-1, -1, -1):
             x = x_list[t]
@@ -113,9 +146,6 @@ class iLQG:
             Qux = lux + fu.T @ Vxx @ fx
 
             # Regularlize
-            # TODO: add adaptive adjustment for lambd
-            lambd = 0.3
-            #lambd = 0.0
             Quu = Quu + np.eye(self.dynamics.u_dim) + lambd
             
             assert Qx.shape  == (self.dynamics.x_dim,)
@@ -124,7 +154,10 @@ class iLQG:
             assert Quu.shape == (self.dynamics.u_dim, self.dynamics.u_dim)
             assert Qux.shape == (self.dynamics.u_dim, self.dynamics.x_dim)
             
-            Quu_inv = np.linalg.inv(Quu)
+            diverged, Quu_inv = self.calc_inverse(Quu)
+            if diverged:
+                print("Diverged")
+                break
             
             k = -Quu_inv @ Qu
             K = -Quu_inv @ Qux
@@ -144,4 +177,13 @@ class iLQG:
         k_list.reverse()
         K_list.reverse()
 
-        return k_list, K_list
+        return diverged, k_list, K_list
+
+    def calc_inverse(self, m):
+        try:
+            R = np.linalg.cholesky(m)
+        except np.linalg.LinAlgError:
+            return True, None
+        R_inv = np.linalg.inv(R)
+        m_inv = R_inv.T @ R_inv
+        return False, m_inv

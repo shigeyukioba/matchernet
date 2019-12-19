@@ -60,6 +60,7 @@ def main():
     renderer = CarRenderer(image_width=256)
 
     obstacles = []
+    
     obstacle0 = CarObstacle(pos=np.array([0.5, 0.0], dtype=np.float32),
                             is_good=False)
     obstacles.append(obstacle0)
@@ -72,6 +73,17 @@ def main():
     obstacle3 = CarObstacle(pos=np.array([0.6, 0.8], dtype=np.float32),
                             is_good=True)
     obstacles.append(obstacle3)
+
+    """
+    obstacle0 = CarObstacle(pos=np.array([0.5, 0.3], dtype=np.float32),
+                            is_good=True)
+    obstacles.append(obstacle0)
+    obstacle1 = CarObstacle(pos=np.array([0.6, 0.8], dtype=np.float32),
+                            is_good=True)
+    """
+    obstacles.append(obstacle1)
+    
+    
     cost = CarCost(obstacles)
     
     ilqg = iLQG(dynamics=dynamics, cost=cost)
@@ -108,8 +120,11 @@ def main():
             K_t = K_list[i]
             u = u_t + K_t @ (x - x_t)
             next_x = dynamics.value(x, u)
+            
+            cost.apply_state(x_t, time_step * dynamics.dt)
+            
             x = next_x
-        
+            
             image = renderer.render(x, u)
             render_obstacles(image, obstacles, time_step * dynamics.dt)
 
