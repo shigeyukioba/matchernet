@@ -18,7 +18,9 @@ MatcherNet is a state space model that includes Extended Kalman-filter (EKF), a 
 For MatcherNet, the user may divide the observed variable  y  and the state variable  x  into multiple parts,  like  y = (y^(1), y^(2), y^(3) ),  x = ( x^(1), x^(2), x^(3), x^(4) ), respectively. Then, the state space is approximated with the hierarchically decomposed model, in which all parts of dynamics/observation model are low-dimensional, easy to learn, and re-usable models.
 
 ## MatcherNet as a controller
-MatcherNet includes system controllers, such as PID, iLQR (iLQG). Provide a control goal as a prior probability of the state variable, and the controller calculates the control signal that minimizes the current and future distance to the prior. 
+<img alt="MatcherNet" src="mn_controllers.png" height="200">
+
+MatcherNet can emit control signal u. A typical network structure (left pannel in the Fig. above) can implement well known controllers, such as PID, iLQR (iLQG), whereas a simpler structure (right pannel) can implement so called "active inference". In any cases, you can provide a control goal as a prior probability of the state variable, and the controller calculates the control signal that minimizes the current and future distance to the prior. 
 
 ## MatcherNet and multi-thread computing
 <img alt="MatcherNet" src="mn_parallel.png" height="300">
