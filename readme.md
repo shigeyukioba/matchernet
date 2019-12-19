@@ -1,5 +1,8 @@
 <img alt="PyPI" src="https://img.shields.io/pypi/v/matchernet"> <img alt="APM" src="https://img.shields.io/apm/l/matchernet">
 
+
+<img alt="MN logo" src="MatcherNetLogo.png">
+
 # What is MatcherNet?
 
 ## What is it?
