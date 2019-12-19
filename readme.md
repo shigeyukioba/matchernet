@@ -11,6 +11,7 @@ MatcherNet is a probabilistic state-space model for dynamic system identificatio
 <img alt="MatcherNet" src="MatcherNet.png"> 
                                                                                                   
 ## MatcherNet as a state space model
+<img alt="MatcherNet" src="ssm.png">
 MatcherNet includes Extended Kalman-filter (EKF), a non-linear extension of Kalman-filter, as a special case. Design a pair of observation model p( y_t | x_t ) and dynamics model p( x_t+1 | x_t ), and EKF calculates the posterior of the current state p( x_t | y_1:t ). For MatcherNet, divide the state variable into multiple parts x_t = (x_1t, x_2t, ..., x_kt), design dynamics models for each part, and then, MatcherNet can manage them in a parallel and principled manner.
 
 ## MatcherNet as a controller
