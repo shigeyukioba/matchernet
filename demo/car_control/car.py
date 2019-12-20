@@ -225,7 +225,7 @@ class CarCost(Cost):
 
         def sharp_edge(x):
             #return 1.0 - np.exp(- np.power(10.0 * x, 2))
-            return 1.0 - np.exp(-np.power(10.0 * x, 0.5))
+            return 1.0 - np.exp(- np.power(1.0 * x, 2))
 
         x_cost = 0.0
         for obstacle in self.obstacles:
@@ -239,6 +239,7 @@ class CarCost(Cost):
             else:
                 # More far = Smaller cost (Mor far is better
                 x_cost -= 0.5 * sigmoid(1.0 * distance) * obstacle.calc_rate(x)
+                #x_cost -= 0.5 * sharp_edge(1.0 * distance) * obstacle.calc_rate(x)
 
         if u is not None:
             # Running cost

@@ -31,7 +31,9 @@ class iLQG(object):
                  T,
                  start_time_step=0,
                  iter_max=20,
-                 stop_criteria=1e-3):
+                 stop_criteria=1e-3,
+                 u_min=None,
+                 u_max=None):
 
         assert x_init.shape == (self.dynamics.x_dim,)
         assert u_init.shape == (T, self.dynamics.u_dim)
@@ -64,7 +66,8 @@ class iLQG(object):
             cost = self.stored_cost.clone()
             
             x_list, u_list, diff = self.forward(x_list, u_list, x_init,
-                                                k_list, K_list, T, cost)
+                                                k_list, K_list, T, cost,
+                                                u_min, u_max)
 
             if(diff < stop_criteria):
                 print("it={}, diff={}".format(i, diff))
@@ -84,7 +87,7 @@ class iLQG(object):
             
         return x_list
 
-    def forward(self, x_list, u_list, x_init, k_list, K_list, T, cost):
+    def forward(self, x_list, u_list, x_init, k_list, K_list, T, cost, u_min, u_max):
         next_x_list = [x_init]
         next_u_list = []
         
@@ -96,6 +99,12 @@ class iLQG(object):
             
             next_u = u_list[t] + alpha * k_list[t] + \
                      K_list[t] @ (next_x_list[t] - x_list[t])
+
+            if u_min is not None:
+                next_u = np.max([next_u, np.ones_like(next_u) * u_min], axis=0)
+            if u_max is not None:
+                next_u = np.min([next_u, np.ones_like(next_u) * u_max], axis=0)
+            
             next_u_list.append(next_u)
             next_x = self.dynamics.value(next_x_list[t], next_u_list[t])
             next_x_list.append(next_x)
@@ -153,7 +162,7 @@ class iLQG(object):
             assert Qxx.shape == (self.dynamics.x_dim, self.dynamics.x_dim)
             assert Quu.shape == (self.dynamics.u_dim, self.dynamics.u_dim)
             assert Qux.shape == (self.dynamics.u_dim, self.dynamics.x_dim)
-            
+
             diverged, Quu_inv = self.calc_inverse(Quu)
             if diverged:
                 print("Diverged")
@@ -167,6 +176,7 @@ class iLQG(object):
 
             Vx  = Qx  + K.T @ Quu @ k + K.T @ Qu  + Qux.T @ k
             Vxx = Qxx + K.T @ Quu @ K + K.T @ Qux + Qux.T @ K
+            Vxx = 0.5 * (Vxx + Vxx.T) # Fix symmetry
             
             assert Vx.shape  == (self.dynamics.x_dim,)
             assert Vxx.shape == (self.dynamics.x_dim, self.dynamics.x_dim)
