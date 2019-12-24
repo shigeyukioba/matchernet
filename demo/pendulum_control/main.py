@@ -81,8 +81,10 @@ class EKFDiscreteTime(object):
         self.state.data["mu"] = mu + dmu
         self.state.data["Sigma"] = Sigma + dSigma
 
-        
+
 def main():
+    np.random.rand(0)
+    
     dynamics = PendulumDynamics(dt=0.05)
     cost = PendulumCost()
     
@@ -90,7 +92,7 @@ def main():
     ilqg = iLQG(dynamics=dynamics, cost=cost)
 
     T = 80
-    iter_max = 50
+    iter_max = 100
     
     # Initial state
     x0 = np.array([np.pi, 0.0], dtype=np.float32)
@@ -135,15 +137,16 @@ def main():
     
     # Initial internal state
     mu0 = np.array([np.pi, 0.0], dtype=np.float32)
-    Sigma0 = np.array([[0.01, 0.0],
-                       [0.0, 0.01]], dtype=np.float32)
-    
-    x_real = np.array([np.pi, 0.0], dtype=np.float32)
+    Sigma0 = np.array([[0.001, 0.0],
+                       [0.0, 0.001]], dtype=np.float32)
+
+    # Initial real state
+    x_real = np.random.multivariate_normal(mu0, Sigma0)
     
     # EKF
     ekf = EKFDiscreteTime(dynamics, Q, g, R, mu0, Sigma0)
     
-    # Initial control sequence
+    # Initial control sequence for MPC
     u0 = np.zeros((T, 1), dtype=np.float32)
 
     # Calc optimal control trajectory
@@ -185,8 +188,8 @@ def main():
     movie.close()
     anim_gif.close()
     est_movie.close()
+
     
-    
-    
+
 if __name__ == '__main__':
     main()
