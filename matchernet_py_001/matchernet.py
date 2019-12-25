@@ -9,22 +9,22 @@ It imports BriCA2 (impremented with C++)
 https://github.com/BriCA/BriCA2
 
 """
-
+import logging
+from log import logging_conf
 import brica
 from brica import Component, VirtualTimeScheduler, Timing
-import numpy as np
-import utils
-from utils import print1, print2, print3, print4, _print_level
-import state
-import time
 import copy
 
-#import pdb
+from matchernet_py_001 import state
+from matchernet_py_001 import utils
+
+logging_conf.set_logger_config("./log/logging.json")
+logger = logging.getLogger(__name__)
 
 zeros = utils.zeros
 
 _with_brica = True
-# A global flag to branch withBriCA2 and withoutBriCA versions
+
 
 class Bundle(object):
     """
@@ -35,9 +35,11 @@ class Bundle(object):
       a state transision dynamics
       arbitrary number of connections to Matchers
     """
-    def __init__(self, name, initial_state_object):
+
+    def __init__(self, name, initial_state_object, logger=logger):
         """ Create a new 'Bundle' instance.
         """
+        self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
         self.state = initial_state_object
         self.component = Component(self)
@@ -46,7 +48,7 @@ class Bundle(object):
     def __call__(self, inputs):
         """ The main routine that is called from brica.
         """
-        for key in inputs: # key is one of the matcher names
+        for key in inputs:  # key is one of the matcher names
             if inputs[key] is not None:
                 self.accept_feedback(inputs[key])
 
@@ -58,21 +60,23 @@ class Bundle(object):
         Accepting the feedback state 'fb_state' from one of the matchers
         which is linking to the current bundle.
         """
-        print2("{} is accepting feedback".format(self.name))
+        self.logger.debug("{} is accepting feedback".format(self.name))
 
-    def print_state(self):
+    def logger_state(self):
         """ Print the state of the current Bundle.
-        Args: None.
-        Returns: None.
+        Args:
+            None.
+        Returns:
+            None.
         """
-        print2("State of {n}".format(n=self.name))
-        print2("self.state.data={x}".format(x=self.state.data))
+        self.logger.debug("State of {n}: {x}".format(n=self.name, x=self.state.data))
 
     def update(self, inputs):
         """ Update the state of the current Bundle.
         This method should be override for any subclasses.
         """
-        print3("{} is updating".format(self.name))
+        self.logger.debug("{} is updating".format(self.name))
+
 
 class Matcher(object):
     """
@@ -80,26 +84,32 @@ class Matcher(object):
     Matcher is a component of matchernet.
     It connects Bundles, calculates energy, and returns a feedback state for each Bundle.
     Here, energy stands for a measure of contradiction among all the linking Bundles. The feedback stands for a signal that is used at the corresponding Bundle; the Bundle updates its state in order to decrease the energy.
+
+    Args:
+        name (str): matcher name.
+        *bundles (:class:`~chainer.Variable`):
     """
-    def __init__(self, name, *bundles):
+
+    def __init__(self, name, *bundles, logger=logger):
+        self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
-        self.state = state.StatePlain(1) # Own state of the current matcher
+        self.state = state.StatePlain(1)  # Own state of the current matcher
         self.results = {}
         self.bundles = bundles
+        for bundle in self.bundles:
+            self.results[bundle.name] = copy.deepcopy(bundle.state)
         self.component = None
         self.update_component()
 
     def update_component(self):
-        component = Component(self)
-        for b in self.bundles:
-            component.make_in_port(b.name)
-            component.make_out_port(b.name)
-            b.component.make_in_port(self.name)
-            brica.connect(b.component, "state", component, b.name)
-            brica.connect(component, b.name, b.component, self.name)
-            print4( "{}".format(b.state.data))
-            self.results[b.name] = copy.deepcopy(b.state)
-        self.component = component
+        self.component = Component(self)
+        for bundle in self.bundles:
+            self.component.make_in_port(bundle.name)
+            self.component.make_out_port(bundle.name)
+            bundle.component.make_in_port(self.name)
+            brica.connect(bundle.component, "state", self.component, bundle.name)
+            brica.connect(self.component, bundle.name, bundle.component, self.name)
+            self.logger.debug("{}".format(bundle.state.data))
 
     def __call__(self, inputs):
         """
@@ -115,7 +125,6 @@ class Matcher(object):
           results = {"Bundle0", fbst0, "Bundle1", fbst1}
 
         """
-        mu = {}
         for key in inputs:
             if inputs[key] is not None:
                 self.accept_bundle_state(inputs[key])
@@ -123,58 +132,8 @@ class Matcher(object):
         return self.results
 
     def accept_bundle_state(self, st):
-        print2("Matcher {} is accepting_bundle_state".format(self.name))
+        self.logger.debug("Matcher {} is accepting_bundle_state".format(self.name))
 
     def update(self, inputs):
-        self.print_state()
-
-    def print_state(self):
-        '''Prints the state of the self.'''
-        print3("State of {n}".format(n=self.name))
-        print3("self.state.data={x}".format(x=self.state.data))
-        print3("self.results={x}".format(x=self.results))
-
-
-# ====================
-#   Test functions
-# ====================
-
-def test_abstract_bm():
-    st = state.StateMuSigma(4)
-    b0   = Bundle("Bundle0",st)
-    b1   = Bundle("Bundle1",st)
-    b2   = Bundle("Bundle2",st)
-    
-    m01 = Matcher("Matcher01",b0,b1)
-    m02 = Matcher("Matcher02",b0,b2)
-    m12 = Matcher("Matcher12",b1,b2)
-
-    s = VirtualTimeScheduler()
-
-    bt = Timing(0, 1, 1)
-    bm = Timing(1, 1, 1)
-
-    s.add_component( b0.component, bt)
-    s.add_component( b1.component, bt)
-    s.add_component( b2.component, bt)
-
-    s.add_component( m01.component, bm)
-    s.add_component( m02.component, bm)
-    s.add_component( m12.component, bm)
-
-    s.step()
-    s.step()
-    s.step()
-    s.step()
-
-    return s
-
-if __name__ == '__main__':
-    import time
-    n=20
-    start = time.time()
-    # _print_level=1 # silent mode
-    utils._print_level=3 # noisy mode
-    s = test_abstract_bm()
-    elapsed_time = time.time() - start
-    print("abstract -- elapsed_time:{0}".format(elapsed_time) + "[sec]")
+        self.logger.debug("State of {n}: {x}".format(n=self.name, x=self.state.data))
+        self.logger.debug("self.results={x}".format(x=self.results))

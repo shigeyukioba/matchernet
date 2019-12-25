@@ -1,8 +1,10 @@
-import utils
-import warnings
+import numpy as np
+
+from matchernet_py_001 import utils
+
 
 class State(object):
-    '''Class State is a state handler that maintains, serializes, and deserializes the state of Bundles or Matchers.
+    """Class State is a state handler that maintains, serializes, and deserializes the state of Bundles or Matchers.
     The methods serialize() and deserialize() are required for BriCA1 components to exchange their states as numpy.array objects.
 
     A Bundle/Matcher has its state as a dictionary.
@@ -16,22 +18,27 @@ class State(object):
     The serialized array is exchanged through  BriCA1 IN/OUT ports
     and deserialized with a method  deserialize() as.
     B0.deserialize(q)
-    '''
+    """
+
     def __init__(self, n):
         self.n = n
-        self.data = {"mu":utils.zeros((1,n))}
+        self.data = {"mu": utils.zeros(n)}
+
 
 class StatePlain(State):
-    '''StatePlain is a State that handles plain numpy.array.
-    '''
-    def __init__(self, n ):
-        '''Initializer takes a dimensionarity of the vector.'''
+    """StatePlain is a State that handles plain numpy.array.
+    """
+
+    def __init__(self, n):
+        """Initializer takes a dimensionarity of the vector.
+        """
         self.n = n
-        #super().__init__(self.n)
+        # super().__init__(self.n)
         super(StatePlain, self).__init__(self.n)
 
+
 class StateMuSigmaDiag(State):
-    '''StateMuSigmaDiag is a state handler that handles
+    """StateMuSigmaDiag is a state handler that handles
     state variable as the following dictionary style.
     B.state.data = {"id":1,
             "mu":numpy.array([1,2,3]),
@@ -39,17 +46,19 @@ class StateMuSigmaDiag(State):
     Note that StateMuSigma and StateMuSigmaDiag have
         n x n matrix "Sigma" and n vector "sigma",
         respectively.
-    '''
+    """
+
     def __init__(self, n):
         self.n = n
-        super(StateMuSigmaDiag,self).__init__(n)
+        super(StateMuSigmaDiag, self).__init__(n)
         self.data["id"] = 1
         self.data["time_stamp"] = 0
-        self.data["mu"] = utils.zeros((1,n))
-        self.data["sigma"] = utils.zeros((1,n))
+        self.data["mu"] = utils.zeros(n)
+        self.data["sigma"] = np.diag(np.eye(self.n, dtype=np.float32))
+
 
 class StateMuSigma(State):
-    '''StateMuSigma is a state handler that handles
+    """StateMuSigma is a state handler that handles
     state variable as the following dictionary style.
     B.state.data = {"id":1,
             "mu":numpy.array([1,2,3]),
@@ -57,32 +66,12 @@ class StateMuSigma(State):
     Note that StateMuSigma and StateMuSigmaDiag have
         n x n matrix "Sigma" and n vector "sigma",
         respectively.
-    '''
+    """
+
     def __init__(self, n):
         self.n = n
-        super(StateMuSigma,self).__init__(n)
+        super(StateMuSigma, self).__init__(n)
         self.data["id"] = 1
         self.data["time_stamp"] = 0
-        self.data["mu"] = utils.zeros((1,n))
-        self.data["Sigma"] = utils.zeros((n,n))
-
-
-if __name__ == '__main__':
-    print("===Testing StatePlain===")
-    s = StatePlain(4)
-    s.data["mu"][0]=np.array([1,2,3,4],dtype=np.float32)
-    print("mu",s.data["mu"])
-
-    print("===Testing StateMuSigma===")
-    s = StateMuSigma(4)
-    s.data["mu"][0]=np.array([1,2,3,4],dtype=np.float32)
-    s.data["Sigma"]=np.eye(4,dtype=np.float32)
-    print("mu", s.data["mu"])
-    print("Sigma", s.data["Sigma"])
-
-    print("===Testing StateMuSigmaDiag===")
-    s = StateMuSigmaDiag(4)
-    s.data["mu"][0]=np.array([1,2,3,4],dtype=np.float32)
-    s.data["sigma"][0]=np.array([5,5,5,5],dtype=np.float32)
-    print("mu",s.data["mu"])
-    print("sigma",s.data["sigma"])
+        self.data["mu"] = utils.zeros(n)
+        self.data["Sigma"] = np.eye(n, dtype=np.float32)

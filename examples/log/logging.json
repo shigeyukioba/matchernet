@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "root": {
+    "level": "DEBUG",
+    "handlers": [
+      "consoleHandler",
+      "logFileHandler"
+    ]
+  },
+  "handlers": {
+    "consoleHandler": {
+      "class": "logging.StreamHandler",
+      "level": "INFO",
+      "formatter": "baseFormatter",
+      "stream": "ext://sys.stdout"
+    },
+    "logFileHandler": {
+      "class": "logging.FileHandler",
+      "level": "DEBUG",
+      "formatter": "baseFormatter",
+      "filename": "./log/app.log",
+      "mode": "w",
+      "encoding": "utf-8"
+    }
+  },
+  "formatters": {
+    "baseFormatter": {
+      "format": "[%(asctime)s] %(module)s.%(funcName)s %(levelname)s -> %(message)s"
+    }
+  },
+  "filters": {
+    "visualizeFilter": {
+      "()": "",
+      "words": [
+        ""
+      ]
+    }
+  }
+}
