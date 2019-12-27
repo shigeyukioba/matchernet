@@ -55,7 +55,8 @@ def render_time_step(image, time_step):
 
     
 def main():
-    dynamics = CarDynamics(dt=0.03)
+    dt = 0.03
+    dynamics = CarDynamics()
 
     renderer = CarRenderer(image_width=256)
 
@@ -86,7 +87,7 @@ def main():
     
     cost = CarCost(obstacles)
     
-    ilqg = iLQG(dynamics=dynamics, cost=cost)
+    ilqg = iLQG(dynamics=dynamics, cost=cost, dt=dt)
 
     # Initial state
     x0 = np.array([0.0, 0.0, 0.0, 0.0], dtype=np.float32)
@@ -119,14 +120,16 @@ def main():
             u_t = u_list[i]
             K_t = K_list[i]
             u = u_t + K_t @ (x - x_t)
-            next_x = dynamics.value(x, u)
+            dx = dynamics.value(x, u)
+            # TODO:
+            next_x = x + dx * dt
             
-            cost.apply_state(x_t, time_step * dynamics.dt)
+            cost.apply_state(x_t, time_step * dt)
             
             x = next_x
             
             image = renderer.render(x, u)
-            render_obstacles(image, obstacles, time_step * dynamics.dt)
+            render_obstacles(image, obstacles, time_step * dt)
 
             render_trajectory(image, x_list[i:])
             render_time_step(image, time_step)

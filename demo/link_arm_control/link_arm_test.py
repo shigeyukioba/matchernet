@@ -29,9 +29,7 @@ def jacobian_finite_difference(func, arg_index, *args):
 
 class LinkArmDynamicsTest(unittest.TestCase):
     def test_link_arm_dynamics(self):
-        dt = 0.03
-        
-        dynamics = LinkArmDynamics(dt)
+        dynamics = LinkArmDynamics()
         
         x = np.zeros(4, dtype=np.float32)
         u = np.ones(2, dtype=np.float32)
@@ -46,7 +44,7 @@ class LinkArmDynamicsTest(unittest.TestCase):
 
         # Compare Jacobian value with numerical differentiation result
         fx_n = jacobian_finite_difference(dynamics.value, 0, x, u)
-        self.assertTrue(np.allclose(fx, fx_n, atol=1e-2))
+        self.assertTrue(np.allclose(fx, fx_n, atol=5e-2))
 
         # Check shape of the Jacobian w.r.t. u
         fu = dynamics.u(x, u)
@@ -54,7 +52,7 @@ class LinkArmDynamicsTest(unittest.TestCase):
 
         # Compare Jacobian value with numerical differentiation result
         fu_n = jacobian_finite_difference(dynamics.value, 1, x, u)
-        self.assertTrue(np.allclose(fu, fu_n, atol=1e-3))
+        self.assertTrue(np.allclose(fu, fu_n, atol=5e-2))
 
 
 if __name__ == '__main__':

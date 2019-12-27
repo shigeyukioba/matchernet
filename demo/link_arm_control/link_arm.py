@@ -29,12 +29,8 @@ class LinkArmDynamics(Dynamics):
     
     Adopted from https://courses.ideate.cmu.edu/16-375/f2018/text/lib/double-pendulum.html
     """
-    def __init__(self, dt):
-        """
-          dt
-            timestap (second)
-        """
-        super(LinkArmDynamics, self).__init__(dt)
+    def __init__(self):
+        super(LinkArmDynamics, self).__init__()
 
         self.l1   = 1.0    # proximal link length, link1
         self.l2   = 1.0    # distal link length, link2
@@ -86,15 +82,13 @@ class LinkArmDynamics(Dynamics):
         # First compute the denominator as the determinant of D:
         denom = (d11 * d22) - (d21 * d12)
 
-        dx = np.array([qd1 * self.dt,
-                       qd2 * self.dt,
-                       ((rhs1 * d22 ) - (rhs2 * d12)) / denom * self.dt,
-                       (( d11 * rhs2) - (d21  * rhs1)) / denom * self.dt],
+        dx = np.array([qd1,
+                       qd2,
+                       ((rhs1 * d22 ) - (rhs2 * d12)) / denom,
+                       (( d11 * rhs2) - (d21  * rhs1)) / denom],
                       dtype=np.float32)
-        
-        # New state
-        x_new = x + dx
-        return x_new
+
+        return dx
 
     @property
     def x_dim(self):

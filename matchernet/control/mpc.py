@@ -4,14 +4,8 @@ class Dynamics(object):
     """
     Base interfaces for MPC dynamics definition.
     """
-    def __init__(self, dt):
-        """
-        Arguments:
-          dt 
-            timestap (second)
-        """
-        # Timestep
-        self._dt = dt
+    def __init__(self):
+        pass
 
     def value(self, x, u):
         raise NotImplementedError()
@@ -29,10 +23,6 @@ class Dynamics(object):
     @property
     def u_dim(self):
         raise NotImplementedError()
-
-    @property
-    def dt(self):
-        return self._dt
 
 
 class Renderer(object):

@@ -42,13 +42,14 @@ def main():
     renderer = [renderer0, renderer1, renderer2]
 
     # Dynamics
-    dynamics = LinkArmDynamics(dt=0.01)
+    dynamics = LinkArmDynamics()
 
     # MPC Environment
-    env = MPCEnv(dynamics, renderer, reward_system=None, use_visual_state=True)
+    dt = 0.01
+    env = MPCEnv(dynamics, renderer, reward_system=None, dt=dt, use_visual_state=True)
 
     # Initial state
-    x_init = np.array([1.0, 1.0, 0.0, 0.0], dtype=np.float32)    
+    x_init = np.array([1.0, 1.0, 0.0, 0.0], dtype=np.float32)
     env.reset(x_init)
     
     frame_size = 180

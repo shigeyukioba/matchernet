@@ -55,7 +55,7 @@ class Display(object):
             angle -= 0.5
         if right:
             angle += 0.5
-        action = [angle, force]
+        action = np.array([angle, force], dtype=np.float32)
         state, reward = self.env.step(action)
         self.show_image(state)
 
@@ -74,11 +74,11 @@ def main():
     display_size = (256, 256)
     
     dt = 0.03
-    dynamics = CarDynamics(dt)
+    dynamics = CarDynamics()
     renderer = CarRenderer()
     reward_system = ObstacleRewardSystem()
     
-    env = MPCEnv(dynamics, renderer, reward_system, use_visual_state=True)
+    env = MPCEnv(dynamics, renderer, reward_system, dt, use_visual_state=True)
     display = Display(display_size, env, recording=recording)
     
     clock = pygame.time.Clock()

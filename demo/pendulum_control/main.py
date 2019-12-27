@@ -2,6 +2,7 @@
 import numpy as np
 from autograd import jacobian
 
+from matchernet import utils
 from matchernet import iLQG, MovieWriter, AnimGIFWriter
 from pendulum import PendulumDynamics, PendulumCost, PendulumRenderer
 
@@ -23,10 +24,10 @@ class PendulumObservation(object):
         return x
 
 
-class EKFDiscreteTime(object):
+class EKFContinuousTime(object):
     def __init__(self, dynamics, Q, g, R, mu, Sigma):
         """
-        Extended Kalman Filter for the discrete time series.
+        Extended Kalman Filter for the continuous time.
 
         Parameters
         ----------
@@ -49,13 +50,15 @@ class EKFDiscreteTime(object):
         self.R = R
         self.state = StateMuSigma(mu, Sigma)
         
-    def step_dynamics(self, u):
+    def step_dynamics(self, u, dt):
         mu = self.state.data["mu"]
         Sigma = self.state.data["Sigma"]
-        
-        F = self.dynamics.x(mu, u)
-        mu = self.dynamics.value(mu, u)
-        Sigma = F.T @ Sigma @ F + self.Q
+
+        # TODO:
+        mu = mu + self.dynamics.value(mu, u) * dt
+        A = self.dynamics.x(mu, u)
+        F = utils.calc_matrix_F(A, dt)
+        Sigma = F.T @ Sigma @ F + self.Q * dt
         
         self.state.data["mu"] = mu
         self.state.data["Sigma"] = Sigma
@@ -84,12 +87,13 @@ class EKFDiscreteTime(object):
 
 def main():
     np.random.rand(0)
-    
-    dynamics = PendulumDynamics(dt=0.05)
+
+    dt = 0.05
+    dynamics = PendulumDynamics()
     cost = PendulumCost()
     
     # iLQG
-    ilqg = iLQG(dynamics=dynamics, cost=cost)
+    ilqg = iLQG(dynamics=dynamics, cost=cost, dt=dt)
 
     T = 80
     iter_max = 100
@@ -129,7 +133,7 @@ def main():
     
     # System noise covariance
     Q = np.array([[0.01, 0.0],
-                  [0.0, 0.01]], dtype=np.float32) * dynamics.dt
+                  [0.0, 0.01]], dtype=np.float32) * dt
     
     # Observation noise
     R = np.array([[0.01, 0.0],
@@ -144,7 +148,7 @@ def main():
     x_real = np.random.multivariate_normal(mu0, Sigma0)
     
     # EKF
-    ekf = EKFDiscreteTime(dynamics, Q, g, R, mu0, Sigma0)
+    ekf = EKFContinuousTime(dynamics, Q, g, R, mu0, Sigma0)
     
     # Initial control sequence for MPC
     u0 = np.zeros((T, 1), dtype=np.float32)
@@ -163,10 +167,12 @@ def main():
         u = u_t + K_t @ (mu - x_t)
 
         # Step dyanmmics in EKF
-        ekf.step_dynamics(u)
+        ekf.step_dynamics(u, dt)
 
         # Update real state and observation
-        next_x_real = np.random.multivariate_normal(dynamics.value(x_real, u), Q)
+        # TODO:
+        dx = dynamics.value(x_real, u)
+        next_x_real = np.random.multivariate_normal(x_real + dx * dt, Q)
         y = np.random.multivariate_normal(g.value(x_real), R)
 
         # Estimate internal state given observation y

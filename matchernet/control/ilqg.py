@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
+from matchernet.utils import calc_matrix_F
+
 
 class Regularization:
     def __init__(self):
@@ -21,9 +23,10 @@ class Regularization:
     
 
 class iLQG(object):
-    def __init__(self, dynamics, cost):
+    def __init__(self, dynamics, cost, dt):
         self.dynamics = dynamics
         self.stored_cost = cost
+        self.dt = dt
 
     def optimize(self,
                  x_init,
@@ -81,8 +84,10 @@ class iLQG(object):
         x_list = [x_init]
         
         for i in range(T):
-            cost.apply_state(x_list[i], (self.start_time_step + i) * self.dynamics.dt)
-            next_x = self.dynamics.value(x_list[i], u_init[i])
+            cost.apply_state(x_list[i], (self.start_time_step + i) * self.dt)
+            #next_x = self.dynamics.value(x_list[i], u_init[i])
+            dx = self.dynamics.value(x_list[i], u_init[i])
+            next_x = x_list[i] + dx * self.dt
             x_list.append(next_x)
             
         return x_list
@@ -93,10 +98,11 @@ class iLQG(object):
         
         diff = 0.0
         alpha = 1.0
-        
+
         for t in range(T):
-            cost.apply_state(next_x_list[t], (self.start_time_step + t) * self.dynamics.dt)
-            
+            cost.apply_state(next_x_list[t], (self.start_time_step + t) * self.dt)
+
+            # TODO:
             next_u = u_list[t] + alpha * k_list[t] + \
                      K_list[t] @ (next_x_list[t] - x_list[t])
 
@@ -106,11 +112,13 @@ class iLQG(object):
                 next_u = np.min([next_u, np.ones_like(next_u) * u_max], axis=0)
             
             next_u_list.append(next_u)
-            next_x = self.dynamics.value(next_x_list[t], next_u_list[t])
+            dx = self.dynamics.value(next_x_list[t], next_u_list[t])
+            # TODO:
+            next_x = next_x_list[t] + dx * self.dt
             next_x_list.append(next_x)
             
             diff += np.sum(np.abs(u_list[t] - next_u_list[t]))
-
+        
         return next_x_list, next_u_list, diff
 
     def backward(self, x_list, u_list, T, cost, lambd):
@@ -118,8 +126,8 @@ class iLQG(object):
         K_list = []
 
         # Derivatives of the terminal cost
-        lx  = cost.x( x_list[T], None, self.start_time_step * self.dynamics.dt)
-        lxx = cost.xx(x_list[T], None, self.start_time_step * self.dynamics.dt)
+        lx  = cost.x( x_list[T], None, self.start_time_step * self.dt)
+        lxx = cost.xx(x_list[T], None, self.start_time_step * self.dt)
         
         Vx  = lx  # (x_dim,)
         Vxx = lxx # (x_dim,x_dim)
@@ -139,21 +147,24 @@ class iLQG(object):
             # Derivatives of the dynamics
             fx = self.dynamics.x(x, u)
             fu = self.dynamics.u(x, u)
-
+            
+            A = calc_matrix_F(fx, self.dt)
+            B = fu * self.dt
+            
             # Derivatives of the running cost
-            lx  = cost.x( x, u, (self.start_time_step+t) * self.dynamics.dt)
-            lxx = cost.xx(x, u, (self.start_time_step+t) * self.dynamics.dt)
-            lu  = cost.u( x, u, (self.start_time_step+t) * self.dynamics.dt)
-            luu = cost.uu(x, u, (self.start_time_step+t) * self.dynamics.dt)
-            lux = cost.ux(x, u, (self.start_time_step+t) * self.dynamics.dt)
-
+            lx  = cost.x( x, u, (self.start_time_step+t) * self.dt)
+            lxx = cost.xx(x, u, (self.start_time_step+t) * self.dt)
+            lu  = cost.u( x, u, (self.start_time_step+t) * self.dt)
+            luu = cost.uu(x, u, (self.start_time_step+t) * self.dt)
+            lux = cost.ux(x, u, (self.start_time_step+t) * self.dt)
+            
             # Derivatives of the Q function
-            Qx  = lx  + fx.T @ Vx
-            Qu  = lu  + fu.T @ Vx
-            Qxx = lxx + fx.T @ Vxx @ fx
-            Quu = luu + fu.T @ Vxx @ fu
-            Qux = lux + fu.T @ Vxx @ fx
-
+            Qx  = lx  + A.T @ Vx
+            Qu  = lu  + B.T @ Vx
+            Qxx = lxx + A.T @ Vxx @ A
+            Quu = luu + B.T @ Vxx @ B
+            Qux = lux + B.T @ Vxx @ A
+            
             # Regularlize
             Quu = Quu + np.eye(self.dynamics.u_dim) + lambd
             

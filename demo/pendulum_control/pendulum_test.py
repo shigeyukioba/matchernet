@@ -35,8 +35,7 @@ def jacobian_finite_difference(func, arg_index, *args):
 
 class PendulumDynamicsTest(unittest.TestCase):
     def test_pendulum_dynamics(self):
-        dt = 0.05
-        dynamics = PendulumDynamics(dt)
+        dynamics = PendulumDynamics()
         
         x = np.zeros(2, dtype=np.float32)
         u = np.ones(1, dtype=np.float32)
@@ -51,7 +50,7 @@ class PendulumDynamicsTest(unittest.TestCase):
 
         # Compare Jacobian value with numerical differentiation result
         fx_n = jacobian_finite_difference(dynamics.value, 0, x, u)
-        self.assertTrue(np.allclose(fx, fx_n, atol=1e-3))
+        self.assertTrue(np.allclose(fx, fx_n, atol=1e-2))
 
         # Check shape of the Jacobian w.r.t. u
         fu = dynamics.u(x, u)
@@ -60,7 +59,7 @@ class PendulumDynamicsTest(unittest.TestCase):
         # Compare Jacobian value with numerical differentiation result
         fu_n = jacobian_finite_difference(dynamics.value, 1, x, u)
         np.testing.assert_almost_equal(fu, fu_n, 2)
-        self.assertTrue(np.allclose(fu, fu_n, atol=1e-3))
+        self.assertTrue(np.allclose(fu, fu_n, atol=1e-2))
 
 
 class PendulumCostTest(unittest.TestCase):
@@ -97,8 +96,7 @@ class PendulumRendererTest(unittest.TestCase):
         x = np.zeros(2, dtype=np.float32)
         u = np.ones(1, dtype=np.float32)
 
-        image = np.ones((256, 256, 3), dtype=np.float32)
-        renderer.render(image, x, u)
+        image = renderer.render(x, u)
 
         self.assertEqual(image.shape, (256,256,3))
 

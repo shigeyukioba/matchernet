@@ -21,14 +21,12 @@ class CarDynamics(Dynamics):
     """
     Car movement dynamics.
     """
-    def __init__(self, dt, Q=None):
+    def __init__(self, Q=None):
         """
-          dt
-            timestap (second)
           Q:
              System noise covariance (numpy nd-array)
         """
-        super(CarDynamics, self).__init__(dt)
+        super(CarDynamics, self).__init__()
 
         self.Q = Q
         
@@ -53,15 +51,11 @@ class CarDynamics(Dynamics):
                        a],
                       dtype=np.float32)
 
-        # New state
-        x_new = x + dx * self.dt
-
         if self.Q is not None:
             # Add system noise
-            x_new += np.random.multivariate_normal(np.zeros_like(x_new),
-                                                   self.Q * self.dt)
+            dx += np.random.multivariate_normal(np.zeros_like(x), self.Q)
         
-        return x_new
+        return dx
 
     @property
     def x_dim(self):

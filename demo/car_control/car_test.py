@@ -29,16 +29,14 @@ def jacobian_finite_difference(func, arg_index, *args):
 
 class CarDynamicsTest(unittest.TestCase):
     def test_car_dynamics(self):
-        dt = 0.03
-        
-        dynamics = CarDynamics(dt)
+        dynamics = CarDynamics()
         
         x = np.zeros(4, dtype=np.float32)
         u = np.ones(2, dtype=np.float32)
 
         # Check shape of the next state
-        x_next = dynamics.value(x, u)
-        self.assertEqual(x_next.shape, (4,))
+        dx = dynamics.value(x, u)
+        self.assertEqual(dx.shape, (4,))
 
         # Check shape of the Jacobian w.r.t. x
         fx = dynamics.x(x, u)
@@ -51,10 +49,10 @@ class CarDynamicsTest(unittest.TestCase):
         # Check shape of the Jacobian w.r.t. u
         fu = dynamics.u(x, u)
         self.assertEqual(fu.shape, (4,2))
-
+        
         # Compare Jacobian value with numerical differentiation result
         fu_n = jacobian_finite_difference(dynamics.value, 1, x, u)
-        self.assertTrue(np.allclose(fu, fu_n, atol=1e-4))
+        self.assertTrue(np.allclose(fu, fu_n, atol=1e-2))
 
 
 class CarCostTest(unittest.TestCase):
@@ -75,16 +73,16 @@ class CarCostTest(unittest.TestCase):
         t = 0
         
         l_terminal = cost.value(x, None, t)
-        print(l_terminal)
-        
+        self.assertEqual(l_terminal.shape, ())
+
         l = cost.value(x, u, t)
-        print(l)
+        self.assertEqual(l.shape, ())
         
         lx = cost.x(x, u, t)
-        print(lx)
+        self.assertEqual(lx.shape, (4,))
         
         lu = cost.u(x, u, t)
-        print(lu)
+        self.assertEqual(lu.shape, (2,))
 
         cloned_cost = cost.clone()
         

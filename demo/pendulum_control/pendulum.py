@@ -11,8 +11,8 @@ class PendulumDynamics(Dynamics):
     """
     Inverted pendulum dynamics.
     """
-    def __init__(self, dt):
-        super(PendulumDynamics, self).__init__(dt)
+    def __init__(self):
+        super(PendulumDynamics, self).__init__()
 
         # Constants
         self.g = 10.0
@@ -26,11 +26,8 @@ class PendulumDynamics(Dynamics):
     def value(self, x, u):
         th    = x[0]
         thdot = x[1]
-
-        newthdot = thdot + (-3 * self.g / (2 * self.l) * np.sin(th + np.pi) + 3.0 / (self.m * self.l ** 2) * u[0]) * self.dt
-        newth = th + newthdot * self.dt
-        
-        return np.array([newth, newthdot], dtype=np.float32)
+        thdotdot = (-3 * self.g / (2 * self.l) * np.sin(th + np.pi) + 3.0 / (self.m * self.l ** 2) * u[0])
+        return np.array([thdot, thdotdot], dtype=np.float32)
 
     @property
     def x_dim(self):

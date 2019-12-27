@@ -8,8 +8,8 @@ from mpcenv import MPCEnv
 
 
 class DummyDynamics(Dynamics):
-    def __init__(self, dt):
-        super(DummyDynamics, self).__init__(dt)
+    def __init__(self):
+        super(DummyDynamics, self).__init__()
         
         self.x = jacobian(self.value, 0)
         self.u = jacobian(self.value, 1)
@@ -54,12 +54,12 @@ class MPCEnvTest(unittest.TestCase):
         Test MPCEnv with normal vector state output.
         """
         dt = 0.03
-        dynamics = DummyDynamics(dt)
+        dynamics = DummyDynamics()
         renderer = DummyRenderer()
         reward_system = DummyRewardSystem()
 
         # Create environment with vector state output.
-        env = MPCEnv(dynamics, renderer, reward_system, use_visual_state=False)
+        env = MPCEnv(dynamics, renderer, reward_system, dt, use_visual_state=False)
 
         state = env.reset()
         # Check state shape and type.
@@ -82,12 +82,12 @@ class MPCEnvTest(unittest.TestCase):
         Test MPCEnv with image state output.
         """
         dt = 0.03
-        dynamics = DummyDynamics(dt)
+        dynamics = DummyDynamics()
         renderer = DummyRenderer()
         reward_system = DummyRewardSystem()
 
         # Create environment with image state output.
-        env = MPCEnv(dynamics, renderer, reward_system, use_visual_state=True)
+        env = MPCEnv(dynamics, renderer, reward_system, dt, use_visual_state=True)
 
         state = env.reset()
         
@@ -115,7 +115,7 @@ class MPCEnvTest(unittest.TestCase):
         Test MPCEnv with multiple image state output.
         """
         dt = 0.03
-        dynamics = DummyDynamics(dt)
+        dynamics = DummyDynamics()
         
         renderer0 = DummyRenderer()
         renderer1 = DummyRenderer()
@@ -124,7 +124,7 @@ class MPCEnvTest(unittest.TestCase):
         reward_system = None
 
         # Create environment with image state output.
-        env = MPCEnv(dynamics, renderer, reward_system, use_visual_state=True)
+        env = MPCEnv(dynamics, renderer, reward_system, dt, use_visual_state=True)
 
         state = env.reset()
         

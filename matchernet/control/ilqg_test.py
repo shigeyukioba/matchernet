@@ -8,8 +8,8 @@ from ilqg import iLQG
 
 
 class DummyDynamics(Dynamics):
-    def __init__(self, dt):
-        super(DummyDynamics, self).__init__(dt)
+    def __init__(self):
+        super(DummyDynamics, self).__init__()
         
         self.x = jacobian(self.value, 0)
         self.u = jacobian(self.value, 1)
@@ -56,9 +56,9 @@ class DummyCost(object):
 class iLQGTest(unittest.TestCase):
     def test_ilqg(self):
         dt = 0.03
-        dynamics = DummyDynamics(dt)
+        dynamics = DummyDynamics()
         cost = DummyCost()
-        ilqg = iLQG(dynamics, cost)
+        ilqg = iLQG(dynamics, cost, dt)
 
         # Initial state
         x0 = np.array([0.0, 0.0, 0.0, 0.0], dtype=np.float32)
