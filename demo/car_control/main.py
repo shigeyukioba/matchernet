@@ -120,9 +120,8 @@ def main():
             u_t = u_list[i]
             K_t = K_list[i]
             u = u_t + K_t @ (x - x_t)
-            dx = dynamics.value(x, u)
-            # TODO:
-            next_x = x + dx * dt
+            xdot = dynamics.value(x, u)
+            next_x = x + xdot * dt
             
             cost.apply_state(x_t, time_step * dt)
             

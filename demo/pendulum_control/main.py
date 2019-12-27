@@ -54,7 +54,6 @@ class EKFContinuousTime(object):
         mu = self.state.data["mu"]
         Sigma = self.state.data["Sigma"]
 
-        # TODO:
         mu = mu + self.dynamics.value(mu, u) * dt
         A = self.dynamics.x(mu, u)
         F = utils.calc_matrix_F(A, dt)
@@ -170,9 +169,8 @@ def main():
         ekf.step_dynamics(u, dt)
 
         # Update real state and observation
-        # TODO:
-        dx = dynamics.value(x_real, u)
-        next_x_real = np.random.multivariate_normal(x_real + dx * dt, Q)
+        xdot = dynamics.value(x_real, u)
+        next_x_real = np.random.multivariate_normal(x_real + xdot * dt, Q)
         y = np.random.multivariate_normal(g.value(x_real), R)
 
         # Estimate internal state given observation y

@@ -45,17 +45,17 @@ class CarDynamics(Dynamics):
         # Change in car angle
         d_angle = v / CAR_AXLES_DISTANCE * np.tan(w)
 
-        dx = np.array([v * np.cos(o),
-                       v * np.sin(o),
-                       d_angle,
-                       a],
-                      dtype=np.float32)
+        xdot = np.array([v * np.cos(o),
+                         v * np.sin(o),
+                         d_angle,
+                         a],
+                        dtype=np.float32)
 
         if self.Q is not None:
             # Add system noise
-            dx += np.random.multivariate_normal(np.zeros_like(x), self.Q)
+            xdot += np.random.multivariate_normal(np.zeros_like(x), self.Q)
         
-        return dx
+        return xdot
 
     @property
     def x_dim(self):

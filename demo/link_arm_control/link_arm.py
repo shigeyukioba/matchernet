@@ -82,13 +82,13 @@ class LinkArmDynamics(Dynamics):
         # First compute the denominator as the determinant of D:
         denom = (d11 * d22) - (d21 * d12)
 
-        dx = np.array([qd1,
+        xdot = np.array([qd1,
                        qd2,
                        ((rhs1 * d22 ) - (rhs2 * d12)) / denom,
                        (( d11 * rhs2) - (d21  * rhs1)) / denom],
                       dtype=np.float32)
 
-        return dx
+        return xdot
 
     @property
     def x_dim(self):

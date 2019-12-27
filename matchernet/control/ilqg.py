@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
-from matchernet.utils import calc_matrix_F
+from matchernet import utils
 
 
 class Regularization:
@@ -85,9 +85,8 @@ class iLQG(object):
         
         for i in range(T):
             cost.apply_state(x_list[i], (self.start_time_step + i) * self.dt)
-            #next_x = self.dynamics.value(x_list[i], u_init[i])
-            dx = self.dynamics.value(x_list[i], u_init[i])
-            next_x = x_list[i] + dx * self.dt
+            xdot = self.dynamics.value(x_list[i], u_init[i])
+            next_x = x_list[i] + xdot * self.dt
             x_list.append(next_x)
             
         return x_list
@@ -112,9 +111,8 @@ class iLQG(object):
                 next_u = np.min([next_u, np.ones_like(next_u) * u_max], axis=0)
             
             next_u_list.append(next_u)
-            dx = self.dynamics.value(next_x_list[t], next_u_list[t])
-            # TODO:
-            next_x = next_x_list[t] + dx * self.dt
+            xdot = self.dynamics.value(next_x_list[t], next_u_list[t])
+            next_x = next_x_list[t] + xdot * self.dt
             next_x_list.append(next_x)
             
             diff += np.sum(np.abs(u_list[t] - next_u_list[t]))
@@ -148,8 +146,8 @@ class iLQG(object):
             fx = self.dynamics.x(x, u)
             fu = self.dynamics.u(x, u)
             
-            A = calc_matrix_F(fx, self.dt)
-            B = fu * self.dt
+            Fx = utils.calc_matrix_F(fx, self.dt)
+            Fu = fu * self.dt
             
             # Derivatives of the running cost
             lx  = cost.x( x, u, (self.start_time_step+t) * self.dt)
@@ -159,11 +157,11 @@ class iLQG(object):
             lux = cost.ux(x, u, (self.start_time_step+t) * self.dt)
             
             # Derivatives of the Q function
-            Qx  = lx  + A.T @ Vx
-            Qu  = lu  + B.T @ Vx
-            Qxx = lxx + A.T @ Vxx @ A
-            Quu = luu + B.T @ Vxx @ B
-            Qux = lux + B.T @ Vxx @ A
+            Qx  = lx  + Fx.T @ Vx
+            Qu  = lu  + Fu.T @ Vx
+            Qxx = lxx + Fx.T @ Vxx @ Fx
+            Quu = luu + Fu.T @ Vxx @ Fu
+            Qux = lux + Fu.T @ Vxx @ Fx
             
             # Regularlize
             Quu = Quu + np.eye(self.dynamics.u_dim) + lambd

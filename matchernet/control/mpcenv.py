@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
-#from matchernet.utils import calc_matrix_F
-
 
 IMAGE_WIDTH = 256
 
@@ -95,13 +93,8 @@ class MPCEnv(object):
         Returns:
           (state, reward)
         """
-        #A = self.dynamics.x(self.x, action)
-        #B = self.dynamics.u(self.x, action)
-        #F = calc_matrix_F(A, self.dt)
-        #self.x = F @ self.x + B @ action * self.dt
-
-        dx = self.dynamics.value(self.x, action)
-        self.x = self.x + dx * self.dt
+        xdot = self.dynamics.value(self.x, action)
+        self.x = self.x + xdot * self.dt
         
         # Calculate reward
         if self.reward_system is not None:

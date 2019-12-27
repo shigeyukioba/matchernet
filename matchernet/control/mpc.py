@@ -28,7 +28,7 @@ class Dynamics(object):
 class Renderer(object):
     """
     Base interfaces for MPC agent renderer.
-    """    
+    """
     def __init__(self):
         pass
 
