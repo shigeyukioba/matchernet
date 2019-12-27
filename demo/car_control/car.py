@@ -42,34 +42,25 @@ class CarDynamics(Dynamics):
         a  = u[1] # Front wheel acceleration
     
         o  = x[2] # Car angle
-        v  = x[3] # Front wheel velocity
-    
-        # Front wheel rolling distance
-        f  = v * self.dt
-    
-        # Back wheel rolling distance
-        b = CAR_AXLES_DISTANCE + f * np.cos(w) - \
-            np.sqrt(CAR_AXLES_DISTANCE ** 2 - (f * np.sin(w)) ** 2)
+        v  = x[3] # Velocity
     
         # Change in car angle
-        d_angle = np.arcsin(np.sin(w) * f/CAR_AXLES_DISTANCE)
-    
-        # Change in state
-        dx = np.array([b*np.cos(o), b*np.sin(o), d_angle, a*self.dt],
+        d_angle = v / CAR_AXLES_DISTANCE * np.tan(w)
+
+        dx = np.array([v * np.cos(o),
+                       v * np.sin(o),
+                       d_angle,
+                       a],
                       dtype=np.float32)
-    
+
         # New state
-        x_new = x + dx
+        x_new = x + dx * self.dt
 
         if self.Q is not None:
             # Add system noise
             x_new += np.random.multivariate_normal(np.zeros_like(x_new),
-                                                    self.Q * self.dt)
+                                                   self.Q * self.dt)
         
-        # Limit x,y pos range For debugging)
-        x_min = np.array([-1, -1, -np.inf, -np.inf], dtype=np.float32)
-        x_max = np.array([ 1,  1,  np.inf,  np.inf], dtype=np.float32)
-        x_new = np.clip(x_new, x_min, x_max)
         return x_new
 
     @property
