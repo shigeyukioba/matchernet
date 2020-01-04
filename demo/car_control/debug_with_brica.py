@@ -11,10 +11,10 @@ from obstacle_reward_system import ObstacleRewardSystem
 
 def main():
     dt = 0.03
-    dynamics = CarDynamics(dt)
+    dynamics = CarDynamics()
     renderer = CarRenderer()
     reward_system = ObstacleRewardSystem()
-    env = MPCEnv(dynamics, renderer, reward_system, use_visual_state=False)
+    env = MPCEnv(dynamics, renderer, reward_system, dt, use_visual_state=False)
     
     mpcenv_bundle = MPCEnvBundle(env)
     mpcenv_matcher = MPCEnvDebugMatcher(mpcenv_bundle)

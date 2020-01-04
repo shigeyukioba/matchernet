@@ -1,6 +1,20 @@
 import numpy as np
 
 
+def regularize_cov_matrix(a, mineig=1e-5):
+    """
+    regularize the covariance matrix  a  so that its minimum eigen value is larger than  mineig.
+    """
+    l, p = np.linalg.eigh(a)
+    # Note: using eigh() rather than eig()
+    n = l.size
+    for i in range(n):
+        if l[i] < mineig:
+            l[i] = mineig
+    ar = np.dot(np.dot(p, np.diag(l)), p.T)
+    return ar
+
+
 def calc_matrix_F(A, dt):
     """Compute the F matrix.
 

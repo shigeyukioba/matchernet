@@ -30,7 +30,7 @@ class MPCEnvBundle(Bundle):
             x, reward = self.env.step(u)
             
             # Increment timestamp
-            self.timestamp += self.env.dynamics.dt
+            self.timestamp += self.env.dt
 
             # Send state to matcher
             state = {

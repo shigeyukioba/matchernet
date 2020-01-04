@@ -2,17 +2,10 @@
 import numpy as np
 from autograd import jacobian
 
+from matchernet.state import StateMuSigma
 from matchernet import utils
 from matchernet import iLQG, MovieWriter, AnimGIFWriter
 from pendulum import PendulumDynamics, PendulumCost, PendulumRenderer
-
-
-# TODO: use State classes from matchenet package after merge
-class StateMuSigma(object):
-    def __init__(self, mu, Sigma):
-        self.data = {}
-        self.data["mu"] = mu
-        self.data["Sigma"] = Sigma
 
 
 class PendulumObservation(object):
@@ -132,7 +125,7 @@ def main():
     
     # System noise covariance
     Q = np.array([[0.01, 0.0],
-                  [0.0, 0.01]], dtype=np.float32) * dt
+                  [0.0, 0.01]], dtype=np.float32)
     
     # Observation noise
     R = np.array([[0.01, 0.0],
@@ -170,7 +163,7 @@ def main():
 
         # Update real state and observation
         xdot = dynamics.value(x_real, u)
-        next_x_real = np.random.multivariate_normal(x_real + xdot * dt, Q)
+        next_x_real = np.random.multivariate_normal(x_real + xdot * dt, Q * dt)
         y = np.random.multivariate_normal(g.value(x_real), R)
 
         # Estimate internal state given observation y

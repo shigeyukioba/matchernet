@@ -12,6 +12,7 @@ https://github.com/BriCA/BriCA2
 """
 import brica
 from brica import Component
+import copy
 
 
 class Bundle(object):
@@ -47,7 +48,10 @@ class Matcher(object):
     """
     def __init__(self, name, *bundles):
         self.name = name
+        self.results = {}
         self.bundles = bundles
+        for bundle in self.bundles:
+            self.results[bundle.name] = copy.deepcopy(bundle.state)
         self.update_component()
 
     def update_component(self):
@@ -64,4 +68,4 @@ class Matcher(object):
         self.component = component
 
     def __call__(self, inputs):
-        return {}
+        return results
