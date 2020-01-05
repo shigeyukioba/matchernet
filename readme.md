@@ -1,19 +1,35 @@
 <img alt="PyPI" src="https://img.shields.io/pypi/v/matchernet"> <img alt="APM" src="https://img.shields.io/apm/l/matchernet">
 
+
+<img alt="MN logo" src="MatcherNetLogo.png" width="200" height="200" >
+
 # What is MatcherNet?
 
-## What is it in short?
-MatcherNet is a modular and hierarchical state-space model for dynamic system identification and control. If you are working with a world model of high-dimensional / multi-modal / multi-scale states and observations for robotics, image processing, sensor networks, and their hybrid cases, MatcherNet may provide you a solution better than a large state space model, a large end-to-end deep neural network, etc.
+## What is it?
+MatcherNet is a probabilistic state-space model for dynamic system identification and control. With MatcherNet, you can easily design a dynamic world model of high-dimensional / multi-modal / multi-scale states and observations for robotics, image processing, sensor networks, and their hybrid cases. MatcherNet may provide you a solution better than a large state space model, a deep neural network of end-to-end structure, etc.
 
+<img alt="MatcherNet" src="MatcherNet.png" height="300"> 
+                                                                                                  
 ## MatcherNet as a state space model
-MatcherNet includes Extended Kalman-filter (EKF), a non-linear extension of Kalman-filter, as a special case. Design a pair of observation model p( y_t | x_t ) and dynamics model p( x_t+1 | x_t ), and EKF calculates the posterior of the current state p( x_t | y_1:t ). For MatcherNet, divide the state variable into multiple parts x_t = (x_1t, x_2t, ..., x_kt), design dynamics models for each part, and then, MatcherNet can manage them in a parallel and principled manner.
+<img alt="MatcherNet" src="ssm.png" height="200">
+MatcherNet is a state space model that includes Extended Kalman-filter (EKF), a non-linear extension of Kalman-filter, as a special case. The EKF works with a pair of given observation model p( y(t) | x(t) ) and dynamics model p( x(t+Delta t) | x(t) ), and it calculates the posterior of the current state q( x(t) ) = p( x(t) | y(1),...,y(t) ) in a sequential manner. In MatcherNet, the algorithm is written in a message passing among the bundles (the observation and the state space model) and the matcher (the prediction model), see the figure above.
 
-## MatcherNet as a controller
-MatcherNet includes system controllers, such as PID, iLQR (iLQG). Provide a control goal as a prior probability of the state variable, and the controller calculates the control signal that minimizes the current and future distance to the prior. 
+<img alt="MatcherNet" src="decomposition.png" height="200">
+For MatcherNet, the user may divide the observed variable  y  and the state variable  x  into multiple parts,  like  y = (y^(1), y^(2), y^(3) ),  x = ( x^(1), x^(2), x^(3), x^(4) ), respectively. Then, the state space is approximated with the hierarchically decomposed model, in which all parts of dynamics/observation model are low-dimensional, easy to learn, and re-usable models.
 
-## MatcherNet and mupti-thread computing
+## MatcherNet as a model predictive controller
+<img alt="MatcherNet" src="mn_controllers2.png" height="200">
+
+MatcherNet can emit control signal u in an online manner as model predictive control (MPC). A typical network structure (left pannel in the Fig. above) can implement well known controllers, such as PID, iLQR (iLQG), whereas a simpler structure (right pannel) can implement so called "active inference". In any cases, you can provide a control goal as a prior probability of the state variable, and the controller calculates the control signal that minimizes the current and future distance to the prior. 
+
+## MatcherNet and multi-thread computing
+<img alt="MatcherNet" src="mn_parallel.png" height="300">
+
 MatcherNet efficiently works with multi-thread computing. Modular division of state-space model lower the dimensionality of each state variable, and multiple modules run in parallel in a multi-core computing environment. 
 
+## Acknowledgment
+MatcherNet was developped with support by the New Energy and Industrial Technology Development Organization (NEDO), Japan,
+and by Post-K application development for exploratory challenges from the MEXT, Japan.
 
 # How to install?
 The alpha version has been tested and released below:
@@ -34,8 +50,9 @@ See also jupyter notebooks under the `/examples` directory.
 
 # How to set up in detail?
 ## For MacOSX
-### Install Python 3.7.2
-3.8.* is not supported.
+### Install Python 3.7.*
+It is tested on 3.7.2 and 3.7.3.
+3.8.* is not supported yet.
 ### Set up virtual environment
 ```bash
 mkdir ~/virt_env
@@ -49,7 +66,7 @@ pip3 install brica2==0.5
 pip3 install matplotlib==3.1.1
 pip3 install numpy==1.17.3 
 pip3 install autograd==1.3
-pip3 install -i https://test.pypi.org/simple/ matchernet-py-001==0.0.2
+pip3 install -i https://test.pypi.org/simple/ matchernet-py-001
 ```
 ### Modify PYTHONPATH
 ```bash
@@ -63,7 +80,7 @@ Python3 demos/demo_ekf.py
 ```
 
 ## For ARM server
-Setting up virtual environment at the ARM server
+Setting up virtual environment at the ARM server with many cores.
 
 - First create a directory for the environments
 ```bash
