@@ -1,10 +1,10 @@
 import unittest
 import numpy as np
 
-from matchernet.observer import Observer, ObserverMultiple, missing_handler001
+from matchernet.observer import Observer, ObserverMultiple, missing_handler
 
 
-class TestMissingHandler001(unittest.TestCase):
+class TestMissingHandler(unittest.TestCase):
     def test_complete(self):
         test_mu_patterns = [
             np.array([1, 2, 3]),
@@ -13,7 +13,7 @@ class TestMissingHandler001(unittest.TestCase):
         for mu in test_mu_patterns:
             sigma = np.eye(len(mu))
             with self.subTest():
-                actual_mu, actual_sigma = missing_handler001(mu, sigma)
+                actual_mu, actual_sigma = missing_handler(mu, sigma)
                 self.assertIsNone(np.testing.assert_array_equal(mu, actual_mu))
                 self.assertIsNone(np.testing.assert_array_equal(sigma, actual_sigma))
 
@@ -26,7 +26,7 @@ class TestMissingHandler001(unittest.TestCase):
         for mu in test_mu_patterns:
             sigma = np.eye(len(mu))
             with self.subTest():
-                actual_mu, actual_sigma = missing_handler001(mu, sigma)
+                actual_mu, actual_sigma = missing_handler(mu, sigma)
                 expected_sigma = 1000 * sigma
                 self.assertIsNone(np.testing.assert_array_equal(expected_mu, actual_mu))
                 self.assertIsNone(np.testing.assert_array_equal(expected_sigma, actual_sigma))

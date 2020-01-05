@@ -43,7 +43,7 @@ class Observer(matchernet.Bundle):
         self.dim = buff.shape[1]
         self.state = state.StateMuSigma(self.dim)
         self.obs_noise_covariance = 1000 * np.eye(self.dim, dtype=np.float32)
-        self.missing_handler = missing_handler001
+        self.missing_handler = missing_handler
         # default setting of missing value handler function
         self.set_results()
         # set the first value with large obs_noise_covariance
@@ -88,7 +88,7 @@ class Observer(matchernet.Bundle):
         # === Note: We may regard  "time_stamp"  as a real time rather than a counter in a future version.
 
 
-def missing_handler001(mu, Sigma, logger=logger):
+def missing_handler(mu, Sigma, logger=logger):
     """A missing value handler function.
     It receives a vector data  mu  with a default covariance matrix  Sigma, find NaN in the vector  mu, and outputs a modified set of a vector  mu  and a covariance  cov.
     """
