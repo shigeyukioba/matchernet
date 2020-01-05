@@ -1,11 +1,11 @@
-from matchernet_py_001.ekf import *
-from matchernet_py_001.fn import *
-from matchernet_py_001.matchernet import *
-from matchernet_py_001.matchernet_null import *
-from matchernet_py_001.observer import *
-from matchernet_py_001.state import *
-from matchernet_py_001.state_space_model_2d import *
-from matchernet_py_001.utils import *
+from matchernet.ekf import *
+from matchernet.fn import *
+from matchernet.matchernet import *
+from matchernet.matchernet_null import *
+from matchernet.observer import *
+from matchernet.state import *
+from matchernet.state_space_model_2d import *
+from matchernet.utils import *
 
 __copyright__ = 'Copyright (C) 2019 Shigeyuki Oba'
 __version__ = '0.0.1'

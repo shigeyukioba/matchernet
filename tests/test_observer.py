@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from matchernet_py_001.observer import Observer, ObserverMultiple, missing_handler001
+from matchernet.observer import Observer, ObserverMultiple, missing_handler001
 
 
 class TestMissingHandler001(unittest.TestCase):

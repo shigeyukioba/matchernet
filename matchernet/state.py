@@ -1,6 +1,6 @@
 import numpy as np
 
-from matchernet_py_001 import utils
+from matchernet import utils
 
 
 class State(object):

@@ -1,8 +1,8 @@
 import unittest
 import numpy as np
 
-from matchernet_py_001 import utils
-from matchernet_py_001.state import StatePlain, StateMuSigma, StateMuSigmaDiag
+from matchernet import utils
+from matchernet.state import StatePlain, StateMuSigma, StateMuSigmaDiag
 
 
 class TestStatePlain(unittest.TestCase):

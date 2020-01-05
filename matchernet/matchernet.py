@@ -15,8 +15,8 @@ import brica
 from brica import Component, VirtualTimeScheduler, Timing
 import copy
 
-from matchernet_py_001 import state
-from matchernet_py_001 import utils
+from matchernet import state
+from matchernet import utils
 
 logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)

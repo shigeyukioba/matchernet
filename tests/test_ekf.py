@@ -1,9 +1,9 @@
 import numpy as np
 import unittest
 
-from matchernet_py_001.ekf import BundleEKFContinuousTime
-from matchernet_py_001 import fn
-from matchernet_py_001 import utils
+from matchernet.ekf import BundleEKFContinuousTime
+from matchernet import fn
+from matchernet import utils
 
 
 class TestBundleEKFContinuousTime(unittest.TestCase):

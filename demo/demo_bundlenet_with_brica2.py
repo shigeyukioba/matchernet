@@ -6,7 +6,7 @@ import numpy as np
 
 import brica
 from brica import Component, VirtualTimeScheduler, Timing
-from matchernet_py_001 import state
+from matchernet import state
 import copy
 
 logging_conf.set_logger_config("./log/logging.json")

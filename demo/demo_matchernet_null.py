@@ -1,6 +1,6 @@
 import time
 from brica import VirtualTimeScheduler, Timing
-from matchernet_py_001.matchernet_null import BundleNull, MatcherNull2
+from matchernet.matchernet_null import BundleNull, MatcherNull2
 
 
 def test_null():

@@ -2,10 +2,10 @@ import logging
 from log import logging_conf
 import numpy as np
 
-from matchernet_py_001 import fn
-from matchernet_py_001.matchernet import Bundle, Matcher
-from matchernet_py_001 import state
-from matchernet_py_001 import utils
+from matchernet import fn
+from matchernet.matchernet import Bundle, Matcher
+from matchernet import state
+from matchernet import utils
 
 logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)

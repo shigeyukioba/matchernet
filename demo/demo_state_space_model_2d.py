@@ -3,9 +3,9 @@ from log import logging_conf
 import numpy as np
 import matplotlib.pyplot as plt
 
-from matchernet_py_001 import fn
-from matchernet_py_001.state_space_model_2d import StateSpaceModel2Dim
-from matchernet_py_001 import utils
+from matchernet import fn
+from matchernet.state_space_model_2d import StateSpaceModel2Dim
+from matchernet import utils
 
 logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
