@@ -88,7 +88,7 @@ class Observer(matchernet.Bundle):
         # === Note: We may regard  "time_stamp"  as a real time rather than a counter in a future version.
 
 
-def missing_handler001(mu, Sigma, logger):
+def missing_handler001(mu, Sigma, logger=logger):
     """A missing value handler function.
     It receives a vector data  mu  with a default covariance matrix  Sigma, find NaN in the vector  mu, and outputs a modified set of a vector  mu  and a covariance  cov.
     """
