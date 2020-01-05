@@ -12,10 +12,6 @@ def _requirements():
     return open(path.join(root_dir, 'requirements.txt')).read().splitlines()
 
 
-def _test_requirements():
-    return [name.rstrip() for name in open(path.join(root_dir, 'test-requirements.txt')).readlines()]
-
-
 with open(path.join(root_dir, package_name, '__init__.py')) as f:
     init_text = f.read()
     version = re.search(r'__version__\s*=\s*[\'\"](.+?)[\'\"]', init_text).group(1)
@@ -42,7 +38,6 @@ setup(
     license=license,
 
     install_requires=_requirements(),
-    tests_require=_test_requirements(),
 
     author=author,
     author_email=author_email,
