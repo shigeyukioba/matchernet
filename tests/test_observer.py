@@ -47,7 +47,7 @@ class TestObserver(unittest.TestCase):
         for i in range(self.repeat_num):
             for j in range(self.buffersize):
                 self.b.count_up()
-                actual = self.b.get_state()[0]
+                actual = self.b.get_state()
                 expected[0] = j
                 self.assertIsNone(np.testing.assert_array_equal(expected, actual))
 
@@ -56,7 +56,7 @@ class TestObserver(unittest.TestCase):
         for i in range(self.repeat_num):
             for j in range(self.buffersize):
                 self.b(self.b.state)
-                actual = self.b.results["state"].data["mu"][0]
+                actual = self.b.results["state"].data["mu"]
                 expected[0] = j
                 self.assertIsNone(np.testing.assert_array_equal(expected, actual))
 
