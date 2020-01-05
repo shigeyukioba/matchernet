@@ -15,7 +15,7 @@ class TestStatePlain(unittest.TestCase):
 
     def test_init_val(self):
         actual = self.s.data["mu"]
-        expected = utils.zeros((1, self.n))
+        expected = utils.zeros(self.n)
         self.assertIsNone(np.testing.assert_array_equal(expected, actual))
 
 
@@ -32,7 +32,7 @@ class TestStateMuSigma(unittest.TestCase):
 
     def test_init_val(self):
         actual_mu = self.s.data["mu"]
-        expected_mu = utils.zeros((1, self.n))
+        expected_mu = utils.zeros(self.n)
         self.assertIsNone(np.testing.assert_array_equal(expected_mu, actual_mu))
 
         actual_sigma = self.s.data["Sigma"]
@@ -53,7 +53,7 @@ class TestStateMuSigmaDiag(unittest.TestCase):
 
     def test_init_val(self):
         actual_mu = self.s.data["mu"]
-        expected_mu = utils.zeros((1, self.n))
+        expected_mu = utils.zeros(self.n)
         self.assertIsNone(np.testing.assert_array_equal(expected_mu, actual_mu))
 
         actual_sigma = self.s.data["sigma"]
