@@ -51,7 +51,7 @@ class Matcher(object):
         self.results = {}
         self.bundles = bundles
         for bundle in self.bundles:
-            self.results[bundle.name] = copy.deepcopy(bundle.state)
+            self.results[bundle.name] = {}
         self.update_component()
 
     def update_component(self):

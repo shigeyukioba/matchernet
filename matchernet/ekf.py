@@ -49,7 +49,7 @@ class MatcherEKF(Matcher):
 
     def update(self, inputs):
         self.b0state, self.b1state = inputs[self.b0name], inputs[self.b1name]
-        d0, d1 = self.b0state.data, self.b1state.data
+        d0, d1 = self.b0state, self.b1state
 
         self.mu0 = d0["mu"]
         self.Sigma0 = d0["Sigma"]
@@ -64,7 +64,7 @@ class MatcherEKF(Matcher):
         self.forward()
         self.backward()
 
-        self.results[self.b0name].data["mu"] = self.dmu0.astype(np.float32)
-        self.results[self.b0name].data["Sigma"] = self.dSigma0.astype(np.float32)
-        self.results[self.b1name].data["mu"] = self.dmu1.astype(np.float32)
-        self.results[self.b1name].data["Sigma"] = self.dSigma1.astype(np.float32)
+        self.results[self.b0name]["mu"] = self.dmu0.astype(np.float32)
+        self.results[self.b0name]["Sigma"] = self.dSigma0.astype(np.float32)
+        self.results[self.b1name]["mu"] = self.dmu1.astype(np.float32)
+        self.results[self.b1name]["Sigma"] = self.dSigma1.astype(np.float32)
