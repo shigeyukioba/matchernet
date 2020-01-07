@@ -10,7 +10,7 @@ from matchernet.state import StateMuSigma
 from matchernet.ekf import MatcherEKF
 from pendulum import PendulumDynamics, PendulumCost, PendulumRenderer
 from matchernet import iLQG
-from matchernet import MovieWriter
+from matchernet import MovieWriter, AnimGIFWriter
 
 from matchernet import Bundle
 from matchernet import utils
@@ -308,20 +308,23 @@ class PendulumEnvRecorder(object):
         if self.current_frame == 0:
             self.renderer = PendulumRenderer(image_width=256)
             self.movie = MovieWriter("out.mov", (256, 256), 30)
+            self.gif = AnimGIFWriter("out.gif", 30)
         
         if self.current_frame < self.recording_frame_size:
             image = self.renderer.render(x, u)
             image = (image * 255.0).astype(np.uint8)
             self.movie.add_frame(image)
+            self.gif.add_frame(image)
             if self.current_frame == self.recording_frame_size-1:
                 self.movie.close()
+                self.gif.close()
         self.current_frame += 1
         
 
 def main():
     np.random.rand(0)
 
-    dt = 0.01
+    dt = 0.02
     dynamics = PendulumDynamics()
     cost = PendulumCost()
     T = 30 # Horizon
