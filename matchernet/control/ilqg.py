@@ -53,8 +53,8 @@ class iLQG(object):
         self.regularization = Regularization()
         
         for i in range(iter_max):
-            print("iter={}".format(i))
-
+            #print("iter={}".format(i))
+            
             for j in range(10):
                 lambd = self.regularization.get_current_lamba()
                 diverged, k_list, K_list = self.backward(x_list, u_list, T, cost, lambd)

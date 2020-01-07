@@ -8,7 +8,9 @@ from brica import Component, VirtualTimeScheduler, Timing
 from matchernet import MPCEnv
 from matchernet.state import StateMuSigma
 from matchernet.ekf import MatcherEKF
-from pendulum import PendulumDynamics, PendulumCost
+from pendulum import PendulumDynamics, PendulumCost, PendulumRenderer
+from matchernet import iLQG
+from matchernet import MovieWriter
 
 from matchernet import Bundle
 from matchernet import utils
@@ -85,7 +87,7 @@ class MPCEnvBundle(Bundle):
     MPCEnv bundle class that communicates with matcher.
     """
 
-    def __init__(self, env, R):
+    def __init__(self, env, R, debug_recorder=None):
         """
         Arguments:
           env
@@ -97,6 +99,8 @@ class MPCEnvBundle(Bundle):
         self.env = env
         self.R = R
         self.time_stamp = 0.0
+        self.debug_recorder = debug_recorder
+        
         self.update_component()
 
     def __call__(self, inputs):
@@ -119,6 +123,9 @@ class MPCEnvBundle(Bundle):
         results["Sigma"] = self.R
         results["time_stamp"] = self.time_stamp
 
+        if self.debug_recorder is not None:
+            self.debug_recorder.record(x, u)
+        
         # Send state to matcher
         return {"state": results}
 
@@ -186,12 +193,15 @@ class MatcherController(object):
 
 
 class Plan(object):
-    def __init__(self):
-        pass
+    def __init__(self, x_list, u_list, K_list):
+        self.x_list = x_list
+        self.u_list = u_list
+        self.K_list = K_list
 
 
 class MatcherILQR(object):
-    def __init__(self, ekf_bundle, plan_bundle):
+    def __init__(self, ekf_bundle, plan_bundle,
+                 dynamics, cost, dt, T, iter_max):
         self.name = "matcher_ilqr"
         self.results = {}
 
@@ -201,6 +211,11 @@ class MatcherILQR(object):
 
         self.results[self.plan_bundle.name] = {}
 
+        self.ilqg = iLQG(dynamics=dynamics, cost=cost, dt=dt)
+        
+        self.T = T
+        self.iter_max = iter_max
+        
         self.update_component()
 
     def update_component(self):
@@ -228,8 +243,15 @@ class MatcherILQR(object):
         ekf_state = inputs[self.ekf_bundle.name]
         
         mu = ekf_state["mu"]
-        plan = Plan()
-        
+
+        # Initial control sequence for MPC
+        u0 = np.zeros((self.T, 1), dtype=np.float32)
+
+        x_list, u_list, K_list = self.ilqg.optimize(mu,
+                                                    u0,
+                                                    self.T,
+                                                    self.iter_max)
+        plan = Plan(x_list, u_list, K_list)
         self.results[self.plan_bundle.name]["plan"] = plan
 
 
@@ -238,13 +260,27 @@ class BundlePlan(Bundle):
         super(BundlePlan, self).__init__("plan_bundle")
         self.x_dim = x_dim
         self.u_dim = u_dim
+        
+        self.latest_plan = None
+        self.index_in_plan = 0
+        
         self.update_component()
 
     def __call__(self, inputs):
-        # TODO: 実装中
-        x = np.zeros((self.x_dim,), dtype=np.float32)
-        u = np.zeros((self.u_dim,), dtype=np.float32)
-        K = np.zeros((self.u_dim, self.x_dim), dtype=np.float32)
+        if "matcher_ilqr" in inputs.keys() and inputs["matcher_ilqr"] is not None:
+            plan = inputs["matcher_ilqr"]["plan"]
+            self.latest_plan = plan
+            self.index_in_plan = 0
+        
+        if self.latest_plan is not None:
+            x = self.latest_plan.x_list[self.index_in_plan]
+            u = self.latest_plan.u_list[self.index_in_plan]
+            K = self.latest_plan.K_list[self.index_in_plan]
+            self.index_in_plan += 1
+        else:
+            x = np.zeros((self.x_dim,), dtype=np.float32)
+            u = np.zeros((self.u_dim,), dtype=np.float32)
+            K = np.zeros((self.u_dim, self.x_dim), dtype=np.float32)
         
         results = {
             "x": x,
@@ -263,17 +299,47 @@ class PendulumObservation(object):
         return x
 
 
+class PendulumEnvRecorder(object):
+    def __init__(self, recording_frame_size):
+        self.recording_frame_size = recording_frame_size
+        self.current_frame = 0
+        
+    def record(self, x, u):
+        if self.current_frame == 0:
+            self.renderer = PendulumRenderer(image_width=256)
+            self.movie = MovieWriter("out.mov", (256, 256), 30)
+        
+        if self.current_frame < self.recording_frame_size:
+            image = self.renderer.render(x, u)
+            image = (image * 255.0).astype(np.uint8)
+            self.movie.add_frame(image)
+            if self.current_frame == self.recording_frame_size-1:
+                self.movie.close()
+        self.current_frame += 1
+        
+
 def main():
     np.random.rand(0)
 
-    dt = 0.05
+    dt = 0.01
     dynamics = PendulumDynamics()
+    cost = PendulumCost()
+    T = 30 # Horizon
+    control_T = 10
+    iter_max = 20
+    num_steps = 300
+
+    debug_recorder = PendulumEnvRecorder(num_steps-5)
+
+    # Initial state
+    x0 = np.array([np.pi, 0.0], dtype=np.float32)
 
     env = MPCEnv(dynamics, None, None, dt, use_visual_state=False)
+    env.reset(x0)
 
     # Observation noise
     R = np.array([[0.01, 0.0], [0.0, 0.01]], dtype=np.float32)
-    mpcenv_b = MPCEnvBundle(env, R)
+    mpcenv_b = MPCEnvBundle(env, R, debug_recorder=debug_recorder)
 
     # System noise covariance
     Q = np.array([[0.01, 0.0], [0.0, 0.01]], dtype=np.float32)
@@ -299,22 +365,21 @@ def main():
     ekf_m = MatcherEKF("ekf_matcher", mpcenv_b, ekf_b, g0, g1)
 
     # ILQR Matcher
-    ilqr_m = MatcherILQR(ekf_b, plan_b)
+    ilqr_m = MatcherILQR(ekf_b, plan_b, dynamics, cost, dt, T, iter_max)
 
     scheduler = VirtualTimeScheduler()
 
-    timing0 = Timing(0, 1, 1)
-    timing1 = Timing(1, 1, 1)
+    # offset, interval, sleep
+    timing0 = Timing(0, 1, 0)
+    timing1 = Timing(1, 1, 0)
+    timing_planning = Timing(3, control_T, 0)
 
-    # TODO: iLQRのインターバル設定
     scheduler.add_component(mpcenv_b.component, timing0)
     scheduler.add_component(ekf_b.component, timing0)
     scheduler.add_component(ekf_m.component, timing1)
     scheduler.add_component(controller_m.component, timing1)
     scheduler.add_component(plan_b.component, timing0)
-    scheduler.add_component(ilqr_m.component, timing1)
-
-    num_steps = 10
+    scheduler.add_component(ilqr_m.component, timing_planning)
 
     for i in range(num_steps):
         print("Step {}/{}".format(i, num_steps))
