@@ -24,7 +24,6 @@ class BundleEKFWithController(Bundle):
         self._initialize_state(mu, Sigma)
 
         self.Q = Q
-        self.time_stamp = 0.0
 
         self.update_component()
 
@@ -45,15 +44,19 @@ class BundleEKFWithController(Bundle):
         results = {
             "mu": self.state.data["mu"],
             "Sigma": self.state.data["Sigma"],
-            "time_stamp": self.time_stamp
+            "time_stamp": self.time_stamp,
+            "time_id": self.time_id
         }
         return {"state": results}
 
     def _initialize_control_params(self, dt):
         self.dt = dt
+        self.time_stamp = 0.0
+        self.time_id = 0
 
     def _countup(self):
         self.time_stamp += self.dt
+        self.time_id += 1
 
     def _initialize_state(self, mu, Sigma):
         self.state = StateMuSigma(mu, Sigma)
@@ -99,6 +102,7 @@ class MPCEnvBundle(Bundle):
         self.env = env
         self.R = R
         self.time_stamp = 0.0
+        self.time_id = 0
         self.debug_recorder = debug_recorder
         
         self.update_component()
@@ -116,16 +120,18 @@ class MPCEnvBundle(Bundle):
         # Ignoring env rewards
         x, _ = self.env.step(u)
         
-        self.time_stamp += self.env.dt
-
         results = {}
         results["mu"] = x
         results["Sigma"] = self.R
         results["time_stamp"] = self.time_stamp
+        results["time_id"] = self.time_id
 
         if self.debug_recorder is not None:
             self.debug_recorder.record(x, u)
-        
+
+        self.time_stamp += self.env.dt
+        self.time_id += 1
+
         # Send state to matcher
         return {"state": results}
 
@@ -183,8 +189,14 @@ class MatcherController(object):
         x_plan = plan_state["x"]
         u_plan = plan_state["u"]
         K_plan = plan_state["K"]
+        plan_time_stamp = plan_state["time_stamp"]
+        plan_time_id = plan_state["time_id"]
 
         mu = ekf_state["mu"]
+        ekf_time_stamp = ekf_state["time_stamp"]
+        ekf_time_id = ekf_state["time_id"]
+
+        #print("time stamp, ekf={0}, plan={1}".format(ekf_time_stamp, plan_time_stamp))
 
         u = u_plan + K_plan @ (mu - x_plan)
 
@@ -193,10 +205,12 @@ class MatcherController(object):
 
 
 class Plan(object):
-    def __init__(self, x_list, u_list, K_list):
+    def __init__(self, x_list, u_list, K_list, time_stamp, time_id):
         self.x_list = x_list
         self.u_list = u_list
         self.K_list = K_list
+        self.time_stamp = time_stamp
+        self.time_id = time_id
 
 
 class MatcherILQR(object):
@@ -215,6 +229,9 @@ class MatcherILQR(object):
         
         self.T = T
         self.iter_max = iter_max
+
+        self.last_u_list = None
+        self.last_time_id = 0
         
         self.update_component()
 
@@ -243,23 +260,34 @@ class MatcherILQR(object):
         ekf_state = inputs[self.ekf_bundle.name]
         
         mu = ekf_state["mu"]
+        time_stamp = ekf_state["time_stamp"]
+        time_id = ekf_state["time_id"]
 
         # Initial control sequence for MPC
         u0 = np.zeros((self.T, 1), dtype=np.float32)
+        if self.last_u_list is not None:
+            # Set initial control signals by copying last control signals.
+            advance_time_id = time_id - self.last_time_id
+            u0[:self.T-advance_time_id,:] = self.last_u_list[advance_time_id:,:]
 
         x_list, u_list, K_list = self.ilqg.optimize(mu,
                                                     u0,
                                                     self.T,
                                                     self.iter_max)
-        plan = Plan(x_list, u_list, K_list)
+        plan = Plan(x_list, u_list, K_list, time_stamp, time_id)
         self.results[self.plan_bundle.name]["plan"] = plan
+        
+        self.last_u_list = u_list
+        self.last_time_id = time_id
 
 
 class BundlePlan(Bundle):
-    def __init__(self, x_dim, u_dim):
+    def __init__(self, x_dim, u_dim, dt, control_T):
         super(BundlePlan, self).__init__("plan_bundle")
         self.x_dim = x_dim
         self.u_dim = u_dim
+        self.dt = dt
+        self.control_T = control_T
         
         self.latest_plan = None
         self.index_in_plan = 0
@@ -269,23 +297,32 @@ class BundlePlan(Bundle):
     def __call__(self, inputs):
         if "matcher_ilqr" in inputs.keys() and inputs["matcher_ilqr"] is not None:
             plan = inputs["matcher_ilqr"]["plan"]
-            self.latest_plan = plan
-            self.index_in_plan = 0
+            if (self.latest_plan is None) or (self.latest_plan.time_id != plan.time_id):
+                self.latest_plan = plan
+                self.index_in_plan = self.control_T - 1
+                # Note: To make the timestamp equal to that from EKFBundle, we need to start
+                # index_in_plan as 'control_T + 1', but we are now using 'control_T - 1'
         
         if self.latest_plan is not None:
             x = self.latest_plan.x_list[self.index_in_plan]
             u = self.latest_plan.u_list[self.index_in_plan]
             K = self.latest_plan.K_list[self.index_in_plan]
+            time_stamp = self.latest_plan.time_stamp + self.dt * self.index_in_plan
+            time_id = self.latest_plan.time_id + self.index_in_plan
             self.index_in_plan += 1
         else:
             x = np.zeros((self.x_dim,), dtype=np.float32)
             u = np.zeros((self.u_dim,), dtype=np.float32)
             K = np.zeros((self.u_dim, self.x_dim), dtype=np.float32)
+            time_stamp = 0
+            time_id = 0
         
         results = {
             "x": x,
             "u": u,
-            "K": K
+            "K": K,
+            "time_stamp": time_stamp,
+            "time_id": time_id
         }
         return {"state": results}
 
@@ -325,10 +362,12 @@ def main():
     np.random.rand(0)
 
     dt = 0.02
+    #dt = 0.05
     dynamics = PendulumDynamics()
     cost = PendulumCost()
-    T = 30 # Horizon
-    control_T = 10
+    #T = 30 # Horizon
+    T = 40 # Horizon
+    control_T = 10 # Plan update interval for receding horizon
     iter_max = 20
     num_steps = 300
 
@@ -356,7 +395,7 @@ def main():
                                     mu0, Sigma0)
 
     # Plan Bundle
-    plan_b = BundlePlan(dynamics.x_dim, dynamics.u_dim)
+    plan_b = BundlePlan(dynamics.x_dim, dynamics.u_dim, dt, control_T)
 
     # Controller Matcher
     controller_m = MatcherController(mpcenv_b, ekf_b, plan_b)
@@ -373,15 +412,15 @@ def main():
     scheduler = VirtualTimeScheduler()
 
     # offset, interval, sleep
-    timing0 = Timing(0, 1, 0)
-    timing1 = Timing(1, 1, 0)
-    timing_planning = Timing(3, control_T, 0)
+    timing_bundle = Timing(0, 1, 0)
+    timing_matcher = Timing(1, 1, 0)
+    timing_planning = Timing(1, control_T, 0)
 
-    scheduler.add_component(mpcenv_b.component, timing0)
-    scheduler.add_component(ekf_b.component, timing0)
-    scheduler.add_component(ekf_m.component, timing1)
-    scheduler.add_component(controller_m.component, timing1)
-    scheduler.add_component(plan_b.component, timing0)
+    scheduler.add_component(mpcenv_b.component, timing_bundle)
+    scheduler.add_component(ekf_b.component, timing_bundle)
+    scheduler.add_component(ekf_m.component, timing_matcher)
+    scheduler.add_component(controller_m.component, timing_matcher)
+    scheduler.add_component(plan_b.component, timing_bundle)
     scheduler.add_component(ilqr_m.component, timing_planning)
 
     for i in range(num_steps):
