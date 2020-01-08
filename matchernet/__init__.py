@@ -1,10 +1,11 @@
 from matchernet.matchernet import *
 from matchernet.utils import *
-from matchernet.control.mpcenv_bundle import *
 from matchernet.control.mpcenv import *
+from matchernet.control.control import *
 from matchernet.control.mpc import *
 from matchernet.control.ilqg import *
 from matchernet.util.recording import *
+from matchernet.ekf import *
 
 __copyright__ = 'Copyright (C) 2019 Shigeyuki Oba'
 __version__ = '0.0.1'
