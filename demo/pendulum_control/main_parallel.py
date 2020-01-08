@@ -17,25 +17,26 @@ from matchernet import utils
 
 
 class BundleEKFWithController(Bundle):
-    def __init__(self, name, dt, f, Q, mu, Sigma):
+    def __init__(self, name, dt, f, Q, mu, Sigma, control_src_name):
         super(BundleEKFWithController, self).__init__(name)
         self.f = f
         self._initialize_control_params(dt)
         self._initialize_state(mu, Sigma)
-
+        
         self.Q = Q
+        self.control_src_name = control_src_name
 
         self.update_component()
 
     def __call__(self, inputs):
         for key in inputs:  # key is one of the matcher names
             if inputs[key] is not None:
-                if "controller" not in key:
+                if key != self.control_src_name:
                     self.accept_feedback(inputs[key])
 
         for key in inputs:  # key is one of the matcher names
             if inputs[key] is not None:
-                if "controller" in key:
+                if key == self.control_src_name:
                     u = inputs[key]["u"]
                     self.step_dynamics(u, self.dt)
 
@@ -90,19 +91,22 @@ class MPCEnvBundle(Bundle):
     MPCEnv bundle class that communicates with matcher.
     """
 
-    def __init__(self, env, R, debug_recorder=None):
+    def __init__(self, name, env, R, control_src_name, debug_recorder=None):
         """
         Arguments:
           env
             MPCEnv instance
           R
-            observation noise
+            Observation noise
+          control_src_name
+            Name of controller src node (Controller Matcher)
         """
-        super(MPCEnvBundle, self).__init__("mpcenv_bundle")
+        super(MPCEnvBundle, self).__init__(name)
         self.env = env
         self.R = R
         self.time_stamp = 0.0
         self.time_id = 0
+        self.control_src_name = control_src_name
         self.debug_recorder = debug_recorder
         
         self.update_component()
@@ -110,11 +114,11 @@ class MPCEnvBundle(Bundle):
     def __call__(self, inputs):
         u_dim = self.env.dynamics.u_dim
 
-        # Receive action from Matcher
-        if "matcher_controller" in inputs.keys() and inputs["matcher_controller"] is not None:
-            u = inputs["matcher_controller"]["u"]
+        # Receive action from Controller Matcher
+        if self.control_src_name in inputs.keys() and inputs[self.control_src_name] is not None:
+            u = inputs[self.control_src_name]["u"]
         else:
-            u = np.zeros((u_dim, ), dtype=np.float32)
+            u = np.zeros((u_dim,), dtype=np.float32)
 
         # Step environment with received action
         # Ignoring env rewards
@@ -137,8 +141,8 @@ class MPCEnvBundle(Bundle):
 
 
 class MatcherController(object):
-    def __init__(self, mpcenv_bundle, ekf_bundle, plan_bundle):
-        self.name = "matcher_controller"
+    def __init__(self, name, mpcenv_bundle, ekf_bundle, plan_bundle):
+        self.name = name
         self.results = {}
 
         self.mpcenv_bundle = mpcenv_bundle
@@ -147,7 +151,7 @@ class MatcherController(object):
         
         self.results[self.mpcenv_bundle.name] = {}
         self.results[self.ekf_bundle.name] = {}
-        # plan_bundle宛てのresultsは無いので注意
+        # Note: there is no results entry for plan_bundle
 
         self.update_component()
 
@@ -196,8 +200,6 @@ class MatcherController(object):
         ekf_time_stamp = ekf_state["time_stamp"]
         ekf_time_id = ekf_state["time_id"]
 
-        #print("time stamp, ekf={0}, plan={1}".format(ekf_time_stamp, plan_time_stamp))
-
         u = u_plan + K_plan @ (mu - x_plan)
 
         self.results[self.mpcenv_bundle.name]["u"] = u
@@ -214,9 +216,9 @@ class Plan(object):
 
 
 class MatcherILQR(object):
-    def __init__(self, ekf_bundle, plan_bundle,
+    def __init__(self, name, ekf_bundle, plan_bundle,
                  dynamics, cost, dt, T, iter_max):
-        self.name = "matcher_ilqr"
+        self.name = name
         self.results = {}
 
         self.ekf_bundle = ekf_bundle
@@ -282,12 +284,13 @@ class MatcherILQR(object):
 
 
 class BundlePlan(Bundle):
-    def __init__(self, x_dim, u_dim, dt, control_T):
-        super(BundlePlan, self).__init__("plan_bundle")
+    def __init__(self, name, x_dim, u_dim, dt, control_T, plan_src_name):
+        super(BundlePlan, self).__init__(name)
         self.x_dim = x_dim
         self.u_dim = u_dim
         self.dt = dt
         self.control_T = control_T
+        self.plan_src_name = plan_src_name
         
         self.latest_plan = None
         self.index_in_plan = 0
@@ -295,8 +298,8 @@ class BundlePlan(Bundle):
         self.update_component()
 
     def __call__(self, inputs):
-        if "matcher_ilqr" in inputs.keys() and inputs["matcher_ilqr"] is not None:
-            plan = inputs["matcher_ilqr"]["plan"]
+        if self.plan_src_name in inputs.keys() and inputs[self.plan_src_name] is not None:
+            plan = inputs[self.plan_src_name]["plan"]
             if (self.latest_plan is None) or (self.latest_plan.time_id != plan.time_id):
                 self.latest_plan = plan
                 self.index_in_plan = self.control_T - 1
@@ -365,49 +368,59 @@ def main():
     #dt = 0.05
     dynamics = PendulumDynamics()
     cost = PendulumCost()
-    #T = 30 # Horizon
-    T = 40 # Horizon
+    #T = 30 # MPC Horizon
+    T = 40 # MPC Horizon
     control_T = 10 # Plan update interval for receding horizon
     iter_max = 20
     num_steps = 300
 
-    debug_recorder = PendulumEnvRecorder(num_steps-5)
+    # Component names
+    ekf_controller_bundle_name = "ekf_contrller_bundle"
+    ekf_matcher_name = "ekf_matcher"
+    plan_bundle_name = "plan_bundle"
+    controller_matcher_name = "controller_matcher"
+    ilqr_matcher_name = "ilqr_matcher"
+    mpcenv_bundle_name = "mpc_env_bundle"
 
     # Initial state
     x0 = np.array([np.pi, 0.0], dtype=np.float32)
-
-    env = MPCEnv(dynamics, None, None, dt, use_visual_state=False)
-    env.reset(x0)
-
-    # Observation noise
-    R = np.array([[0.01, 0.0], [0.0, 0.01]], dtype=np.float32)
-    mpcenv_b = MPCEnvBundle(env, R, debug_recorder=debug_recorder)
-
-    # System noise covariance
-    Q = np.array([[0.01, 0.0], [0.0, 0.01]], dtype=np.float32)
 
     # Initial internal state
     mu0 = np.array([np.pi, 0.0], dtype=np.float32)
     Sigma0 = np.array([[0.001, 0.0], [0.0, 0.001]], dtype=np.float32)
 
-    # EKF Controller Bundle
-    ekf_b = BundleEKFWithController("ekf_contrller_bundle", dt, dynamics, Q,
-                                    mu0, Sigma0)
+    # System noise covariance
+    Q = np.array([[0.01, 0.0], [0.0, 0.01]], dtype=np.float32)
 
+    # Observation noise
+    R = np.array([[0.01, 0.0], [0.0, 0.01]], dtype=np.float32)
+    
+    # MPCEnv Bundle
+    env = MPCEnv(dynamics, None, None, dt, use_visual_state=False)
+    env.reset(x0)
+    debug_recorder = PendulumEnvRecorder(num_steps-5)
+    mpcenv_b = MPCEnvBundle(mpcenv_bundle_name, env, R,
+                            controller_matcher_name,
+                            debug_recorder=debug_recorder)
+
+    # EKF Controller Bundle
+    ekf_b = BundleEKFWithController(ekf_controller_bundle_name, dt, dynamics, Q,
+                                    mu0, Sigma0, controller_matcher_name)
+    
     # Plan Bundle
-    plan_b = BundlePlan(dynamics.x_dim, dynamics.u_dim, dt, control_T)
+    plan_b = BundlePlan(plan_bundle_name, dynamics.x_dim, dynamics.u_dim, dt, control_T,
+                        ilqr_matcher_name)
 
     # Controller Matcher
-    controller_m = MatcherController(mpcenv_b, ekf_b, plan_b)
-
-    g0 = PendulumObservation()
-    g1 = PendulumObservation()
+    controller_m = MatcherController(controller_matcher_name, mpcenv_b, ekf_b, plan_b)
 
     # EKF Matcher
-    ekf_m = MatcherEKF("ekf_matcher", mpcenv_b, ekf_b, g0, g1)
+    g0 = PendulumObservation()
+    g1 = PendulumObservation()
+    ekf_m = MatcherEKF(ekf_matcher_name, mpcenv_b, ekf_b, g0, g1)
 
     # ILQR Matcher
-    ilqr_m = MatcherILQR(ekf_b, plan_b, dynamics, cost, dt, T, iter_max)
+    ilqr_m = MatcherILQR(ilqr_matcher_name, ekf_b, plan_b, dynamics, cost, dt, T, iter_max)
 
     scheduler = VirtualTimeScheduler()
 
