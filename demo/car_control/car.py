@@ -82,8 +82,11 @@ class CarRenderer(Renderer):
         image = cv2.drawContours(image, [box], 0, color, 1)
         return image
 
-    def render(self, x, u):
-        image = np.ones((self.image_width, self.image_width, 3), dtype=np.float32)
+    def render(self, x, u, override_image=None):
+        if override_image is None:
+            image = np.ones((self.image_width, self.image_width, 3), dtype=np.float32)
+        else:
+            image = override_image
         
         render_scale = self.image_width / 2.0
         render_offset = self.image_width / 2.0
