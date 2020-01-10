@@ -49,7 +49,7 @@ class VREPEnv(object):
         names = ['joint%i_shadow' % i for i in range(self.robot_config.N_JOINTS)]
         joint_handles = []
         for name in names:
-            interface.get_xyz(name)  # this loads in the joint handle
+            self.interface.get_xyz(name)  # this loads in the joint handle
             joint_handles.append(self.interface.misc_handles[name])
         self.interface.send_target_angles(q, joint_handles)            
 
