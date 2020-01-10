@@ -2,9 +2,6 @@
 import numpy as np
 
 
-IMAGE_WIDTH = 256
-
-
 class MPCEnv(object):
     def __init__(self,
                  dynamics,
@@ -102,3 +99,11 @@ class MPCEnv(object):
         else:
             reward = 0.0
         return self.get_state(action), reward
+
+    @property
+    def u_dim(self):
+        return self.dynamics.u_dim
+
+    @property
+    def x_dim(self):
+        return self.dynamics.x_dim

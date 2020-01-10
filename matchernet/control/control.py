@@ -133,7 +133,8 @@ class MatcherILQR(object):
         time_id = ekf_state["time_id"]
 
         # Initial control sequence for MPC
-        u0 = np.zeros((self.T, 1), dtype=np.float32)
+        u_dim = self.ilqg.dynamics.u_dim
+        u0 = np.zeros((self.T, u_dim), dtype=np.float32)
         if self.last_u_list is not None:
             # Set initial control signals by copying last control signals.
             advance_time_id = time_id - self.last_time_id
@@ -223,7 +224,7 @@ class MPCEnvBundle(Bundle):
         self.update_component()
 
     def __call__(self, inputs):
-        u_dim = self.env.dynamics.u_dim
+        u_dim = self.env.u_dim
 
         # Receive action from Controller Matcher
         if self.control_src_name in inputs.keys() and inputs[self.control_src_name] is not None:
