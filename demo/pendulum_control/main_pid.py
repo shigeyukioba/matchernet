@@ -16,17 +16,18 @@ class PIDControl(object):
         self.K_d = K_d
         self.eta = eta
         
-        self.integral = 0.0
+        self.integral = np.zeros_like(x0)
 
     def control(self, x):
-        u_p = -self.K_p * (x - self.x_target)
+        u_p = -self.K_p @ (x - self.x_target)
         
         self.integral = self.integral * (1 - self.eta * self.dt) + self.eta * self.dt * (x - self.x_target)
-        u_i = -self.K_i * self.integral
-        
-        u_d = -self.K_d * (x - self.x_last) / self.dt
+        u_i = -self.K_i @ self.integral
+
+        u_d = -self.K_d @ (x - self.x_last) / self.dt
         self.x_last = x
-        return u_p + u_i + u_d
+        u = u_p + u_i + u_d
+        return np.array([u], dtype=np.float32)
 
 
 def main():
@@ -43,16 +44,17 @@ def main():
     renderer = PendulumRenderer(image_width=256)
 
     # Record target trajectory
-    movie = MovieWriter("out.mov", (256, 256), 30)
+    #movie = MovieWriter("out.mov", (256, 256), 30)
+    movie = AnimGIFWriter("out.gif", 30)
     
     dt = 0.02
-    K_p = 2.3
-    K_i = 0.8
-    K_d = 0.22
+    K_p = np.array([2.3,  0.016], dtype=np.float32)
+    K_i = np.array([0.8,  0.0], dtype=np.float32)
+    K_d = np.array([0.22, 0.0], dtype=np.float32)
     eta = 0.1
     
-    pid_control = PIDControl(x0[0],
-                             x_target[0],
+    pid_control = PIDControl(x0,
+                             x_target,
                              dt,
                              K_p,
                              K_i,
@@ -60,10 +62,9 @@ def main():
                              eta)
     
     x = np.copy(x0)
-    
+
     for i in range(300):
-        u = pid_control.control(x[0])
-        u = np.array([u], dtype=np.float32)
+        u = pid_control.control(x)
         xdot = dynamics.value(x, u)
         x = x + xdot * dt
         image = renderer.render(x, u)
