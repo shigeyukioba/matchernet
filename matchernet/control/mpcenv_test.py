@@ -30,8 +30,11 @@ class DummyRenderer(Renderer):
     def __init__(self):
         super(DummyRenderer, self).__init__()
 
-    def render(self, x, u):
-        return np.ones([256, 256, 3], dtype=np.float32)
+    def render(self, x, u, override_image=None):
+        if override_image is not None:
+            return override_image
+        else:
+            return np.ones([256, 256, 3], dtype=np.float32)
 
 
 class DummyRewardSystem(object):
@@ -110,7 +113,7 @@ class MPCEnvTest(unittest.TestCase):
             # Check reward is a scalar value
             self.assertEqual(type(reward), float)
 
-    def test_mpcenv_with_multiple_visual(self):
+    def test_mpcenv_with_multiple_view(self):
         """
         Test MPCEnv with multiple image state output.
         """

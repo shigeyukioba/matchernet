@@ -32,7 +32,7 @@ class Renderer(object):
     def __init__(self):
         pass
 
-    def render(self, image, x, u=None):
+    def render(self, x, u=None, override_image=None):
         raise NotImplementedError()
 
 

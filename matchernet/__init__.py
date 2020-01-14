@@ -3,6 +3,7 @@ from matchernet.utils import *
 from matchernet.control.mpcenv import *
 from matchernet.control.control import *
 from matchernet.control.mpc import *
+from matchernet.control.multi import *
 from matchernet.control.ilqg import *
 from matchernet.util.recording import *
 from matchernet.ekf import *
