@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+import argparse
+from distutils.util import strtobool
 from autograd import jacobian
 
 import brica
 from brica import VirtualTimeScheduler, Timing
 
-from matchernet import MPCEnvBundle, MatcherController, Plan, MatcherILQR, BundlePlan, BundleEKFWithController, MatcherEKF, MPCEnv, MovieWriter, AnimGIFWriter
+from matchernet import MPCEnvBundle, MatcherController, MatcherILQR, BundlePlan, BundleFixedPlan, BundleEKFWithController, MatcherEKF, MPCEnv, MovieWriter, AnimGIFWriter
 
 from pendulum import PendulumDynamics, PendulumCost, PendulumRenderer
 
@@ -41,14 +43,18 @@ class PendulumEnvRecorder(object):
         self.current_frame += 1
         
 
-def main():
+def main(use_ilqr):
+    """
+    Arguments:
+      use_ilqr:
+        True    iLQR control
+        False   PID control
+    """
     np.random.rand(0)
 
     dt = 0.02
-    #dt = 0.05
     dynamics = PendulumDynamics()
     cost = PendulumCost()
-    #T = 30 # MPC Horizon
     T = 40 # MPC Horizon
     control_T = 10 # Plan update interval for receding horizon
     iter_max = 20
@@ -88,8 +94,19 @@ def main():
                                     mu0, Sigma0, controller_matcher_name)
     
     # Plan Bundle
-    plan_b = BundlePlan(plan_bundle_name, dynamics.x_dim, dynamics.u_dim, dt, control_T,
-                        ilqr_matcher_name)
+    if use_ilqr:
+        # for ILQR control
+        plan_b = BundlePlan(plan_bundle_name, dynamics.x_dim, dynamics.u_dim, dt, control_T,
+                            ilqr_matcher_name)
+    else:
+        # for PID control
+        x_target = np.array([0.0, 0.0], dtype=np.float32)
+        K_p = np.array([2.3,  0.016], dtype=np.float32)
+        K_i = np.array([0.8,  0.0], dtype=np.float32)
+        K_d = np.array([0.22, 0.0], dtype=np.float32)
+        eta = 0.1
+        plan_b = BundleFixedPlan(plan_bundle_name, dynamics.x_dim, dynamics.u_dim, dt,
+                                 x_target, K_p, K_i, K_d, eta)
 
     # Controller Matcher
     controller_m = MatcherController(controller_matcher_name, mpcenv_b, ekf_b, plan_b)
@@ -99,8 +116,9 @@ def main():
     g1 = PendulumObservation()
     ekf_m = MatcherEKF(ekf_matcher_name, mpcenv_b, ekf_b, g0, g1)
 
-    # ILQR Matcher
-    ilqr_m = MatcherILQR(ilqr_matcher_name, ekf_b, plan_b, dynamics, cost, dt, T, iter_max)
+    if use_ilqr:
+        # ILQR Matcher
+        ilqr_m = MatcherILQR(ilqr_matcher_name, ekf_b, plan_b, dynamics, cost, dt, T, iter_max)
 
     scheduler = VirtualTimeScheduler()
 
@@ -114,7 +132,8 @@ def main():
     scheduler.add_component(ekf_m.component, timing_matcher)
     scheduler.add_component(controller_m.component, timing_matcher)
     scheduler.add_component(plan_b.component, timing_bundle)
-    scheduler.add_component(ilqr_m.component, timing_planning)
+    if use_ilqr:
+        scheduler.add_component(ilqr_m.component, timing_planning)
 
     for i in range(num_steps):
         print("Step {}/{}".format(i, num_steps))
@@ -122,4 +141,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--use_ilqr", type=strtobool, default="true")
+    args = parser.parse_args()
+    
+    main(args.use_ilqr)

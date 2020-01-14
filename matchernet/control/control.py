@@ -20,6 +20,10 @@ class MatcherController(object):
         self.results[self.ekf_bundle.name] = {}
         # Note: there is no results entry for plan_bundle
 
+        # TODO: How do we reset this integral value for PID?
+        self.integral = 0.0
+        self.x_last = None
+
         self.update_component()
 
     def update_component(self):
@@ -60,6 +64,10 @@ class MatcherController(object):
         x_plan = plan_state["x"]
         u_plan = plan_state["u"]
         K_plan = plan_state["K"]
+        K_i_plan = plan_state["K_i"]
+        K_d_plan = plan_state["K_d"]
+        eta = plan_state["eta"]
+        dt = plan_state["dt"]
         plan_time_stamp = plan_state["time_stamp"]
         plan_time_id = plan_state["time_id"]
 
@@ -67,8 +75,17 @@ class MatcherController(object):
         ekf_time_stamp = ekf_state["time_stamp"]
         ekf_time_id = ekf_state["time_id"]
 
-        u = u_plan + K_plan @ (mu - x_plan)
-
+        # PID control
+        u_p = u_plan + K_plan @ (mu - x_plan)
+        self.integral = self.integral * (1 - eta * dt) + eta * dt * (mu - x_plan)
+        u_i = -K_i_plan @ self.integral
+        if self.x_last is None:
+            self.x_last = np.copy(mu)
+        u_d = -K_d_plan @ (mu - self.x_last) / dt
+        u = u_p + u_i + u_d
+        
+        self.x_last = np.copy(mu)
+        
         self.results[self.mpcenv_bundle.name]["u"] = u
         self.results[self.ekf_bundle.name]["u"] = u
 
@@ -152,6 +169,9 @@ class MatcherILQR(object):
 
 
 class BundlePlan(Bundle):
+    """
+    Plan sending class for iLQR control.
+    """
     def __init__(self, name, x_dim, u_dim, dt, control_T, plan_src_name):
         super(BundlePlan, self).__init__(name)
         self.x_dim = x_dim
@@ -187,14 +207,65 @@ class BundlePlan(Bundle):
             K = np.zeros((self.u_dim, self.x_dim), dtype=np.float32)
             time_stamp = 0
             time_id = 0
+
+        # Compatibility for PID controller
+        K_i = np.zeros((self.u_dim, self.x_dim), dtype=np.float32)
+        K_d = np.zeros((self.u_dim, self.x_dim), dtype=np.float32)
+        eta = 0.0
         
         results = {
             "x": x,
             "u": u,
             "K": K,
+            "K_i": K_i,
+            "K_d": K_d,
+            "eta": eta,
+            "dt": self.dt,
             "time_stamp": time_stamp,
             "time_id": time_id
         }
+        return {"state": results}
+
+
+class BundleFixedPlan(Bundle):
+    """
+    Plan sending class for PID control.
+    """
+    def __init__(self, name, x_dim, u_dim, dt, x_target, K, K_i, K_d, eta):
+        super(BundleFixedPlan, self).__init__(name)
+        self.x_dim = x_dim
+        self.u_dim = u_dim
+        self.x_target = x_target
+        self.K = K
+        self.K_i = K_i
+        self.K_d = K_d
+        self.eta = eta
+        self.dt = dt
+
+        self.time_stamp = 0.0
+        self.time_id = 0
+        
+        self.update_component()
+
+    def __call__(self, inputs):
+        # Compatibility for iLQR controller
+        u = np.zeros((self.u_dim,), dtype=np.float32)
+        
+        results = {
+            "x": self.x_target,
+            "u": u,
+            "K": -self.K, # Sign is inverted for the compatibility with iLQR
+            "K_i": self.K_i,
+            "K_d": self.K_d,
+            "eta": self.eta,
+            "dt": self.dt,
+            "time_stamp": self.time_stamp,
+            "time_id": self.time_id
+        }
+
+        self.time_stamp += self.dt
+        self.time_id += 1
+        
         return {"state": results}
 
 
