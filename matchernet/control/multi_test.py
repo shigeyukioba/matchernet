@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import autograd.numpy as np
 import unittest
-from autograd import jacobian
+from autograd import grad, jacobian
 
 from multi import MultiAgentDynamics, MultiAgentCost, MultiAgentRenderer, MultiAgentRewardSystem
 from mpc import Dynamics, Cost, Renderer
@@ -30,6 +30,12 @@ class DummyCost(Cost):
     def __init__(self):
         super(DummyCost, self).__init__()
 
+        self.x  = grad(self.value, 0)
+        self.u  = grad(self.value, 1)
+        self.xx = jacobian(self.x, 0)
+        self.uu = jacobian(self.u, 1)
+        self.ux = jacobian(self.u, 0)        
+
     def clone(self):
         return self
 
@@ -37,7 +43,9 @@ class DummyCost(Cost):
         pass
         
     def value(self, x, u, t):
-        return 0.0
+        #value = np.sum(x @ x.T) + np.sum(u @ u.T)
+        value = np.sum(x) + np.sum(u)
+        return value
 
 
 class DummyRenderer(Renderer):
@@ -94,10 +102,21 @@ class MutlAgentTest(unittest.TestCase):
 
         t = 0.0
         v = multi_cost.value(x, u, t)
-        self.assertEqual(type(v), float)
+        #self.assertEqual(type(v), float)
         
         multi_cost.clone()
         multi_cost.apply_state(x, t)
+
+        dx = multi_cost.x(x, u, t)
+        self.assertEqual(dx.shape, (40,))
+        du = multi_cost.u(x, u, t)
+        self.assertEqual(du.shape, (20,))
+        dxx = multi_cost.xx(x, u, t)
+        self.assertEqual(dxx.shape, (40,40))
+        duu = multi_cost.uu(x, u, t)
+        self.assertEqual(duu.shape, (20,20))
+        dux = multi_cost.ux(x, u, t)
+        self.assertEqual(dux.shape, (20,40))
 
     def test_multi_agent_renderer(self):
         renderer = DummyRenderer()
@@ -115,7 +134,7 @@ class MutlAgentTest(unittest.TestCase):
         
         x = np.zeros(4*10, dtype=np.float32)
         image = np.ones([256, 256, 3], dtype=np.float32)
-        dt = 0.1        
+        dt = 0.1
 
         multi_reward_sysetm.reset()
         image = multi_reward_sysetm.render(image)

@@ -75,17 +75,102 @@ class MultiAgentCost(object):
             self.costs[i].apply_state(x_agent, t)
     
     def value(self, x, u, t):
-        x_dim = x.shape[0]
-        u_dim = u.shape[0]
+        x_dim = x.shape[0] // self.agent_size
+        if u is not None:
+            u_dim = u.shape[0] // self.agent_size
         
         value_new = 0.0
         for i in range(self.agent_size):
             x_agent = x[x_dim*i:x_dim*(i+1)]
-            u_agent = u[u_dim*i:u_dim*(i+1)]
+            if u is not None:
+                u_agent = u[u_dim*i:u_dim*(i+1)]
+            else:
+                u_agent = None
             # TODO:
             value_agent = self.costs[i].value(x_agent, u_agent, t)
             value_new += value_agent
         return value_new
+
+    def x(self, x, u, t):
+        x_dim = x.shape[0] // self.agent_size
+        if u is not None:
+            u_dim = u.shape[0] // self.agent_size
+
+        dx = np.zeros((x.shape[0],))
+        for i in range(self.agent_size):
+            x_agent = x[x_dim*i:x_dim*(i+1)]
+            if u is not None:
+                u_agent = u[u_dim*i:u_dim*(i+1)]
+            else:
+                u_agent = None
+            dx_agent = self.costs[i].x(x_agent, u_agent, t)
+            dx[x_dim*i:x_dim*(i+1)] = dx_agent
+        return dx
+
+    def u(self, x, u, t):
+        x_dim = x.shape[0] // self.agent_size
+        if u is not None:
+            u_dim = u.shape[0] // self.agent_size
+
+        du = np.zeros((u.shape[0],))
+        for i in range(self.agent_size):
+            x_agent = x[x_dim*i:x_dim*(i+1)]
+            if u is not None:
+                u_agent = u[u_dim*i:u_dim*(i+1)]
+            else:
+                u_agent = None
+            du_agent = self.costs[i].u(x_agent, u_agent, t)
+            du[u_dim*i:u_dim*(i+1)] = du_agent
+        return du
+
+    def xx(self, x, u, t):
+        x_dim = x.shape[0] // self.agent_size
+        if u is not None:
+            u_dim = u.shape[0] // self.agent_size
+
+        dxx = np.zeros((x.shape[0],x.shape[0]))
+        for i in range(self.agent_size):
+            x_agent = x[x_dim*i:x_dim*(i+1)]
+            if u is not None:
+                u_agent = u[u_dim*i:u_dim*(i+1)]
+            else:
+                u_agent = None
+            dxx_agent = self.costs[i].xx(x_agent, u_agent, t)
+            dxx[x_dim*i:x_dim*(i+1),x_dim*i:x_dim*(i+1)] = dxx_agent
+        return dxx
+
+    def uu(self, x, u, t):
+        x_dim = x.shape[0] // self.agent_size
+        if u is not None:
+            u_dim = u.shape[0] // self.agent_size
+
+        duu = np.zeros((u.shape[0],u.shape[0]))
+        for i in range(self.agent_size):
+            x_agent = x[x_dim*i:x_dim*(i+1)]
+            if u is not None:
+                u_agent = u[u_dim*i:u_dim*(i+1)]
+            else:
+                u_agent = None
+            duu_agent = self.costs[i].uu(x_agent, u_agent, t)
+            duu[u_dim*i:u_dim*(i+1),u_dim*i:u_dim*(i+1)] = duu_agent
+        return duu
+
+    def ux(self, x, u, t):
+        x_dim = x.shape[0] // self.agent_size
+        if u is not None:
+            u_dim = u.shape[0] // self.agent_size
+
+        dux = np.zeros((u.shape[0],x.shape[0]))
+        for i in range(self.agent_size):
+            x_agent = x[x_dim*i:x_dim*(i+1)]
+            if u is not None:
+                u_agent = u[u_dim*i:u_dim*(i+1)]
+            else:
+                u_agent = None
+            dux_agent = self.costs[i].ux(x_agent, u_agent, t)
+            dux[u_dim*i:u_dim*(i+1),x_dim*i:x_dim*(i+1)] = dux_agent
+        return dux
+
 
 
 class MultiAgentRenderer(object):
@@ -97,9 +182,18 @@ class MultiAgentRenderer(object):
         self.agent_size = agent_size
 
     def render(self, x, u=None):
+        x_dim = x.shape[0] // self.agent_size
+        if u is not None:
+            u_dim = u.shape[0] // self.agent_size
+        
         image = None
         for i in range(self.agent_size):
-            image = self.renderer.render(x, u, override_image=image)
+            x_agent = x[x_dim*i:x_dim*(i+1)]
+            if u is not None:
+                u_agent = u[u_dim*i:u_dim*(i+1)]
+            else:
+                u_agent = None            
+            image = self.renderer.render(x_agent, u_agent, override_image=image)
         return image
 
 

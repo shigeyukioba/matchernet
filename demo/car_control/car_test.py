@@ -3,6 +3,7 @@ import numpy as np
 import unittest
 
 from car import CarDynamics, CarCost, CarObstacle
+from matchernet import MultiAgentDynamics, MultiAgentCost, MultiAgentRenderer, MultiAgentRewardSystem
 
 
 def jacobian_finite_difference(func, arg_index, *args):
@@ -85,6 +86,55 @@ class CarCostTest(unittest.TestCase):
         self.assertEqual(lu.shape, (2,))
 
         cloned_cost = cost.clone()
+
+
+class MultiAgentTest(unittest.TestCase):
+    def test_multi_agent(self):
+        agent_size = 2
+
+        x = np.zeros(4*agent_size, dtype=np.float32)
+        u = np.ones(2*agent_size, dtype=np.float32)        
+
+        # Check multi agent dynamics
+        dynamics = MultiAgentDynamics(CarDynamics(), agent_size)
+        xdot = dynamics.value(x, u)
+        self.assertEqual(xdot.shape, (4*agent_size,))
+
+        dx = dynamics.x(x, u)
+        self.assertEqual(dx.shape, (4*agent_size,4*agent_size))
+
+        du = dynamics.u(x, u)
+        self.assertEqual(du.shape, (4*agent_size,2*agent_size))
+
+        self.assertEqual(dynamics.x_dim, 4*agent_size)
+        self.assertEqual(dynamics.u_dim, 2*agent_size)
+
+        # Check multi agent cost
+        obstacles = []
+        obstacle0 = CarObstacle(pos=np.array([0.5, 0.0], dtype=np.float32), is_good=False)
+        obstacles.append(obstacle0)
+        obstacle1 = CarObstacle(pos=np.array([0.5, 0.3], dtype=np.float32), is_good=True)
+        obstacles.append(obstacle1)
+        
+        cost = MultiAgentCost(CarCost(obstacles), agent_size)
+        t = 0.0
+
+        v = cost.value(x, u, t)
+        #self.assertEqual(type(v), float)
+        
+        cost.clone()
+        cost.apply_state(x, t)
+
+        dx = cost.x(x, u, t)
+        self.assertEqual(dx.shape, (4*agent_size,))
+        du = cost.u(x, u, t)
+        self.assertEqual(du.shape, (2*agent_size,))
+        dxx = cost.xx(x, u, t)
+        self.assertEqual(dxx.shape, (4*agent_size,4*agent_size))
+        duu = cost.uu(x, u, t)
+        self.assertEqual(duu.shape, (2*agent_size,2*agent_size))
+        dux = cost.ux(x, u, t)
+        self.assertEqual(dux.shape, (2*agent_size,4*agent_size))
         
         
 if __name__ == '__main__':
