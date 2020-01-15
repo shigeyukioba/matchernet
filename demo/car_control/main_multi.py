@@ -62,7 +62,16 @@ def main():
     renderer = MultiAgentRenderer(CarRenderer(image_width=256), agent_size)
 
     obstacles = []
-    
+
+    """
+    for i in range(30):
+        x = np.random.rand() * 2.0 - 1.0
+        y = np.random.rand() * 2.0 - 1.0
+        obstacle = CarObstacle(pos=np.array([x, y], dtype=np.float32),
+                               is_good=i%2==0)
+        obstacles.append(obstacle)
+    """
+
     obstacle0 = CarObstacle(pos=np.array([0.5, 0.0], dtype=np.float32),
                             is_good=False)
     obstacles.append(obstacle0)
@@ -75,15 +84,7 @@ def main():
     obstacle3 = CarObstacle(pos=np.array([0.6, 0.8], dtype=np.float32),
                             is_good=True)
     obstacles.append(obstacle3)
-
-    """
-    obstacle0 = CarObstacle(pos=np.array([0.5, 0.3], dtype=np.float32),
-                            is_good=True)
-    obstacles.append(obstacle0)
-    obstacle1 = CarObstacle(pos=np.array([0.6, 0.8], dtype=np.float32),
-                            is_good=True)
-    """
-    obstacles.append(obstacle1)
+    #obstacles.append(obstacle1)
     
     cost = MultiAgentCost(CarCost(obstacles), agent_size)
     

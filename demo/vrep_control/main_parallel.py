@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-#from autograd import jacobian
 
 import brica
 from brica import VirtualTimeScheduler, Timing
@@ -22,6 +21,7 @@ class VREPDynamics(Dynamics):
         self.u = jacobian(self.value, 1)
 
     def value(self, x, u):
+        # TODO: 未実装
         return x
 
     @property
@@ -48,6 +48,7 @@ class VREPCost(object):
         pass
 
     def value(self, x, u, t):
+        # TODO: 未実装
         return 0.0
 
 
