@@ -71,7 +71,6 @@ def image_gen(rotation_range=180,
         preprocessing_function=preprocessing_function)
 
 
-# input data generator
 class Iterator(object):
     def __init__(self,
                  data_df,
@@ -81,8 +80,6 @@ class Iterator(object):
                  batch_size=8,
                  shuffle=True,
                  imagegen=image_gen(),
-                 audiogen=audio_generator.AudioGenerator(
-                     melsp=True, augment=True),
                  **params):
 
         self.data_df = data_df
@@ -95,10 +92,6 @@ class Iterator(object):
         self.sample_num = len(self.data_df)
 
         self.imagegen = imagegen
-        self.audiogen = audiogen
-
-        self.txt_length = params[
-            "txt_length"] if "txt_length" in params else 200
         self.img_shape = params["img_shape"] if "img_shape" in params else (
             128, 128, 3)
 
@@ -170,15 +163,11 @@ class Iterator(object):
         for i, c in enumerate(self.data_df.columns):
             if c.endswith("num"):
                 num_inputs.append(self.data_df[c].values[batch_ids])
-            elif c.endswith("txt") or c.endswith("txt_path"):
-                x = self._load_txt(self.data_df[c].values[batch_ids])
-                inputs.append(x)
             elif c.endswith("img") or c.endswith("img_path"):
                 x = self._load_img(self.data_df[c].values[batch_ids])
                 inputs.append(x)
-            elif c.endswith("snd") or c.endswith("snd_path"):
-                x = self._load_snd(self.data_df[c].values[batch_ids])
-                inputs.append(x)
+            else:
+                raise NotImplementedError
         if len(num_inputs) > 0:
             inputs.append(np.array(num_inputs).T)
 
