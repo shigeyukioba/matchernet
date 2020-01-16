@@ -58,7 +58,7 @@ def main(use_ilqr):
     T = 40 # MPC Horizon
     control_T = 10 # Plan update interval for receding horizon
     iter_max = 20
-    num_steps = 300
+    num_steps = 400
 
     # Component names
     ekf_controller_bundle_name = "ekf_contrller_bundle"
@@ -84,7 +84,7 @@ def main(use_ilqr):
     # MPCEnv Bundle
     env = MPCEnv(dynamics, None, None, dt, use_visual_state=False)
     env.reset(x0)
-    debug_recorder = PendulumEnvRecorder(num_steps-5)
+    debug_recorder = PendulumEnvRecorder(num_steps//2-1)
     mpcenv_b = MPCEnvBundle(mpcenv_bundle_name, env, R,
                             controller_matcher_name,
                             debug_recorder=debug_recorder)
@@ -123,9 +123,9 @@ def main(use_ilqr):
     scheduler = VirtualTimeScheduler()
 
     # offset, interval, sleep
-    timing_bundle = Timing(0, 1, 0)
-    timing_matcher = Timing(1, 1, 0)
-    timing_planning = Timing(1, control_T, 0)
+    timing_bundle = Timing(0, 1, 1)
+    timing_matcher = Timing(1, 1, 1)
+    timing_planning = Timing(1, control_T*2, 0)
 
     scheduler.add_component(mpcenv_b.component, timing_bundle)
     scheduler.add_component(ekf_b.component, timing_bundle)

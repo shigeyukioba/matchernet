@@ -75,13 +75,15 @@ def prepare_cost():
     obstacle1 = CarObstacle(pos=np.array([0.5, 0.3], dtype=np.float32),
                             is_good=True)
     obstacles.append(obstacle1)
+    """
     obstacle2 = CarObstacle(pos=np.array([0.8, 0.6], dtype=np.float32),
                             is_good=False)
     obstacles.append(obstacle2)
     obstacle3 = CarObstacle(pos=np.array([0.6, 0.8], dtype=np.float32),
                             is_good=True)
     obstacles.append(obstacle3)
-
+    """
+    
     cost = CarCost(obstacles)
     return cost
 
@@ -95,7 +97,7 @@ def main():
     T = 50 # MPC Horizon
     control_T = 10 # Plan update interval for receding horizon
     iter_max = 10
-    num_steps = 300
+    num_steps = 400
 
     # Component names
     ekf_controller_bundle_name = "ekf_contrller_bundle"
@@ -121,7 +123,7 @@ def main():
     # MPCEnv Bundle
     env = MPCEnv(dynamics, None, None, dt, use_visual_state=False)
     env.reset(x0)
-    debug_recorder = CarEnvRecorder(num_steps-5, cost)
+    debug_recorder = CarEnvRecorder(num_steps//2-1, cost)
     mpcenv_b = MPCEnvBundle(mpcenv_bundle_name, env, R,
                             controller_matcher_name,
                             debug_recorder=debug_recorder)
@@ -148,9 +150,9 @@ def main():
     scheduler = VirtualTimeScheduler()
 
     # offset, interval, sleep
-    timing_bundle = Timing(0, 1, 0)
-    timing_matcher = Timing(1, 1, 0)
-    timing_planning = Timing(1, control_T, 0)
+    timing_bundle = Timing(0, 1, 1)
+    timing_matcher = Timing(1, 1, 1)
+    timing_planning = Timing(1, control_T*2, 0)
 
     scheduler.add_component(mpcenv_b.component, timing_bundle)
     scheduler.add_component(ekf_b.component, timing_bundle)

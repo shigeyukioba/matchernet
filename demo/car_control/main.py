@@ -81,9 +81,8 @@ def main():
     obstacles.append(obstacle0)
     obstacle1 = CarObstacle(pos=np.array([0.6, 0.8], dtype=np.float32),
                             is_good=True)
-    """
     obstacles.append(obstacle1)
-    
+    """
     
     cost = CarCost(obstacles)
     
