@@ -1,6 +1,7 @@
 *.pyc
 *.mov
 *.gif
+app.log
 
 
 

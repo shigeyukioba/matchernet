@@ -172,6 +172,81 @@ class BundleEKFContinuousTime(Bundle):
         # ["time_stamp"] is updated in the method self._countup()
 
 
+class BundleEKFWithController(Bundle):
+    # TODO: Add Comments
+    def __init__(self, name, dt, f, Q, mu, Sigma, control_src_name):
+        super(BundleEKFWithController, self).__init__(name)
+        self.f = f
+        self._initialize_control_params(dt)
+        self._initialize_state(mu, Sigma)
+        
+        self.Q = Q
+        self.control_src_name = control_src_name
+
+        self.update_component()
+
+    def __call__(self, inputs):
+        # Update state
+        for key in inputs:  # key is one of the matcher names
+            if inputs[key] is not None:
+                if key != self.control_src_name:
+                    self.accept_feedback(inputs[key])
+
+        # Step dynamics with applied control signal
+        for key in inputs:  # key is one of the matcher names
+            if inputs[key] is not None:
+                if key == self.control_src_name:
+                    u = inputs[key]["u"]
+                    self.step_dynamics(u, self.dt)
+
+        # Update timestamp
+        self._countup()
+
+        # Send state to Matcher
+        results = {
+            "mu": self.state.data["mu"],
+            "Sigma": self.state.data["Sigma"],
+            "time_stamp": self.time_stamp,
+            "time_id": self.time_id
+        }
+        return {"state": results}
+
+    def _initialize_control_params(self, dt):
+        self.dt = dt
+        self.time_stamp = 0.0
+        self.time_id = 0
+
+    def _countup(self):
+        self.time_stamp += self.dt
+        self.time_id += 1
+
+    def _initialize_state(self, mu, Sigma):
+        self.state = state.StateMuSigma(mu, Sigma)
+
+    def accept_feedback(self, fbst):
+        dmu = fbst["mu"]
+        dSigma = fbst["Sigma"]
+        mu = self.state.data["mu"]
+        Sigma = self.state.data["Sigma"]
+
+        self.state.data["mu"] = (mu + dmu).astype(np.float32)
+        self.state.data["Sigma"] = (Sigma + dSigma).astype(np.float32)
+
+    def step_dynamics(self, u, dt):
+        mu = self.state.data["mu"]
+        Sigma = self.state.data["Sigma"]
+        Q = self.Q
+        A = self.f.x(mu, u)
+        F = utils.calc_matrix_F(A, dt)
+        mu = mu + self.f.value(mu, u) * dt
+        Sigma = dt * Q + F.T @ Sigma @ F
+        Sigma = utils.regularize_cov_matrix(Sigma)
+
+        self.state.data["mu"] = mu
+        self.state.data["Sigma"] = Sigma
+        # ["time_stamp"] is updated in the method self._countup()
+
+
 class MatcherEKF(Matcher):
     """Class MatcherEKF is a Matcher part of an extended Kalman filter (EKF) model implemented as the BundleNet.
 
