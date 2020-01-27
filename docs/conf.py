@@ -12,12 +12,12 @@
 #
 # import os
 # import sys
-# sys.path.insert(0, '/Users/uchi_k/Desktop/projects/research/matchernet_dev/matchernet_py_001')
+# sys.path.insert(0, '/Users/uchi_k/Desktop/projects/research/matchernet_dev/matchernet')
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'matchernet_py_001'
+project = 'matchernet'
 copyright = '2019, Author'
 author = 'Author'
 

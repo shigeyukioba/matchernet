@@ -4,12 +4,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from brica import Component, VirtualTimeScheduler, Timing
 
-from matchernet_py_001.ekf import BundleEKFContinuousTime, MatcherEKF
-from matchernet_py_001 import fn
-from matchernet_py_001 import observer
-from matchernet_py_001.state_space_model_2d import StateSpaceModel2Dim
-from matchernet_py_001 import utils
-from matchernet_py_001.utils import print_flush
+from matchernet.ekf import BundleEKFContinuousTime, MatcherEKF
+from matchernet import fn
+from matchernet import observer
+from matchernet.state_space_model_2d import StateSpaceModel2Dim
+from matchernet import utils
+from matchernet.utils import print_flush
 
 logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)

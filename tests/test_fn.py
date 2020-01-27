@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from matchernet_py_001.fn import LinearFn, LinearFnXU
+from matchernet.fn import LinearFn, LinearFnXU
 
 
 class TestLinearFn(unittest.TestCase):

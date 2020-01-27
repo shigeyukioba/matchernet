@@ -3,16 +3,14 @@ from codecs import open
 from os import path
 import re
 
-package_name = "matchernet_py_001"
+package_name = "matchernet"
 
 root_dir = path.abspath(path.dirname(__file__))
 
+
 def _requirements():
-    return [name.rstrip() for name in open(path.join(root_dir, 'requirements.txt')).readlines()]
+    return open(path.join(root_dir, 'requirements.txt')).read().splitlines()
 
-
-def _test_requirements():
-    return [name.rstrip() for name in open(path.join(root_dir, 'test-requirements.txt')).readlines()]
 
 with open(path.join(root_dir, package_name, '__init__.py')) as f:
     init_text = f.read()
@@ -40,7 +38,6 @@ setup(
     license=license,
 
     install_requires=_requirements(),
-    tests_require=_test_requirements(),
 
     author=author,
     author_email=author_email,
@@ -49,7 +46,7 @@ setup(
 
     description='',
     long_description=long_description,
-    long_description_content_type = "text/markdown",
+    long_description_content_type="text/markdown",
     keywords='kalman filter, neural net',
 
     classifiers=[

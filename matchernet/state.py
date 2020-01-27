@@ -1,5 +1,7 @@
 import numpy as np
 
+from matchernet import utils
+
 
 class State(object):
     """Class State is a state handler that maintains, serializes, and deserializes the state of Bundles or Matchers.
@@ -18,16 +20,47 @@ class State(object):
     B0.deserialize(q)
     """
 
-    def __init__(self, mu):
-        self.data = {}
-        self.data = {"mu": mu}
-        self.data["time_stamp"] = 0.0
+    def __init__(self, n):
+        self.n = n
+        self.data = {"mu": utils.zeros(n)}
+
+
+class StatePlain(State):
+    """StatePlain is a State that handles plain numpy.array.
+    """
+
+    def __init__(self, n):
+        """Initializer takes a dimensionarity of the vector.
+        """
+        self.n = n
+        # super().__init__(self.n)
+        super(StatePlain, self).__init__(self.n)
+
+
+class StateMuSigmaDiag(State):
+    """StateMuSigmaDiag is a state handler that handles
+    state variable as the following dictionary style.
+    B.state.data = {"id":1,
+            "mu":numpy.array([1,2,3]),
+            "sigma":numpy.array([2.0,2.0,2.0])}
+    Note that StateMuSigma and StateMuSigmaDiag have
+        n x n matrix "Sigma" and n vector "sigma",
+        respectively.
+    """
+
+    def __init__(self, n):
+        self.n = n
+        super(StateMuSigmaDiag, self).__init__(n)
+        self.data["id"] = 1
+        self.data["time_stamp"] = 0
+        self.data["mu"] = utils.zeros(n)
+        self.data["sigma"] = np.diag(np.eye(self.n, dtype=np.float32))
 
 
 class StateMuSigma(State):
     """StateMuSigma is a state handler that handles
     state variable as the following dictionary style.
-    B.state.data = {
+    B.state.data = {"id":1,
             "mu":numpy.array([1,2,3]),
             "Sigma":numpy.array([[1,0,0],[0,1,0],[0,0,1]])}
     Note that StateMuSigma and StateMuSigmaDiag have
@@ -35,6 +68,10 @@ class StateMuSigma(State):
         respectively.
     """
 
-    def __init__(self, mu, Sigma):
-        super(StateMuSigma, self).__init__(mu)
-        self.data["Sigma"] = Sigma
+    def __init__(self, n):
+        self.n = n
+        super(StateMuSigma, self).__init__(n)
+        self.data["id"] = 1
+        self.data["time_stamp"] = 0
+        self.data["mu"] = utils.zeros(n)
+        self.data["Sigma"] = np.eye(n, dtype=np.float32)
