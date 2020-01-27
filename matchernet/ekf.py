@@ -386,19 +386,19 @@ class MatcherEKF(Matcher):
         z = self.g0.value(self.mu0) - self.g1.value(self.mu1)
         C0 = self.g0.x(self.mu0)
         C1 = self.g1.x(self.mu1)
-        S = np.dot(np.dot(C0.T, self.Sigma0), C0) + np.dot(np.dot(C1.T, self.Sigma1), C1)
+        S = C0 @ self.Sigma0 @ C0.T + C1 @ self.Sigma1 @ C1.T
         SI = np.linalg.inv(S)
         dum_sign, logdet = np.linalg.slogdet(S)
-        self.lnL_t -= np.dot(np.dot(z, SI), z.T) / 2.0
-        self.err2 += np.dot(z, z.T)
+        self.lnL_t -= z @ SI @ z.T / 2.0
+        self.err2 += z @ z.T
         self.lnL_t -= logdet / 2.0
-        K0 = np.dot(np.dot(self.Sigma0, C0), SI)
-        K1 = np.dot(np.dot(self.Sigma1, C1), SI)
+        K0 = self.Sigma0 @ C0.T @ SI
+        K1 = self.Sigma1 @ C1.T @ SI        
 
         self.dmu0 = -np.dot(K0, z)  #### HERE it is fixed! ####
         self.dmu1 = np.dot(K1, z)
-        self.dSigma0 = -np.dot(K0, np.dot(C0.T, self.Sigma0))
-        self.dSigma1 = -np.dot(K1, np.dot(C1.T, self.Sigma1))
+        self.dSigma0 = -K0 @ C0 @ self.Sigma0
+        self.dSigma1 = -K1 @ C1 @ self.Sigma1
         self.lnL += self.lnL_t
         self.logger.debug("lnL_t = {lnLt}, lnL = {lnL}".format(lnLt=self.lnL_t, lnL=self.lnL))
 
