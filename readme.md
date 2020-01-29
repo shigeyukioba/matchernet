@@ -31,6 +31,9 @@ MatcherNet efficiently works with multi-thread computing. Modular division of st
 MatcherNet was developped with support by the New Energy and Industrial Technology Development Organization (NEDO), Japan,
 and by Post-K application development for exploratory challenges from the MEXT, Japan.
 
+# Document
+See the [matchernet documentation](https://shigeyukioba.github.io/matchernet/)
+
 # How to install?
 The alpha version has been tested and released below:
 https://test.pypi.org/project/matchernet-py-001/
