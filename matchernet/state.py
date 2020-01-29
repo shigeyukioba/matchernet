@@ -75,3 +75,13 @@ class StateMuSigma(State):
         self.data["time_stamp"] = 0
         self.data["mu"] = utils.zeros(n)
         self.data["Sigma"] = np.eye(n, dtype=np.float32)
+
+
+class StateVisualMotor(State):
+    def __init__(self, n):
+        self.n = n
+        super(StateVisualMotor, self).__init__(n)
+        self.data["id"] = 1
+        self.data["time_stamp"] = 0
+        self.data["angle"] = 0
+        self.data["angular_velocity"] = 0
