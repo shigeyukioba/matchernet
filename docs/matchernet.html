@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>matchernet package &#8212; matchernet  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to matchernet’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="matchernet-package">
+<h1>matchernet package<a class="headerlink" href="#matchernet-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="matchernet-ekf-module">
+<h2>matchernet.ekf module<a class="headerlink" href="#matchernet-ekf-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-matchernet.fn">
+<span id="matchernet-fn-module"></span><h2>matchernet.fn module<a class="headerlink" href="#module-matchernet.fn" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fn-py">
+<h3>fn.py<a class="headerlink" href="#fn-py" title="Permalink to this headline">¶</a></h3>
+<p>This module contains function handler classes that the BundleNet
+architecture needs. It is overridden when you use chainer/TensorFlow to implement the arbitrary parametric functions.</p>
+<dl class="class">
+<dt id="matchernet.fn.Fn">
+<em class="property">class </em><code class="sig-prename descclassname">matchernet.fn.</code><code class="sig-name descname">Fn</code><span class="sig-paren">(</span><em class="sig-param">A</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/fn.html#Fn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.fn.Fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An abstract class to implement numerical function
+that BundleNet uses.</p>
+<dl class="method">
+<dt id="matchernet.fn.Fn.get_params">
+<code class="sig-name descname">get_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/fn.html#Fn.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.fn.Fn.get_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="matchernet.fn.Fn.value">
+<code class="sig-name descname">value</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/fn.html#Fn.value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.fn.Fn.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Numerically calculates f(x)
+x should be a numpy array of shape (dim_in, 1)
+outputs a numpy array of shape (dim_out, 1)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="matchernet.fn.LinearFn">
+<em class="property">class </em><code class="sig-prename descclassname">matchernet.fn.</code><code class="sig-name descname">LinearFn</code><span class="sig-paren">(</span><em class="sig-param">A</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/fn.html#LinearFn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.fn.LinearFn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#matchernet.fn.Fn" title="matchernet.fn.Fn"><code class="xref py py-class docutils literal notranslate"><span class="pre">matchernet.fn.Fn</span></code></a></p>
+<p>Linear function y = np.dot(A, x) and its derivatives.</p>
+<dl class="method">
+<dt id="matchernet.fn.LinearFn.value">
+<code class="sig-name descname">value</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/fn.html#LinearFn.value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.fn.LinearFn.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Numerically calculates f(x)
+x should be a numpy array of shape (dim_in, 1)
+outputs a numpy array of shape (dim_out, 1)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="matchernet.fn.LinearFnXU">
+<em class="property">class </em><code class="sig-prename descclassname">matchernet.fn.</code><code class="sig-name descname">LinearFnXU</code><span class="sig-paren">(</span><em class="sig-param">A</em>, <em class="sig-param">B</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/fn.html#LinearFnXU"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.fn.LinearFnXU" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Linear function y = np.dot(A, x) + np.dot(B, u) and its derivatives.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The shapes of matrix A and matrix B must match</p>
+</div>
+<dl class="method">
+<dt id="matchernet.fn.LinearFnXU.value">
+<code class="sig-name descname">value</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">u</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/fn.html#LinearFnXU.value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.fn.LinearFnXU.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="matchernet-matchernet-module">
+<h2>matchernet.matchernet module<a class="headerlink" href="#matchernet-matchernet-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="matchernet-matchernet-null-module">
+<h2>matchernet.matchernet_null module<a class="headerlink" href="#matchernet-matchernet-null-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="matchernet-observer-module">
+<h2>matchernet.observer module<a class="headerlink" href="#matchernet-observer-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-matchernet.state">
+<span id="matchernet-state-module"></span><h2>matchernet.state module<a class="headerlink" href="#module-matchernet.state" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="matchernet.state.State">
+<em class="property">class </em><code class="sig-prename descclassname">matchernet.state.</code><code class="sig-name descname">State</code><span class="sig-paren">(</span><em class="sig-param">n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/state.html#State"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.state.State" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class State is a state handler that maintains, serializes, and deserializes the state of Bundles or Matchers.
+The methods serialize() and deserialize() are required for BriCA1 components to exchange their states as numpy.array objects.</p>
+<p>A Bundle/Matcher has its state as a dictionary.
+For exmaple,
+B0.state = state.State()
+B0.state.data = {“mu”:np.array([1,2]),</p>
+<blockquote>
+<div><p>“Sigma”:np.array([[1,0],[0,1]])}</p>
+</div></blockquote>
+<p>The disctionary is serialized with a method  serialize()
+q = B0.serialize()
+into a numpy.array object  q  .
+The serialized array is exchanged through  BriCA1 IN/OUT ports
+and deserialized with a method  deserialize() as.
+B0.deserialize(q)</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="matchernet.state.StateMuSigma">
+<em class="property">class </em><code class="sig-prename descclassname">matchernet.state.</code><code class="sig-name descname">StateMuSigma</code><span class="sig-paren">(</span><em class="sig-param">n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/state.html#StateMuSigma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.state.StateMuSigma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#matchernet.state.State" title="matchernet.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">matchernet.state.State</span></code></a></p>
+<p>StateMuSigma is a state handler that handles
+state variable as the following dictionary style.
+B.state.data = {“id”:1,</p>
+<blockquote>
+<div><p>“mu”:numpy.array([1,2,3]),
+“Sigma”:numpy.array([[1,0,0],[0,1,0],[0,0,1]])}</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Note that StateMuSigma and StateMuSigmaDiag have</dt><dd><p>n x n matrix “Sigma” and n vector “sigma”,
+respectively.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="matchernet.state.StateMuSigmaDiag">
+<em class="property">class </em><code class="sig-prename descclassname">matchernet.state.</code><code class="sig-name descname">StateMuSigmaDiag</code><span class="sig-paren">(</span><em class="sig-param">n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/state.html#StateMuSigmaDiag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.state.StateMuSigmaDiag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#matchernet.state.State" title="matchernet.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">matchernet.state.State</span></code></a></p>
+<p>StateMuSigmaDiag is a state handler that handles
+state variable as the following dictionary style.
+B.state.data = {“id”:1,</p>
+<blockquote>
+<div><p>“mu”:numpy.array([1,2,3]),
+“sigma”:numpy.array([2.0,2.0,2.0])}</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Note that StateMuSigma and StateMuSigmaDiag have</dt><dd><p>n x n matrix “Sigma” and n vector “sigma”,
+respectively.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="matchernet.state.StatePlain">
+<em class="property">class </em><code class="sig-prename descclassname">matchernet.state.</code><code class="sig-name descname">StatePlain</code><span class="sig-paren">(</span><em class="sig-param">n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/state.html#StatePlain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.state.StatePlain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#matchernet.state.State" title="matchernet.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">matchernet.state.State</span></code></a></p>
+<p>StatePlain is a State that handles plain numpy.array.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="matchernet-state-space-model-2d-module">
+<h2>matchernet.state_space_model_2d module<a class="headerlink" href="#matchernet-state-space-model-2d-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-matchernet.utils">
+<span id="matchernet-utils-module"></span><h2>matchernet.utils module<a class="headerlink" href="#module-matchernet.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="matchernet.utils.calc_matrix_F">
+<code class="sig-prename descclassname">matchernet.utils.</code><code class="sig-name descname">calc_matrix_F</code><span class="sig-paren">(</span><em class="sig-param">A</em>, <em class="sig-param">dt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/utils.html#calc_matrix_F"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.utils.calc_matrix_F" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the F matrix.</p>
+<p>Ft’ = exp(dt * At’) ≈ I + dt * At’ + dt^2 * At’^2 + …
+Approximate up to the third-order term and calculate F.
+F = I + A * dt + (A^2 * dt^2)/2.0 + (A^3 * dt^3)/6.0</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>A (np.array): Jacobian of the state space model dynamics function.
+dt (int or float): Differentiating time width.</p>
+</dd>
+<dt>Returns:</dt><dd><p>np.array: A variable holding a np.array of the F matrix.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="matchernet.utils.print_flush">
+<code class="sig-prename descclassname">matchernet.utils.</code><code class="sig-name descname">print_flush</code><span class="sig-paren">(</span><em class="sig-param">s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/utils.html#print_flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.utils.print_flush" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="matchernet.utils.q_plot001">
+<code class="sig-prename descclassname">matchernet.utils.</code><code class="sig-name descname">q_plot001</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">q_array</em>, <em class="sig-param">x_array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/utils.html#q_plot001"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.utils.q_plot001" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="matchernet.utils.q_plot002">
+<code class="sig-prename descclassname">matchernet.utils.</code><code class="sig-name descname">q_plot002</code><span class="sig-paren">(</span><em class="sig-param">trange</em>, <em class="sig-param">mu</em>, <em class="sig-param">s</em>, <em class="sig-param">color='blue'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/utils.html#q_plot002"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.utils.q_plot002" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="matchernet.utils.regularize_cov_matrix">
+<code class="sig-prename descclassname">matchernet.utils.</code><code class="sig-name descname">regularize_cov_matrix</code><span class="sig-paren">(</span><em class="sig-param">a</em>, <em class="sig-param">mineig=1e-05</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/utils.html#regularize_cov_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.utils.regularize_cov_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>regularize the covariance matrix  a  so that its minimum eigen value is larger than  mineig.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="matchernet.utils.zeros">
+<code class="sig-prename descclassname">matchernet.utils.</code><code class="sig-name descname">zeros</code><span class="sig-paren">(</span><em class="sig-param">size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/matchernet/utils.html#zeros"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#matchernet.utils.zeros" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">matchernet</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">matchernet package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#matchernet-ekf-module">matchernet.ekf module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-matchernet.fn">matchernet.fn module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#fn-py">fn.py</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#matchernet-matchernet-module">matchernet.matchernet module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#matchernet-matchernet-null-module">matchernet.matchernet_null module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#matchernet-observer-module">matchernet.observer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-matchernet.state">matchernet.state module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#matchernet-state-space-model-2d-module">matchernet.state_space_model_2d module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-matchernet.utils">matchernet.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to matchernet’s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Author.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/matchernet.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
