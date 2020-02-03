@@ -8,7 +8,8 @@ from matchernet.state import StatePlain, StateMuSigma, StateMuSigmaDiag
 class TestStatePlain(unittest.TestCase):
     def setUp(self):
         self.n = 4
-        self.s = StatePlain(self.n)
+        mu = np.zeros(self.n, dtype=np.float32)
+        self.s = StatePlain(mu)
 
     def test_has_key(self):
         self.assertTrue(self.s.data.keys() >= {"mu"})
@@ -22,13 +23,12 @@ class TestStatePlain(unittest.TestCase):
 class TestStateMuSigma(unittest.TestCase):
     def setUp(self):
         self.n = 4
-        self.s = StateMuSigma(self.n)
+        mu = np.zeros(self.n, dtype=np.float32)
+        Sigma = np.eye(self.n, dtype=np.float32)
+        self.s = StateMuSigma(mu, Sigma)
 
     def test_has_key(self):
-        self.assertTrue(self.s.data.keys() >= {"id",
-                                               "time_stamp",
-                                               "mu",
-                                               "Sigma"})
+        self.assertTrue(self.s.data.keys() >= {"mu", "Sigma"})
 
     def test_init_val(self):
         actual_mu = self.s.data["mu"]
@@ -43,13 +43,12 @@ class TestStateMuSigma(unittest.TestCase):
 class TestStateMuSigmaDiag(unittest.TestCase):
     def setUp(self):
         self.n = 4
-        self.s = StateMuSigmaDiag(self.n)
+        mu = np.zeros(self.n, dtype=np.float32)
+        sigma = np.diag(np.eye(self.n, dtype=np.float32))
+        self.s = StateMuSigmaDiag(mu, sigma)
 
     def test_has_key(self):
-        self.assertTrue(self.s.data.keys() >= {"id",
-                                               "time_stamp",
-                                               "mu",
-                                               "sigma"})
+        self.assertTrue(self.s.data.keys() >= {"mu", "sigma"})
 
     def test_init_val(self):
         actual_mu = self.s.data["mu"]

@@ -9,9 +9,16 @@ from matchernet import utils
 class TestBundleEKFContinuousTime(unittest.TestCase):
     def setUp(self):
         self.n = 2
-        self.A = np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32)
-        self.b0 = BundleEKFContinuousTime("b0", 2, fn.LinearFn(self.A))
-        self.b1 = BundleEKFContinuousTime("b1", 2, fn.LinearFn(self.A))
+
+        mu0 = np.zeros(self.n, dtype=np.float32)
+        Sigma0 = np.eye(self.n, dtype=np.float32)
+        A0 = np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32)
+        Q = np.eye(self.n, dtype=np.float32)
+        f = fn.LinearFn(A0)
+        dt = 0.01
+        
+        self.b0 = BundleEKFContinuousTime("b0", dt, f, Q, mu0, Sigma0)
+        self.b1 = BundleEKFContinuousTime("b1", dt, f, Q, mu0, Sigma0)
 
     def test_has_key(self):
         self.assertTrue(self.b0.state.data.keys() >= {"mu", "Sigma"})

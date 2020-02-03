@@ -117,5 +117,4 @@ class ObserverMultiple(Observer):
         for i in range(1, self.mul):
             j = (self.counter + i) % self.length
             z = np.concatenate((z, b[j].copy()))
-        self.state.data["mu"] = z
         return z

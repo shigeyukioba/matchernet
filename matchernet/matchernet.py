@@ -127,7 +127,6 @@ class Matcher(object):
           results = {"Bundle0", fbst0, "Bundle1", fbst1}
 
         """
-        # TODO: Check
         for key in inputs:
             if inputs[key] is not None:
                 self.accept_bundle_state(inputs[key])
