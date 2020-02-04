@@ -55,8 +55,8 @@ class TestObserver(unittest.TestCase):
         expected = np.zeros(self.dim, dtype=np.float32)
         for i in range(self.repeat_num):
             for j in range(self.buffersize):
-                self.b(self.b.state)
-                actual = self.b.results["state"].data["mu"]
+                self.b(None)
+                actual = self.b.get_results()["state"]["mu"]
                 expected[0] = j
                 self.assertIsNone(np.testing.assert_array_equal(expected, actual))
 

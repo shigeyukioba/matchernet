@@ -21,12 +21,12 @@ class TestLinearFn(unittest.TestCase):
                 actual_dot = f.value(self.x)
                 self.assertIsNone(np.testing.assert_array_equal(expected_dot, actual_dot))
 
-    def test_linear_dx(self):
+    def test_linear_x(self):
         for A in self.test_A_patterns:
             f = LinearFn(A)
             expected_dx = A
             with self.subTest():
-                actual_dx = f.dx(self.x)
+                actual_dx = f.x(self.x)
                 self.assertIsNone(np.testing.assert_array_equal(expected_dx, actual_dx))
 
 
@@ -58,7 +58,7 @@ class TestLinearFnXU(unittest.TestCase):
             f = LinearFnXU(A, B)
             expected_dx = A
             with self.subTest():
-                actual_dx = f.dx(self.x, self.u)
+                actual_dx = f.x(self.x, self.u)
                 self.assertIsNone(np.testing.assert_array_equal(expected_dx, actual_dx))
 
     def test_linear_XU_du(self):
@@ -66,7 +66,7 @@ class TestLinearFnXU(unittest.TestCase):
             f = LinearFnXU(A, B)
             expected_du = B
             with self.subTest():
-                actual_du = f.du(self.x, self.u)
+                actual_du = f.u(self.x, self.u)
                 self.assertIsNone(np.testing.assert_array_equal(expected_du, actual_du))
 
 

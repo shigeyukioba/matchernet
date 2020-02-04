@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from codecs import open
 from os import path
 import re
@@ -31,7 +31,7 @@ with open('readme.md', encoding='utf-8') as f:
 
 setup(
     name=package_name,
-    packages=[package_name],
+    packages=find_packages(exclude=('tests', )),
 
     version="0.0.3",
 

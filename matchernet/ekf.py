@@ -64,18 +64,14 @@ class BundleEKFContinuousTime(Bundle):
 
     """
 
-    def __init__(self, name, n, f, logger=logger):
+    def __init__(self, name, dt, f, Q, mu, Sigma, logger=logger):
         self.logger = logger.getChild(self.__class__.__name__)
-        self.n = n  # Dimsnsionarity of the state variable
-        self.name = name
-        self.state = state.StateMuSigma(n)
-        self._initialize_control_params()
-        self._initialize_state(n)
+        self.state = state.StateMuSigma(mu, Sigma)
+        self._initialize_control_params(dt)
         self.f = f
-        # self.bw = matchernet.bundleWeight(numSteps)
-        self.record = {}
-        self._first_call_of_state_record = True
-        super(BundleEKFContinuousTime, self).__init__(self.name, self.state)
+        self.Q = Q
+        self.record = None
+        super(BundleEKFContinuousTime, self).__init__(name, logger)
 
     def __call__(self, inputs):
         """The main routine that is called from brica.
@@ -86,42 +82,53 @@ class BundleEKFContinuousTime(Bundle):
                 self.accept_feedback(inputs[key])
         self.step_dynamics(self.dt)
         self._countup()
-        self.state.data["Sigma"] = utils.regularize_cov_matrix(self.state.data["Sigma"])
         self._state_record()
         self.logger.debug("mu={}".format(self.state.data["mu"]))
 
-        return {"state": self.state}
+        # Send state to Matcher
+        results = {
+            "mu": self.state.data["mu"],
+            "Sigma": self.state.data["Sigma"],
+            "time_stamp": self.time_stamp,
+            "time_id": self.time_id
+        }
+        return {
+            "state" : results
+        }
 
-    def _initialize_control_params(self):
-        self.id = 0
-        self.dt = 0.01
-        self.callcount = 0
-        self.is_optimizer_ready = False
-        self.lr = 0.0001  # Leaning rate for dynamics  f
+    def _initialize_control_params(self, dt):
+        self.time_id = 0
+        self.time_stamp = 0.0
+        self.dt = dt
 
     def _countup(self):
-        self.id = self.id + 1
-        self.state.data["time_stamp"] = self.state.data["time_stamp"] + self.dt
-        self.callcount = self.callcount + 1
+        self.time_id += 1
+        self.time_stamp += self.dt
 
     def _state_record(self):
         mu = np.array(self.state.data["mu"], dtype=np.float32)
         sigma = np.array([np.diag(self.state.data["Sigma"])], dtype=np.float32)
-        ts = np.array([self.state.data["time_stamp"]], dtype=np.float32)
+        ts = np.array([self.time_stamp], dtype=np.float32)
 
-        if self._first_call_of_state_record:
-            self.record = {"mu": mu, "diagSigma": sigma, "time_stamp": ts}
-            self._first_call_of_state_record = False
+        if self.record is None:
+            self.record = {
+                "mu": mu,
+                "diagSigma": sigma,
+                "time_stamp": ts
+            }
         else:
             self.record["mu"] = np.vstack((self.record["mu"], mu))
             self.record["diagSigma"] = np.concatenate((self.record["diagSigma"], sigma), axis=0)
             self.record["time_stamp"] = np.concatenate((self.record["time_stamp"], ts), axis=0)
 
-    def _initialize_state(self, n):
-        self.state.data["id"] = self.id
-        self.state.data["mu"] = utils.zeros(n)
-        self.state.data["Sigma"] = 1.0 * np.identity(self.n, dtype=np.float32)
-        self.state.data["Q"] = 1.0 * np.identity(self.n)
+    def logger_state(self):
+        """ Print the state of the current Bundle.
+        Args:
+            None.
+        Returns:
+            None.
+        """
+        self.logger.debug("State of {n}: {x}".format(n=self.name, x=self.state.data))
 
     def accept_feedback(self, fbst):
         """Overriding matchernet.Bundle.accept_feedback()
@@ -133,16 +140,15 @@ class BundleEKFContinuousTime(Bundle):
         where  mu  and  Sigma  stands for the probabilistic state of the current bundle  q(x) = N( mu, Sigma ),
         and  dmu  and  dSigma  stands for the feedback state coming from the corresponding Matcher.
         """
-        dmu = fbst.data["mu"]
-        dSigma = fbst.data["Sigma"]
+        dmu = fbst["mu"]
+        dSigma = fbst["Sigma"]
         mu = self.state.data["mu"]
         Sigma = self.state.data["Sigma"]
-        # Q = self.state.data["Q"]
 
         self.logger.debug("dmu={}".format(dmu))
         self.logger.debug("dSigma={}".format(dSigma))
+        
         weight = 1.0
-
         self.state.data["mu"] = (mu + weight * dmu).astype(np.float32)
         self.state.data["Sigma"] = (Sigma + weight * dSigma).astype(np.float32)
         # self.Q = (1-weight*self.lr) * Q + weight*self.lr * np.dot(dmu.T,dmu)
@@ -161,12 +167,90 @@ class BundleEKFContinuousTime(Bundle):
         """
         mu = self.state.data["mu"]
         Sigma = self.state.data["Sigma"]
-        Q = self.state.data["Q"]
-        A = self.f.dx(mu)
+        A = self.f.x(mu)
         # Note:  mu.shape = (n, ), A.shape = (n,n)
         F = utils.calc_matrix_F(A, dt)
-        mu = np.dot(F, mu)
-        Sigma = dt * Q + np.dot(np.dot(F.T, Sigma), F)
+        mu = F @ mu
+        Sigma = dt * self.Q + F.T @ Sigma @ F
+        Sigma = utils.regularize_cov_matrix(Sigma)
+        self.state.data["mu"] = mu
+        self.state.data["Sigma"] = Sigma
+        # ["time_stamp"] is updated in the method self._countup()
+
+
+class BundleEKFWithController(Bundle):
+    """Class BundleEKFWithController is a extentin of BundleEKFContinuousTime class with controller input  u.
+    """
+    
+    def __init__(self, name, dt, f, Q, mu, Sigma, control_src_name):
+        self.f = f
+        self._initialize_control_params(dt)
+        self._initialize_state(mu, Sigma)
+        
+        self.Q = Q
+        self.control_src_name = control_src_name
+
+        super(BundleEKFWithController, self).__init__(name)
+
+    def __call__(self, inputs):
+        # Update state
+        for key in inputs:  # key is one of the matcher names
+            if inputs[key] is not None:
+                if key != self.control_src_name:
+                    self.accept_feedback(inputs[key])
+
+        # Step dynamics with applied control signal
+        for key in inputs:  # key is one of the matcher names
+            if inputs[key] is not None:
+                if key == self.control_src_name:
+                    u = inputs[key]["u"]
+                    self.step_dynamics(u, self.dt)
+
+        # Update timestamp
+        self._countup()
+
+        # Send state to Matcher
+        results = {
+            "mu": self.state.data["mu"],
+            "Sigma": self.state.data["Sigma"],
+            "time_stamp": self.time_stamp,
+            "time_id": self.time_id
+        }
+        return {
+            "state" : results
+        }
+
+    def _initialize_control_params(self, dt):
+        self.dt = dt
+        self.time_stamp = 0.0
+        self.time_id = 0
+
+    def _countup(self):
+        self.time_stamp += self.dt
+        self.time_id += 1
+
+    def _initialize_state(self, mu, Sigma):
+        self.state = state.StateMuSigma(mu, Sigma)
+
+    def accept_feedback(self, fbst):
+        dmu = fbst["mu"]
+        dSigma = fbst["Sigma"]
+        mu = self.state.data["mu"]
+        Sigma = self.state.data["Sigma"]
+
+        self.state.data["mu"] = (mu + dmu).astype(np.float32)
+        self.state.data["Sigma"] = (Sigma + dSigma).astype(np.float32)
+
+    def step_dynamics(self, u, dt):
+        mu = self.state.data["mu"]
+        Sigma = self.state.data["Sigma"]
+        A = self.f.x(mu, u)
+        F = utils.calc_matrix_F(A, dt)
+        
+        mu = mu + self.f.value(mu, u) * dt
+        Sigma = dt * self.Q + F.T @ Sigma @ F
+        Sigma = utils.regularize_cov_matrix(Sigma)
+
         self.state.data["mu"] = mu
         self.state.data["Sigma"] = Sigma
         # ["time_stamp"] is updated in the method self._countup()
@@ -211,30 +295,22 @@ class MatcherEKF(Matcher):
     where  C0 = (dg0/dx)  and  C1 = (dg1/dx)  are Jacobian matrices. Note that C0 and C1 are identity matrices and  S = Sigma0 + Sigma1  holds in the simplest case.
     """
 
-    def __init__(self, name, b0, b1, logger=logger):
+    def __init__(self, name, b0, b1, g0, g1, logger=logger):
         self.logger = logger.getChild(self.__class__.__name__)
-        self.name = name
-        super(MatcherEKF, self).__init__(name, b0, b1)
         self.b0name = b0.name
         self.b1name = b1.name
-        self.n0 = b0.state.n  # dim. of B0
-        self.n1 = b1.state.n  # dim. of B1
-        self._first_call_of_state_record = True
+        self.g0 = g0
+        self.g1 = g1
+        self.record = None
         self._initialize_model()
         self.ts0_recent = -1  # the most recent value of the time_stamp of b0
         self.ts1_recent = -1  # that of b1
-        self.update_component()
+
+        super(MatcherEKF, self).__init__(name, b0, b1)
 
     def _initialize_model(self):
-        self.n = self.n0  # dim. of g0(x0), g1(x1)
-        # self.g0 is an identity function as a default observation model
-        self.g0 = fn.LinearFn(np.eye(self.n0, dtype=np.float32))
-        # self.g1 is also an identity function
-        self.g1 = fn.LinearFn(np.eye(self.n1, dtype=np.float32))
         self.lnL = 0
         self.err2 = 0
-        self.id0 = 0
-        self.id1 = 0
 
     def __call__(self, inputs):
         """The main routine that is called from brica.
@@ -267,7 +343,7 @@ class MatcherEKF(Matcher):
         dmu1 = np.array(fbst1.data["mu"])
         dsigma1 = np.array([np.diag(fbst1.data["Sigma"])], dtype=np.float32)
 
-        if self._first_call_of_state_record:
+        if self.record is None:
             self.record = {
                 "mu0": mu0,
                 "diagSigma0": sigma0,
@@ -307,23 +383,27 @@ class MatcherEKF(Matcher):
         """
         self.logger.debug("Matcher_EKF forward")
         self.lnL_t = 0
-        # self.R = self.Sigma0 + self.Sigma1
+        
         z = self.g0.value(self.mu0) - self.g1.value(self.mu1)
         C0 = self.g0.x(self.mu0)
         C1 = self.g1.x(self.mu1)
-        S = np.dot(np.dot(C0.T, self.Sigma0), C0) + np.dot(np.dot(C1.T, self.Sigma1), C1)
+        
+        S = C0 @ self.Sigma0 @ C0.T + C1 @ self.Sigma1 @ C1.T
         SI = np.linalg.inv(S)
+        
         dum_sign, logdet = np.linalg.slogdet(S)
-        self.lnL_t -= np.dot(np.dot(z, SI), z.T) / 2.0
-        self.err2 += np.dot(z, z.T)
+        self.lnL_t -= z @ SI @ z.T / 2.0
+        self.err2 += z @ z.T
         self.lnL_t -= logdet / 2.0
-        K0 = np.dot(np.dot(self.Sigma0, C0), SI)
-        K1 = np.dot(np.dot(self.Sigma1, C1), SI)
+        
+        K0 = self.Sigma0 @ C0.T @ SI
+        K1 = self.Sigma1 @ C1.T @ SI
 
-        self.dmu0 = -np.dot(K0, z)  #### HERE it is fixed! ####
-        self.dmu1 = np.dot(K1, z)
-        self.dSigma0 = -np.dot(K0, np.dot(C0.T, self.Sigma0))
-        self.dSigma1 = -np.dot(K1, np.dot(C1.T, self.Sigma1))
+        self.dmu0 = -K0 @ z
+        self.dmu1 =  K1 @ z
+        self.dSigma0 = -K0 @ C0 @ self.Sigma0
+        self.dSigma1 = -K1 @ C1 @ self.Sigma1
+        
         self.lnL += self.lnL_t
         self.logger.debug("lnL_t = {lnLt}, lnL = {lnL}".format(lnLt=self.lnL_t, lnL=self.lnL))
 
@@ -340,14 +420,14 @@ class MatcherEKF(Matcher):
          is called from self.__call__()
         """
         self.b0state, self.b1state = inputs[self.b0name], inputs[self.b1name]
-        d0, d1 = self.b0state.data, self.b1state.data
+        d0, d1 = self.b0state, self.b1state
 
         self.mu0 = d0["mu"]
         self.Sigma0 = d0["Sigma"]
-        self.ts0 = d0["time_stamp"]
+        self.ts0 = d0["time_id"]
         self.mu1 = d1["mu"]
         self.Sigma1 = d1["Sigma"]
-        self.ts1 = d1["time_stamp"]
+        self.ts1 = d1["time_id"]
 
         self.logger.debug("mu0={}".format(self.mu0))
         self.logger.debug("Sigma0={}".format(self.Sigma0))
@@ -364,7 +444,7 @@ class MatcherEKF(Matcher):
         self.forward()
         self.backward()
 
-        self.results[self.b0name].data["mu"] = self.dmu0.astype(np.float32)
-        self.results[self.b0name].data["Sigma"] = self.dSigma0.astype(np.float32)
-        self.results[self.b1name].data["mu"] = self.dmu1.astype(np.float32)
-        self.results[self.b1name].data["Sigma"] = self.dSigma1.astype(np.float32)
+        self.results[self.b0name]["mu"] = self.dmu0.astype(np.float32)
+        self.results[self.b0name]["Sigma"] = self.dSigma0.astype(np.float32)
+        self.results[self.b1name]["mu"] = self.dmu1.astype(np.float32)
+        self.results[self.b1name]["Sigma"] = self.dSigma1.astype(np.float32)

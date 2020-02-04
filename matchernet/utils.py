@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def print_flush(s):
@@ -24,25 +23,6 @@ def regularize_cov_matrix(a, mineig=1e-5):
             l[i] = mineig
     ar = np.dot(np.dot(p, np.diag(l)), p.T)
     return ar
-
-
-def q_plot001(n, q_array, x_array):
-    trange = range(0, q_array.shape[0])
-    for i in range(n):
-        plt.subplot(n, 1, i + 1)
-        mu = q_array[:, i + 1]
-        s = np.sqrt(q_array[:, 1 + n + (n * i + i)])
-        x = x_array[:, i]
-        q_plot002(trange, mu, s, color='green')
-        plt.plot(x, 'b.-')
-        plt.ylabel("x{i}".format(i=i))
-    plt.xlabel("Time")
-
-
-def q_plot002(trange, mu, s, color='blue'):
-    plt.fill_between(trange, mu - s, mu + s,
-                     edgecolor='none', facecolor=color, alpha=0.2)
-    plt.plot(trange, mu, '-', color=color)
 
 
 def calc_matrix_F(A, dt):

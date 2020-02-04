@@ -21,10 +21,6 @@ from matchernet import utils
 logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
 
-zeros = utils.zeros
-
-_with_brica = True
-
 
 class Bundle(object):
     """
@@ -36,12 +32,15 @@ class Bundle(object):
       arbitrary number of connections to Matchers
     """
 
-    def __init__(self, name, initial_state_object, logger=logger):
+    def __init__(self, name, logger=logger):
         """ Create a new 'Bundle' instance.
         """
         self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
-        self.state = initial_state_object
+
+        self.update_component()
+
+    def update_component(self):
         self.component = Component(self)
         self.component.make_out_port("state")
 
@@ -53,7 +52,8 @@ class Bundle(object):
                 self.accept_feedback(inputs[key])
 
         self.update(inputs)
-        return {"state": self.state}
+        state = {}
+        return {"state": state}
 
     def accept_feedback(self, fb_state):
         """
@@ -61,15 +61,6 @@ class Bundle(object):
         which is linking to the current bundle.
         """
         self.logger.debug("{} is accepting feedback".format(self.name))
-
-    def logger_state(self):
-        """ Print the state of the current Bundle.
-        Args:
-            None.
-        Returns:
-            None.
-        """
-        self.logger.debug("State of {n}: {x}".format(n=self.name, x=self.state.data))
 
     def update(self, inputs):
         """ Update the state of the current Bundle.
@@ -93,12 +84,10 @@ class Matcher(object):
     def __init__(self, name, *bundles, logger=logger):
         self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
-        self.state = state.StatePlain(1)  # Own state of the current matcher
         self.results = {}
         self.bundles = bundles
         for bundle in self.bundles:
-            self.results[bundle.name] = copy.deepcopy(bundle.state)
-        self.component = None
+            self.results[bundle.name] = {}
         self.update_component()
 
     def update_component(self):
@@ -107,9 +96,9 @@ class Matcher(object):
             self.component.make_in_port(bundle.name)
             self.component.make_out_port(bundle.name)
             bundle.component.make_in_port(self.name)
+            
             brica.connect(bundle.component, "state", self.component, bundle.name)
             brica.connect(self.component, bundle.name, bundle.component, self.name)
-            self.logger.debug("{}".format(bundle.state.data))
 
     def __call__(self, inputs):
         """
@@ -135,5 +124,4 @@ class Matcher(object):
         self.logger.debug("Matcher {} is accepting_bundle_state".format(self.name))
 
     def update(self, inputs):
-        self.logger.debug("State of {n}: {x}".format(n=self.name, x=self.state.data))
         self.logger.debug("self.results={x}".format(x=self.results))
