@@ -121,6 +121,15 @@ class BundleEKFContinuousTime(Bundle):
             self.record["diagSigma"] = np.concatenate((self.record["diagSigma"], sigma), axis=0)
             self.record["time_stamp"] = np.concatenate((self.record["time_stamp"], ts), axis=0)
 
+    def logger_state(self):
+        """ Print the state of the current Bundle.
+        Args:
+            None.
+        Returns:
+            None.
+        """
+        self.logger.debug("State of {n}: {x}".format(n=self.name, x=self.state.data))
+
     def accept_feedback(self, fbst):
         """Overriding matchernet.Bundle.accept_feedback()
         This method updates the state of the current Bundle with accepting a feedback, fbst, from each Matcher linking from the current Bundle, according to the following update rule.
@@ -170,7 +179,9 @@ class BundleEKFContinuousTime(Bundle):
 
 
 class BundleEKFWithController(Bundle):
-    # TODO: Add Comments
+    """Class BundleEKFWithController is a extentin of BundleEKFContinuousTime class with controller input  u.
+    """
+    
     def __init__(self, name, dt, f, Q, mu, Sigma, control_src_name):
         self.f = f
         self._initialize_control_params(dt)
@@ -292,8 +303,8 @@ class MatcherEKF(Matcher):
         self.g1 = g1
         self.record = None
         self._initialize_model()
-        #self.ts0_recent = -1  # the most recent value of the time_stamp of b0
-        #self.ts1_recent = -1  # that of b1
+        self.ts0_recent = -1  # the most recent value of the time_stamp of b0
+        self.ts1_recent = -1  # that of b1
 
         super(MatcherEKF, self).__init__(name, b0, b1)
 
@@ -413,24 +424,22 @@ class MatcherEKF(Matcher):
 
         self.mu0 = d0["mu"]
         self.Sigma0 = d0["Sigma"]
-        #self.ts0 = d0["time_stamp"]
+        self.ts0 = d0["time_id"]
         self.mu1 = d1["mu"]
         self.Sigma1 = d1["Sigma"]
-        #self.ts1 = d1["time_stamp"]
+        self.ts1 = d1["time_id"]
 
         self.logger.debug("mu0={}".format(self.mu0))
         self.logger.debug("Sigma0={}".format(self.Sigma0))
         self.logger.debug("mu1={}".format(self.mu1))
         self.logger.debug("Sigma1={}".format(self.Sigma1))
 
-        """
         if self.ts0 == self.ts0_recent:
             self.logger.debug("b0.state is not updated")
         if self.ts1 == self.ts1_recent:
             self.logger.debug("b1.state is not updated")
         self.ts0_recent = self.ts0
         self.ts1_recent = self.ts1
-        """
 
         self.forward()
         self.backward()

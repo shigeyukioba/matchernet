@@ -62,17 +62,6 @@ class Bundle(object):
         """
         self.logger.debug("{} is accepting feedback".format(self.name))
 
-    def logger_state(self):
-        """ Print the state of the current Bundle.
-        Args:
-            None.
-        Returns:
-            None.
-        """
-        # TODO:
-        #..self.logger.debug("State of {n}: {x}".format(n=self.name, x=self.state.data))
-        pass
-
     def update(self, inputs):
         """ Update the state of the current Bundle.
         This method should be override for any subclasses.
@@ -110,8 +99,6 @@ class Matcher(object):
             
             brica.connect(bundle.component, "state", self.component, bundle.name)
             brica.connect(self.component, bundle.name, bundle.component, self.name)
-            # TODO:
-            #self.logger.debug("{}".format(bundle.state))
 
     def __call__(self, inputs):
         """
