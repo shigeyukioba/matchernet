@@ -119,7 +119,7 @@ class BundleEKFContinuousTime(Bundle):
         else:
             self.record["mu"] = np.vstack((self.record["mu"], mu))
             self.record["diagSigma"] = np.concatenate((self.record["diagSigma"], sigma), axis=0)
-            self.record["time_stamp"] = np.concatenate(([self.time_stamp], ts), axis=0)
+            self.record["time_stamp"] = np.concatenate((self.record["time_stamp"], ts), axis=0)
 
     def accept_feedback(self, fbst):
         """Overriding matchernet.Bundle.accept_feedback()

@@ -33,15 +33,18 @@ class Observer(matchernet.Bundle):
     When the vector data in buffer included  NaN  entries, they are regarded as missing entries and the Observer outpus a zero vector  mu  with covariance matrix  cov  of large eigen values. (See the function  missing_handler001()  for a default setting to construct the corresponding output. )
     """
 
-    def __init__(self, name, buff, logger=logger):
+    def __init__(self, name, buff, obs_noise_covariance=None, logger=logger):
         self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
         self.buffer = buff
         self.counter = -1
         self.length = buff.shape[0]
         self.dim = buff.shape[1]
-        self.obs_noise_covariance = 1000 * np.eye(self.dim,
-                                                  dtype=np.float32)
+
+        if obs_noise_covariance is None:
+            self.obs_noise_covariance = 1000 * np.eye(self.dim, dtype=np.float32)
+        else:
+            self.obs_noise_covariance = obs_noise_covariance
         self.missing_handler = missing_handler
         # default setting of missing value handler function
         # TODO:

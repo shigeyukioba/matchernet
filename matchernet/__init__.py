@@ -11,7 +11,7 @@ from matchernet.control.control import *
 from matchernet.control.mpc import *
 from matchernet.control.multi import *
 from matchernet.control.ilqg import *
-from matchernet.util.recording import *
+from matchernet.misc.recording import *
 
 __copyright__ = 'Copyright (C) 2019 Shigeyuki Oba'
 __version__ = '0.0.1'
