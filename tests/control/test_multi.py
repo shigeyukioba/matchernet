@@ -3,8 +3,7 @@ import autograd.numpy as np
 import unittest
 from autograd import grad, jacobian
 
-from multi import MultiAgentDynamics, MultiAgentCost, MultiAgentRenderer, MultiAgentRewardSystem
-from mpc import Dynamics, Cost, Renderer
+from matchernet import MultiAgentDynamics, MultiAgentCost, MultiAgentRenderer, MultiAgentRewardSystem, Dynamics, Cost, Renderer
 
 
 class DummyDynamics(Dynamics):

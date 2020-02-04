@@ -3,8 +3,7 @@ import autograd.numpy as np
 import unittest
 from autograd import jacobian
 
-from mpc import Dynamics, Renderer
-from mpcenv import MPCEnv
+from matchernet import Dynamics, Renderer, MPCEnv
 
 
 class DummyDynamics(Dynamics):
@@ -155,4 +154,3 @@ class MPCEnvTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    

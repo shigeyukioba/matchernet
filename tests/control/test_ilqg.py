@@ -3,8 +3,7 @@ import autograd.numpy as np
 import unittest
 from autograd import jacobian, grad
 
-from mpc import Dynamics
-from ilqg import iLQG
+from matchernet import Dynamics, iLQG
 
 
 class DummyDynamics(Dynamics):
