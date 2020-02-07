@@ -1,5 +1,4 @@
-<img alt="PyPI" src="https://img.shields.io/pypi/v/matchernet"> <img alt="APM" src="https://img.shields.io/apm/l/matchernet">
-
+<img alt="PyPI" src="https://img.shields.io/pypi/v/matchernet"> <img alt="PyPI - License" src="https://img.shields.io/pypi/l/matchernet">
 
 <img alt="MN logo" src="MatcherNetLogo.png" width="200" height="200" >
 
