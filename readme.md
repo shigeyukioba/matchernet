@@ -52,11 +52,7 @@ workon mn
 ```
 ### Install libraries
 ```bash
-pip3 install brica2==0.5
-pip3 install matplotlib==3.1.1
-pip3 install numpy==1.17.3 
-pip3 install autograd==1.3
-pip3 install -i https://test.pypi.org/simple/ matchernet-py-001
+pip3 install -r requirements.txt
 ```
 ### Modify PYTHONPATH
 ```bash
