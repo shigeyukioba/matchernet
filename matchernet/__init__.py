@@ -11,11 +11,12 @@ from matchernet.control.control import *
 from matchernet.control.mpc import *
 from matchernet.control.multi import *
 from matchernet.control.ilqg import *
+from matchernet import *
 from matchernet.misc.recording import *
 
 __copyright__ = 'Copyright (C) 2019 Shigeyuki Oba'
-__version__ = '0.0.1'
-__license__ = 'BSD-3-Clause'
+__version__ = '0.0.12'
+__license__ = 'Apache License 2.0'
 __author__ = 'Shigeyuki Oba'
 __author_email__ = 'oba@i.kyoto-u.ac.jp'
 __url__ = 'https://github.com/shigeyukioba/matchernet'
