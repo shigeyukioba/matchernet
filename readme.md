@@ -22,12 +22,12 @@ See the [matchernet documentation](https://shigeyukioba.github.io/matchernet/) f
 See a [developers' info.](https://github.com/shigeyukioba/matchernet/blob/master/fordevelopers.md) for knowing some additional info. for installation.
 
 # How to install?
-The alpha version has been tested and released below:
-https://test.pypi.org/project/matchernet-py-001/
+The beta version has been released below:
+https://pypi.org/project/matchernet/
 
 You can install the alpha version with the following command:
 ```bash
-pip install -i https://test.pypi.org/simple/ matchernet-py-001
+pip install matchernet
 ```
 
 # How to try demos?
