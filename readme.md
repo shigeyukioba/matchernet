@@ -25,7 +25,7 @@ See a [developers' info.](https://github.com/shigeyukioba/matchernet/blob/master
 The beta version has been released below:
 https://pypi.org/project/matchernet/
 
-You can install the alpha version with the following command:
+You can install the beta version with the following command:
 ```bash
 pip install matchernet
 ```
