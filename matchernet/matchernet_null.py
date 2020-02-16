@@ -6,14 +6,12 @@ This module contains a null demonstration of the BundleNet
 
 """
 import logging
-from log import logging_conf
 from operator import add
 from functools import reduce
 
 from matchernet.matchernet import Bundle, Matcher
 from matchernet import state
 
-logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
 
 
@@ -38,7 +36,7 @@ class BundleNull(Bundle):
         results = {}
         results["mu"] = self.state.data["mu"]
         return {
-            "state" : results
+            "state": results
         }
 
     def update(self, inputs):

@@ -1,13 +1,10 @@
 import logging
-from log import logging_conf
 import numpy as np
 
-from matchernet import fn
 from matchernet.matchernet import Bundle, Matcher
 from matchernet import state
 from matchernet import utils
 
-logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
 
 
@@ -93,7 +90,7 @@ class BundleEKFContinuousTime(Bundle):
             "time_id": self.time_id
         }
         return {
-            "state" : results
+            "state": results
         }
 
     def _initialize_control_params(self, dt):
@@ -147,7 +144,7 @@ class BundleEKFContinuousTime(Bundle):
 
         self.logger.debug("dmu={}".format(dmu))
         self.logger.debug("dSigma={}".format(dSigma))
-        
+
         weight = 1.0
         self.state.data["mu"] = (mu + weight * dmu).astype(np.float32)
         self.state.data["Sigma"] = (Sigma + weight * dSigma).astype(np.float32)
@@ -181,12 +178,12 @@ class BundleEKFContinuousTime(Bundle):
 class BundleEKFWithController(Bundle):
     """Class BundleEKFWithController is a extentin of BundleEKFContinuousTime class with controller input  u.
     """
-    
+
     def __init__(self, name, dt, f, Q, mu, Sigma, control_src_name):
         self.f = f
         self._initialize_control_params(dt)
         self._initialize_state(mu, Sigma)
-        
+
         self.Q = Q
         self.control_src_name = control_src_name
 
@@ -217,7 +214,7 @@ class BundleEKFWithController(Bundle):
             "time_id": self.time_id
         }
         return {
-            "state" : results
+            "state": results
         }
 
     def _initialize_control_params(self, dt):
@@ -246,7 +243,7 @@ class BundleEKFWithController(Bundle):
         Sigma = self.state.data["Sigma"]
         A = self.f.x(mu, u)
         F = utils.calc_matrix_F(A, dt)
-        
+
         mu = mu + self.f.value(mu, u) * dt
         Sigma = dt * self.Q + F.T @ Sigma @ F
         Sigma = utils.regularize_cov_matrix(Sigma)
@@ -383,27 +380,27 @@ class MatcherEKF(Matcher):
         """
         self.logger.debug("Matcher_EKF forward")
         self.lnL_t = 0
-        
+
         z = self.g0.value(self.mu0) - self.g1.value(self.mu1)
         C0 = self.g0.x(self.mu0)
         C1 = self.g1.x(self.mu1)
-        
+
         S = C0 @ self.Sigma0 @ C0.T + C1 @ self.Sigma1 @ C1.T
         SI = np.linalg.inv(S)
-        
+
         dum_sign, logdet = np.linalg.slogdet(S)
         self.lnL_t -= z @ SI @ z.T / 2.0
         self.err2 += z @ z.T
         self.lnL_t -= logdet / 2.0
-        
+
         K0 = self.Sigma0 @ C0.T @ SI
         K1 = self.Sigma1 @ C1.T @ SI
 
         self.dmu0 = -K0 @ z
-        self.dmu1 =  K1 @ z
+        self.dmu1 = K1 @ z
         self.dSigma0 = -K0 @ C0 @ self.Sigma0
         self.dSigma1 = -K1 @ C1 @ self.Sigma1
-        
+
         self.lnL += self.lnL_t
         self.logger.debug("lnL_t = {lnLt}, lnL = {lnL}".format(lnLt=self.lnL_t, lnL=self.lnL))
 

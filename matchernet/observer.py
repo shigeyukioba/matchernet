@@ -1,10 +1,8 @@
 import logging
-from log import logging_conf
 import numpy as np
 
 from matchernet import matchernet
 
-logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
 
 
@@ -48,7 +46,7 @@ class Observer(matchernet.Bundle):
         self.missing_handler = missing_handler
         # default setting of missing value handler function
         # TODO:
-        #self.set_results()
+        # self.set_results()
         # set the first value with large obs_noise_covariance
         # for an initial value
         super(Observer, self).__init__(self.name)
@@ -84,10 +82,10 @@ class Observer(matchernet.Bundle):
         results = {}
         results["mu"] = mu
         results["Sigma"] = Sigma
-        #results["time_stamp"] = self.counter
+        # results["time_stamp"] = self.counter
         results["time_id"] = self.counter
         return {
-            "state" : results
+            "state": results
         }
         # === Note: We may regard  "time_stamp"  as a real time rather than a counter in a future version.
 

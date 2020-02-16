@@ -10,15 +10,9 @@ https://github.com/BriCA/BriCA2
 
 """
 import logging
-from log import logging_conf
 import brica
-from brica import Component, VirtualTimeScheduler, Timing
-import copy
+from brica import Component
 
-from matchernet import state
-from matchernet import utils
-
-logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
 
 
@@ -96,7 +90,7 @@ class Matcher(object):
             self.component.make_in_port(bundle.name)
             self.component.make_out_port(bundle.name)
             bundle.component.make_in_port(self.name)
-            
+
             brica.connect(bundle.component, "state", self.component, bundle.name)
             brica.connect(self.component, bundle.name, bundle.component, self.name)
 
