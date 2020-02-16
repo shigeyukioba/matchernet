@@ -5,9 +5,9 @@ from matchernet.matchernet_null import BundleNull, MatcherNull2
 
 
 def test_null():
-    mu0 = np.array([0,1,0,0], dtype=np.float32)
-    mu1 = np.array([0,0,10,0], dtype=np.float32)
-    mu2 = np.array([0,0,0,100], dtype=np.float32)
+    mu0 = np.array([0, 1, 0, 0], dtype=np.float32)
+    mu1 = np.array([0, 0, 10, 0], dtype=np.float32)
+    mu2 = np.array([0, 0, 0, 100], dtype=np.float32)
 
     b0 = BundleNull("Bundle0", mu0, delay=100)
     b1 = BundleNull("Bundle1", mu1, delay=200)

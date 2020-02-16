@@ -4,7 +4,7 @@ from log import logging_conf
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from brica import Component, VirtualTimeScheduler, Timing
+from brica import VirtualTimeScheduler, Timing
 
 from matchernet.ekf import BundleEKFContinuousTime, MatcherEKF
 from matchernet import fn
@@ -49,7 +49,7 @@ def ekf_test_multiple_observer(dt, numSteps, num_observers, yrecs):
 
     g0 = fn.LinearFn(np.eye(2, dtype=np.float32))
     g1 = fn.LinearFn(np.eye(2, dtype=np.float32))
-    
+
     for i in range(num_observers):
         mpname = "mp0{}".format(i)
         mptmp = MatcherEKF(mpname, b0, bp[i], g0, g1)

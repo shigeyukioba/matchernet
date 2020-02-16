@@ -55,12 +55,14 @@ def visualize_bundle_rec(b, y_rec=None):
         plt.subplot(224)
         plt.scatter(time_stamp, y_rec[:, 1], s=2)
 
+
 ey2 = np.eye(2, dtype=np.float32)
-        
+
 mu0 = np.array([0, 1.0], dtype=np.float32)
 Sigma0 = 1.0 * ey2
 A0 = np.array([[-0.1, 2], [-2, -0.1]], dtype=np.float32)
 Q = 1.0 * ey2
+
 
 def test_BundleEKFContinuousTime01(dt, n_steps):
     f = fn.LinearFn(A0)
@@ -112,12 +114,12 @@ def test_MatcherEKF01(dt, n_steps, y_rec):
     if _with_brica is False:
         for i in range(n_steps):
             print_flush("Step {}/{} with brica".format(i, n_steps))
-            inputs_to_m01 = {"b0" : b0.state.data,
-                             "b1" : b1.state.data}
+            inputs_to_m01 = {"b0": b0.state.data,
+                             "b1": b1.state.data}
             results = m01(inputs_to_m01)
-            inputs_to_b0 = {"m01" : results["b0"]}
+            inputs_to_b0 = {"m01": results["b0"]}
             s0 = b0(inputs_to_b0)
-            inputs_to_b1 = {"m01" : results["b1"]}
+            inputs_to_b1 = {"m01": results["b1"]}
             s1 = b1(inputs_to_b1)
     else:
         s = VirtualTimeScheduler()

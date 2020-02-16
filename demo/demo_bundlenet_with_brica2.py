@@ -7,7 +7,6 @@ import numpy as np
 import brica
 from brica import Component, VirtualTimeScheduler, Timing
 from matchernet import state
-import copy
 
 logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
@@ -28,7 +27,7 @@ class NullBundle(object):
             if inputs[key] is not None:
                 self.state.data["mu"] += inputs[key]["mu"]
         logger.debug("{} state: {}".format(self.name, self.state.data["mu"]))
-        return {"state" : self.state.data}
+        return {"state": self.state.data}
 
 
 class NullMatcher(object):

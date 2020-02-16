@@ -31,7 +31,7 @@ with open('readme.md', encoding='utf-8') as f:
 
 setup(
     name=package_name,
-    packages=find_packages(exclude=('tests', )),
+    packages=find_packages(exclude=('tests',)),
     version=version,
     license=license,
     install_requires=_requirements(),

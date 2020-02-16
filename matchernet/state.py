@@ -1,8 +1,3 @@
-import numpy as np
-
-from matchernet import utils
-
-
 class State(object):
     """Class State is a state handler that maintains, serializes, and deserializes the state of Bundles or Matchers.
     The methods serialize() and deserialize() are required for BriCA1 components to exchange their states as numpy.array objects.
