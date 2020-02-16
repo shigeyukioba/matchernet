@@ -1,5 +1,4 @@
-<img alt="PyPI" src="https://img.shields.io/pypi/v/matchernet"> <img alt="APM" src="https://img.shields.io/apm/l/matchernet">
-
+<img alt="PyPI" src="https://img.shields.io/pypi/v/matchernet"> <img alt="PyPI - License" src="https://img.shields.io/pypi/l/matchernet">
 
 <img alt="MN logo" src="MatcherNetLogo.png" width="200" height="200" >
 
@@ -23,12 +22,12 @@ See the [matchernet documentation](https://shigeyukioba.github.io/matchernet/) f
 See a [developers' info.](https://github.com/shigeyukioba/matchernet/blob/master/fordevelopers.md) for knowing some additional info. for installation.
 
 # How to install?
-The alpha version has been tested and released below:
-https://test.pypi.org/project/matchernet-py-001/
+The beta version has been released below:
+https://pypi.org/project/matchernet/
 
-You can install the alpha version with the following command:
+You can install the beta version with the following command:
 ```bash
-pip install -i https://test.pypi.org/simple/ matchernet-py-001
+pip install matchernet
 ```
 
 # How to try demos?
@@ -53,11 +52,7 @@ workon mn
 ```
 ### Install libraries
 ```bash
-pip3 install brica2==0.5
-pip3 install matplotlib==3.1.1
-pip3 install numpy==1.17.3 
-pip3 install autograd==1.3
-pip3 install -i https://test.pypi.org/simple/ matchernet-py-001
+pip3 install -r requirements.txt
 ```
 ### Modify PYTHONPATH
 ```bash
