@@ -1,16 +1,17 @@
+import numpy as np
 import time
 from brica import VirtualTimeScheduler, Timing
 from matchernet.matchernet_null import BundleNull, MatcherNull2
 
 
 def test_null():
-    b0 = BundleNull("Bundle0", 4, 100)
-    b1 = BundleNull("Bundle1", 4, 200)
-    b2 = BundleNull("Bundle2", 4, 300)
+    mu0 = np.array([0, 1, 0, 0], dtype=np.float32)
+    mu1 = np.array([0, 0, 10, 0], dtype=np.float32)
+    mu2 = np.array([0, 0, 0, 100], dtype=np.float32)
 
-    b0.state.data["mu"][1] = 1
-    b1.state.data["mu"][2] = 10
-    b2.state.data["mu"][3] = 100
+    b0 = BundleNull("Bundle0", mu0, delay=100)
+    b1 = BundleNull("Bundle1", mu1, delay=200)
+    b2 = BundleNull("Bundle2", mu2, delay=300)
 
     m01 = MatcherNull2("Matcher01", b0, b1)
     m02 = MatcherNull2("Matcher02", b0, b2)

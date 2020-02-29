@@ -38,10 +38,10 @@ class LinearFn(Fn):
     def __init__(self, A):
         super(LinearFn, self).__init__(A)
         self.A = A
-        self.dx = jacobian(self.value, 0)
+        self.x = jacobian(self.value, 0)
 
     def value(self, x):
-        return np.dot(self.A, x)
+        return self.A @ x
 
 
 class LinearFnXU(object):
@@ -54,8 +54,8 @@ class LinearFnXU(object):
     def __init__(self, A, B):
         self.A = A
         self.B = B
-        self.dx = jacobian(self.value, 0)
-        self.du = jacobian(self.value, 1)
+        self.x = jacobian(self.value, 0)
+        self.u = jacobian(self.value, 1)
 
     def value(self, x, u):
-        return np.dot(self.A, x) + np.dot(self.B, u)
+        return self.A @ x + self.B @ u

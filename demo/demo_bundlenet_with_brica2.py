@@ -7,28 +7,27 @@ import numpy as np
 import brica
 from brica import Component, VirtualTimeScheduler, Timing
 from matchernet import state
-import copy
 
 logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
 
 
 class NullBundle(object):
-    def __init__(self, name, n, mu, logger=logger):
+    def __init__(self, name, mu, Sigma, logger=logger):
         super(NullBundle, self).__init__()
         self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
-        self.state = state.StateMuSigma(n)
-        self.state.data["mu"] = mu
+
+        self.state = state.StateMuSigma(mu, Sigma)
         self.component = Component(self)
         self.component.make_out_port("state")
 
     def __call__(self, inputs):
         for key in inputs:
             if inputs[key] is not None:
-                self.state.data["mu"] += inputs[key].data["mu"]
+                self.state.data["mu"] += inputs[key]["mu"]
         logger.debug("{} state: {}".format(self.name, self.state.data["mu"]))
-        return {"state": self.state}
+        return {"state": self.state.data}
 
 
 class NullMatcher(object):
@@ -38,7 +37,7 @@ class NullMatcher(object):
         self.result_state = {}
 
         for bundle in bundles:
-            self.result_state[bundle.name] = copy.deepcopy(bundle.state)
+            self.result_state[bundle.name] = {}
 
         self.component = Component(self)
         for bundle in bundles:
@@ -54,20 +53,20 @@ class NullMatcher(object):
         mu = {}
         for key in inputs:
             if inputs[key] is not None:
-                mu[key] = inputs[key].data["mu"]
+                mu[key] = inputs[key]["mu"]
         mean = reduce(add, mu.values()) / len(inputs)
         for key in inputs:
             if inputs[key] is not None:
-                self.result_state[key].data["mu"] = (mean - mu[key]) * 0.1
+                self.result_state[key]["mu"] = (mean - mu[key]) * 0.1
         return self.result_state
 
 
 def main():
-    n = 4
+    Sigma = np.eye(4, dtype=np.float32)
 
-    b0 = NullBundle("Bundle0", n, mu=np.array([0, 1, 0, 0]).astype(np.float32))
-    b1 = NullBundle("Bundle1", n, mu=np.array([0, 0, 10, 0]).astype(np.float32))
-    b2 = NullBundle("Bundle2", n, mu=np.array([0, 0, 0, 100]).astype(np.float32))
+    b0 = NullBundle("Bundle0", mu=np.array([0, 1, 0, 0]).astype(np.float32), Sigma=Sigma)
+    b1 = NullBundle("Bundle1", mu=np.array([0, 0, 10, 0]).astype(np.float32), Sigma=Sigma)
+    b2 = NullBundle("Bundle2", mu=np.array([0, 0, 0, 100]).astype(np.float32), Sigma=Sigma)
 
     m01 = NullMatcher("Matcher01", b0, b1)
     m02 = NullMatcher("Matcher02", b0, b2)

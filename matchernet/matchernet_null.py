@@ -6,28 +6,38 @@ This module contains a null demonstration of the BundleNet
 
 """
 import logging
-from log import logging_conf
 from operator import add
 from functools import reduce
 
 from matchernet.matchernet import Bundle, Matcher
 from matchernet import state
 
-logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
 
 
 class BundleNull(Bundle):
-    def __init__(self, name, n, delay=0, logger=logger):
+    def __init__(self, name, mu, delay=0, logger=logger):
         self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
         # self.delay = delay
         self.delay = -1
-        self.state = state.StatePlain(n)
-        super(BundleNull, self).__init__(self.name, self.state)
+        self.state = state.StatePlain(mu)
+        super(BundleNull, self).__init__(self.name)
 
     def accept_feedback(self, fb_state):
-        self.state.data["mu"] += fb_state.data["mu"]
+        self.state.data["mu"] += fb_state["mu"]
+
+    def __call__(self, inputs):
+        for key in inputs:
+            if inputs[key] is not None:
+                self.accept_feedback(inputs[key])
+
+        self.update(inputs)
+        results = {}
+        results["mu"] = self.state.data["mu"]
+        return {
+            "state": results
+        }
 
     def update(self, inputs):
         self.logger.debug("Updating {}".format(self.name))
@@ -49,8 +59,8 @@ class MatcherNull2(Matcher):
     def update(self, inputs):
         mu = {}
         for key in inputs:
-            mu[key] = inputs[key].data["mu"]
+            mu[key] = inputs[key]["mu"]
         mean = reduce(add, mu.values()) / len(inputs)
         for key in inputs:
             if inputs[key] is not None:
-                self.results[key].data["mu"] = (mean - mu[key]) * 0.1
+                self.results[key]["mu"] = (mean - mu[key]) * 0.1

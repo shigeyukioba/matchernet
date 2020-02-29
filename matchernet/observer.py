@@ -1,11 +1,8 @@
 import logging
-from log import logging_conf
 import numpy as np
 
 from matchernet import matchernet
-from matchernet import state
 
-logging_conf.set_logger_config("./log/logging.json")
 logger = logging.getLogger(__name__)
 
 
@@ -24,42 +21,41 @@ class Observer(matchernet.Bundle):
 
     and you get the vector data of the current time-stamp
 
-     results.state.data["mu"]
+     results.state["mu"]
 
     with corresponding observation error covariance matrix
 
-     results.state.data["Sigma"].
+     results.state["Sigma"].
 
     Note:
     When the vector data in buffer included  NaN  entries, they are regarded as missing entries and the Observer outpus a zero vector  mu  with covariance matrix  cov  of large eigen values. (See the function  missing_handler001()  for a default setting to construct the corresponding output. )
     """
 
-    def __init__(self, name, buff, logger=logger):
+    def __init__(self, name, buff, obs_noise_covariance=None, logger=logger):
         self.logger = logger.getChild(self.__class__.__name__)
         self.name = name
         self.buffer = buff
         self.counter = -1
         self.length = buff.shape[0]
         self.dim = buff.shape[1]
-        self.state = state.StateMuSigma(self.dim)
-        self.obs_noise_covariance = 1000 * np.eye(self.dim, dtype=np.float32)
+
+        if obs_noise_covariance is None:
+            self.obs_noise_covariance = 1000 * np.eye(self.dim, dtype=np.float32)
+        else:
+            self.obs_noise_covariance = obs_noise_covariance
         self.missing_handler = missing_handler
         # default setting of missing value handler function
-        self.set_results()
+        # TODO:
+        # self.set_results()
         # set the first value with large obs_noise_covariance
         # for an initial value
-        super(Observer, self).__init__(self.name, self.state)
+        super(Observer, self).__init__(self.name)
 
     def __call__(self, inputs):
         """ The main routine that is called from brica.
         """
-        # for key in inputs: # key is one of the matcher names
-        #    if inputs[key] is not None:
-        #        self.accept_feedback(inputs[key]) # Doing nothing
-
         self.count_up()
-        self.set_results()
-        return self.results
+        return self.get_results()
 
     def count_up(self):
         self.counter = (self.counter + 1) % self.length
@@ -78,13 +74,19 @@ class Observer(matchernet.Bundle):
         z = b[self.counter].copy()
         return z
 
-    def set_results(self):
+    def get_results(self):
         q = self.get_state()
-        mu, Sigma = self.missing_handler(np.array(q, dtype=np.float32), self.obs_noise_covariance, self.logger)
-        self.state.data["mu"] = mu
-        self.state.data["Sigma"] = Sigma
-        self.state.data["time_stamp"] = self.counter
-        self.results = {"state": self.state}
+        mu, Sigma = self.missing_handler(np.array(q, dtype=np.float32),
+                                         self.obs_noise_covariance, self.logger)
+
+        results = {}
+        results["mu"] = mu
+        results["Sigma"] = Sigma
+        # results["time_stamp"] = self.counter
+        results["time_id"] = self.counter
+        return {
+            "state": results
+        }
         # === Note: We may regard  "time_stamp"  as a real time rather than a counter in a future version.
 
 
@@ -116,5 +118,4 @@ class ObserverMultiple(Observer):
         for i in range(1, self.mul):
             j = (self.counter + i) % self.length
             z = np.concatenate((z, b[j].copy()))
-        self.state.data["mu"] = z
         return z

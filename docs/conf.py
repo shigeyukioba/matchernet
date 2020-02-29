@@ -12,13 +12,13 @@
 #
 # import os
 # import sys
-# sys.path.insert(0, '/Users/uchi_k/Desktop/projects/research/matchernet_dev/matchernet')
+# sys.path.insert(0, '/Users/uchi_k/Desktop/projects/research/matchernet/matchernet')
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'matchernet'
-copyright = '2019, Author'
+copyright = '2020, Author'
 author = 'Author'
 
 
@@ -31,8 +31,6 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.todo',
-    'sphinx.ext.githubpages',
-    'sphinx.ext.mathjax'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -56,7 +54,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'default'
+html_theme = 'alabaster'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

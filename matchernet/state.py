@@ -1,8 +1,3 @@
-import numpy as np
-
-from matchernet import utils
-
-
 class State(object):
     """Class State is a state handler that maintains, serializes, and deserializes the state of Bundles or Matchers.
     The methods serialize() and deserialize() are required for BriCA1 components to exchange their states as numpy.array objects.
@@ -20,21 +15,18 @@ class State(object):
     B0.deserialize(q)
     """
 
-    def __init__(self, n):
-        self.n = n
-        self.data = {"mu": utils.zeros(n)}
+    def __init__(self, mu):
+        self.data = {"mu": mu}
 
 
 class StatePlain(State):
     """StatePlain is a State that handles plain numpy.array.
     """
 
-    def __init__(self, n):
+    def __init__(self, mu):
         """Initializer takes a dimensionarity of the vector.
         """
-        self.n = n
-        # super().__init__(self.n)
-        super(StatePlain, self).__init__(self.n)
+        super(StatePlain, self).__init__(mu)
 
 
 class StateMuSigmaDiag(State):
@@ -48,13 +40,9 @@ class StateMuSigmaDiag(State):
         respectively.
     """
 
-    def __init__(self, n):
-        self.n = n
-        super(StateMuSigmaDiag, self).__init__(n)
-        self.data["id"] = 1
-        self.data["time_stamp"] = 0
-        self.data["mu"] = utils.zeros(n)
-        self.data["sigma"] = np.diag(np.eye(self.n, dtype=np.float32))
+    def __init__(self, mu, sigma):
+        super(StateMuSigmaDiag, self).__init__(mu)
+        self.data["sigma"] = sigma
 
 
 class StateMuSigma(State):
@@ -68,13 +56,9 @@ class StateMuSigma(State):
         respectively.
     """
 
-    def __init__(self, n):
-        self.n = n
-        super(StateMuSigma, self).__init__(n)
-        self.data["id"] = 1
-        self.data["time_stamp"] = 0
-        self.data["mu"] = utils.zeros(n)
-        self.data["Sigma"] = np.eye(n, dtype=np.float32)
+    def __init__(self, mu, Sigma):
+        super(StateMuSigma, self).__init__(mu)
+        self.data["Sigma"] = Sigma
 
 
 class StateVisualMotor(State):

@@ -1,1 +1,13 @@
 *.pyc
+*.mov
+*.gif
+app.log
+*-checkpoint.ipynb
+lib
+*.egg
+*.egg-info
+
+
+
+
+

@@ -4,7 +4,7 @@ from log import logging_conf
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from brica import Component, VirtualTimeScheduler, Timing
+from brica import VirtualTimeScheduler, Timing
 
 from matchernet.ekf import BundleEKFContinuousTime, MatcherEKF
 from matchernet import fn
@@ -29,11 +29,11 @@ def ekf_test_multiple_observer(dt, numSteps, num_observers, yrecs):
        --- m03 --- b3
     where b1, b2, and b3 are Observers
     """
-    b0 = BundleEKFContinuousTime("b0", 2, fn.LinearFn(A0 * 0.5))
-    b0.state.data["mu"] = mu0
-    b0.state.data["Sigma"] = 2 * ey2
-    b0.dt = dt
-    b0.state.data["mu"][1] = 2
+    f = fn.LinearFn(A0 * 0.5)
+    Sigma0 = 2 * ey2
+    Q = ey2
+    mu1 = np.array([0, 2.0], dtype=np.float32)
+    b0 = BundleEKFContinuousTime("b0", dt, f, Q, mu1, Sigma0)
 
     bp = []
     for i in range(num_observers):
@@ -46,9 +46,13 @@ def ekf_test_multiple_observer(dt, numSteps, num_observers, yrecs):
     # bp[1].obs_noise_covariance = 4*ey2
 
     mp = []
+
+    g0 = fn.LinearFn(np.eye(2, dtype=np.float32))
+    g1 = fn.LinearFn(np.eye(2, dtype=np.float32))
+
     for i in range(num_observers):
         mpname = "mp0{}".format(i)
-        mptmp = MatcherEKF(mpname, b0, bp[i])
+        mptmp = MatcherEKF(mpname, b0, bp[i], g0, g1)
         mp.append(mptmp)
 
     s = VirtualTimeScheduler()
