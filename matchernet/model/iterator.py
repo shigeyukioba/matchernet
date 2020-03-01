@@ -41,7 +41,7 @@ class MultiModalIterator(object):
                 yield inputs, targets
 
     def _get_target(self):
-        """model_type に応じてラベルを選択する
+        """Select a label according to model_type
         """
         if self.model_type == "multiclass":
             return self._to_categorical()
@@ -49,7 +49,7 @@ class MultiModalIterator(object):
             raise NotImplementedError
 
     def _data_generation(self, batch_ids):
-        """各モダリティのデータを集める
+        """Gather data for each modality
         """
         inputs, num_inputs = [], []
         for i, col in enumerate(self.data_df.columns):
@@ -62,10 +62,10 @@ class MultiModalIterator(object):
         return inputs, targets
 
     def _get_indexes(self):
-        """データ index の作成とシャッフル
+        """Create and shuffle data index
 
         Returns:
-            indexes(numpy.array): (sample_num), データの index
+            indexes(numpy.array): (sample_num), Data index
         """
         indexes = np.arange(self.sample_num)
         if self.shuffle:
@@ -77,7 +77,7 @@ class MultiModalIterator(object):
         return keras.utils.to_categorical(self.data_df[self.target_column].values)
 
     def _validate_target_column(self, target_column):
-        """指定した target_column が存在するかチェック
+        """Check if specified target_column exists
         """
         if target_column not in self.data_df.columns:
             raise KeyError("{0} not in DataFrame.".format(target_column))
@@ -85,17 +85,18 @@ class MultiModalIterator(object):
             return target_column
 
     def _load_image(self, paths):
-        """パスからの画像データのロード
+        """Loading image data from a path
 
-        ImageDataGenerator の random_transform で指定した augmentation, パラメータに従って
-        単一画像テンソルをランダムに拡張し、standardize で正規化を行っている。
-        train, test 両方で使うが、train 時のみ data augmentation を行う。
+        The single image tensor is extended at random according to the augmentation
+        and parameters specified by random_transform of ImageDataGenerator, and normalized
+        by standardize.
+        Use for both train and test, but perform data augmentation only during train.
 
         Args:
-            paths(list): 画像データパス
+            paths(list): Image data path
 
         Returns:
-            x(numpy.array): 前処理を行った画像データ
+            x(numpy.array): Preprocessed image data
         """
         x = np.zeros((len(paths), *self.image_shape))
         for i, path in enumerate(paths):
