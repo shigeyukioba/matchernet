@@ -53,22 +53,11 @@ def random_erasing_augmentation(p=0.5,
     return eraser
 
 
-def image_generator(rotation_range=180,
-                    width_shift_range=0.2,
-                    height_shift_range=0.2,
-                    shear_range=10,
-                    zoom_range=0.3,
-                    channel_shift_range=5.,
+def image_generator(channel_shift_range=5.,
                     preprocessing_function=random_erasing_augmentation(v_l=0, v_h=255)):
     """Data augmentation and batch creation using keras standard generator
 
     Args:
-        rotation_range(int): Rotation range to rotate the image randomly. default: 180
-        width_shift_range(float): Range of horizontal shift randomly. default: 0.2
-        height_shift_range(float): Range to vertically shift randomly. default: 0.2
-        shear_range(float): Shear strength, the strength of applying a transformation
-                            that distorts obliquely. default: 10
-        zoom_range(float): Enlarge only objects in image. default: 0.3
         channel_shift_range(float): Range to shuffle channels randomly. default: 5.
         preprocessing_function: You can specify a function that takes a 3D numpy.ndarray
                                 as input and has the same shape output.
@@ -79,11 +68,6 @@ def image_generator(rotation_range=180,
                             data augmentation.
     """
     return ImageDataGenerator(
-        rotation_range=rotation_range,
-        width_shift_range=width_shift_range,
-        height_shift_range=height_shift_range,
-        shear_range=shear_range,
-        zoom_range=zoom_range,
         channel_shift_range=channel_shift_range,
         preprocessing_function=preprocessing_function
     )
