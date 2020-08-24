@@ -13,6 +13,9 @@ MatcherNet is a probabilistic state-space model for dynamic system identificatio
 MatcherNet was developped with support by the New Energy and Industrial Technology Development Organization (NEDO), Japan,
 and by Post-K application development for exploratory challenges from the MEXT, Japan.
 
+Copyright (C) 2019 Kyoto University and National Institute of Advanced Industrial Science and Technology (AIST)
+
+
 # Document
 
 See an [overview](https://github.com/shigeyukioba/matchernet/blob/master/overview.md) for knowing what is MatcherNet in a little bit more detail.
